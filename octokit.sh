@@ -17,7 +17,7 @@
 # Available environment vars:
 #
 #   OCTOKIT_SH_URL=${OCTOKIT_SH_URL}
-#   OCTOKIT_SH_V=${OCTOKIT_SH_V}
+#   OCTOKIT_SH_ACCEPT=${OCTOKIT_SH_ACCEPT}
 #
 # Requirements and setup:
 #
@@ -40,7 +40,7 @@ export ALL_FUNCS=$(awk 'BEGIN {ORS=" "} !/^_/ && /^[a-zA-Z0-9_]+\s*\(\)/ {
     sub(/\(\)$/, "", $1); print $1 }' $0 | sort)
 
 export OCTOKIT_SH_URL=${OCTOKIT_SH_URL:-'https://api.github.com'}
-export OCTOKIT_SH_V='Accept: application/vnd.github.v3+json'
+export OCTOKIT_SH_ACCEPT='application/vnd.github.v3+json'
 export OCTOKIT_SH_RATELIMIT=0
 
 # Customizable logging output.
@@ -100,7 +100,7 @@ _main() {
     while getopts l:qrvVdh opt; do
         case $opt in
         q)  quiet=1;;
-        r)  GH_RATE_LIMIT=1;;
+        r)  OCTOKIT_SH_RATELIMIT=1;;
         v)  verbose=$(( $verbose + 1 ));;
         V)  printf 'Version: %s\n' $VERSION
             exit;;
@@ -137,7 +137,143 @@ _main() {
             exit $(( E_COMMAND_NOT_FOUND ));;
     *)      exit $?;;
     esac
+}
 
+request() {
+    # Return JSON from one or more HTTP calls
+    #
+    # - (stdin)
+    #   JSON data to send as the request body.
+    # o_path : /
+    #   The URL path for the HTTP request.
+    # o_method : GET
+    #   The HTTP method to send in the request.
+    # o_follow_next : 0
+    #   Whether to automatically follow 'next' links in the 'Link' header.
+    # o_follow_limit : 100
+    #   The maximum number of 'next' links to follow.
+    #
+    # Usage:
+    #   request /repos/:owner/:repo/issues
+    #   request /repos/:owner/:repo/issues GET 1 50
+    #   printf '{"title": "%s", "body": "%s"}\n' "Stuff" "Things" \
+    #       | request /repos/:owner/:repo/issues POST | jq -r '.[url]'
+
+    awk \
+        -v o_path="${1:-/}" \
+        -v o_method="${2:-GET}" \
+        -v o_follow_next="${3:-0}" \
+        -v o_follow_limit="${4:-100}" \
+    '
+    function _log(level, message) {
+        # Output log messages to the logging fds of the parent script.
+
+        if (level == "ratelimit") log_file = 2
+        if (level == "error") log_file = 2
+        if (level == "info")  log_file = ENVIRON["LINFO"]
+        if (level == "debug") log_file = ENVIRON["LDEBUG"]
+
+        printf("%s %s: %s\n", ENVIRON["NAME"], toupper(level), message) \
+            | "cat 1>&" log_file
+    }
+
+    function check_status(response_code, response_text) {
+        # Exit early on failure response codes.
+
+        if (substr(response_code, 1, 1) == 2) level = "info"
+        else level = "error"
+
+        _log(level, "Response code " response_code " " response_text)
+
+        if (substr(response_code, 1, 1) == 2) return
+        else if (substr(response_code, 1, 1) == 4) exit 4
+        else if (substr(response_code, 1, 1) == 5) exit 5
+        else exit 1
+    }
+
+    function show_rate_limit(rate_limit) {
+        # Output the GitHub rate limit from the last HTTP response.
+
+        if (ENVIRON["OCTOKIT_SH_RATELIMIT"])
+            _log("ratelimit", "Remaining GitHub requests: " rate_limit)
+    }
+
+    function get_next(link_hdr) {
+        # Process the Link header into a map.
+        # Return a 'next' link if there is one.
+
+        split(link_hdr, links, ", ")
+
+        for (i in links) {
+            sub(/</, "", links[i])
+            sub(/>;/, "", links[i])
+            sub(/rel="/, "", links[i])
+            sub(/"/, "", links[i])
+            split(links[i], a, " ")
+            links[a[2]] = a[1]
+        }
+
+        if ("next" in links) return links["next"]
+    }
+
+    function req(o_method, url) {
+        # Separate status from headers from body.
+
+        cmd = sprintf("curl -nsSi -H \"Accept: %s\" -X %s \"%s\"",
+            ENVIRON["OCTOKIT_SH_ACCEPT"],
+            o_method,
+            url)
+
+        _log("info", "Executing: " cmd)
+
+        response_code=""
+        is_headers = 1
+        split("", headers, ":")  # initialize headers array
+        while((cmd | getline line) > 0) {
+            sub(/\r$/, "", line)
+            if (line == "") {
+                is_headers = 0
+                continue
+            }
+
+            if (!response_code) {
+                idx = index(line, " ")
+                response_code = substr(line, idx + 1, 3)
+                response_text = substr(line, idx + 5)
+
+                check_status(response_code, response_text)
+                continue
+            }
+
+            if (is_headers) {
+                idx = index(line, ": ")
+                headers[substr(line, 0, idx - 1)] = substr(line, idx + 2)
+                continue
+            }
+
+            # Output body
+            print line
+        }
+
+        close(cmd)
+
+        if ("X-RateLimit-Remaining" in headers)
+            show_rate_limit(headers["X-RateLimit-Remaining"])
+
+        if ("Link" in headers)
+            return get_next(headers["Link"])
+    }
+
+    BEGIN {
+        next_url = req(o_method, ENVIRON["OCTOKIT_SH_URL"] "/" o_path)
+
+        do {
+            next_url = req(o_method, next_url)
+            o_follow_limit -= 1
+            _log("debug", "Following \"next\" links: " o_follow_limit)
+        } while(o_follow_next && o_follow_limit > 0 && next_url)
+    }
+    '
 }
 
 _main "$@"
