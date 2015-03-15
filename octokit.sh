@@ -13,6 +13,8 @@
 #   -d      Enable xtrace debug logging.
 #   -r      Print your current GitHub API rate limit to stderr.
 #   -q      Quiet; don't print to stdout.
+#   -j      Output raw JSON; don't process with jq.
+#               (Default if jq is not installed).
 #
 # Available environment vars:
 #
@@ -25,6 +27,8 @@
 #   header by making additional HTTP requests.
 # OCTOKIT_SH_NEXT_MAX=${OCTOKIT_SH_NEXT_MAX}
 #   The maximum number of 'next' links to follow at one time.
+# OCTOKIT_SH_JQ_BIN=${OCTOKIT_SH_JQ_BIN}
+#   The name of the jq binary, if installed.
 #
 # Requirements:
 #
@@ -58,6 +62,11 @@ export OCTOKIT_SH_ACCEPT='application/vnd.github.v3+json'
 export OCTOKIT_SH_NEXT=${OCTOKIT_SH_NEXT:-0}
 export OCTOKIT_SH_NEXT_MAX=${OCTOKIT_SH_NEXT_MAX:-100}
 export OCTOKIT_SH_RATELIMIT=0
+export OCTOKIT_SH_JQ_BIN="${OCTOKIT_SH_JQ_BIN:-jq}"
+
+# Detect if jq is installed.
+type "$OCTOKIT_SH_JQ_BIN" 1>/dev/null 2>/dev/null
+NO_JQ=$?
 
 # Customizable logging output.
 exec 4>/dev/null
@@ -113,8 +122,9 @@ _main() {
         echo $excode
     ' INT TERM EXIT
 
-    while getopts l:qrvVdh opt; do
+    while getopts l:jqrvVdh opt; do
         case $opt in
+        j)  NO_JQ=1;;
         q)  quiet=1;;
         r)  OCTOKIT_SH_RATELIMIT=1;;
         v)  verbose=$(( $verbose + 1 ));;
@@ -153,6 +163,24 @@ _main() {
             exit $(( E_COMMAND_NOT_FOUND ));;
     *)      exit $?;;
     esac
+}
+
+_filter() {
+    # Filter JSON input using jq; outputs raw JSON if jq is not installed
+    #
+    # - (stdin)
+    #   JSON input.
+    # filter
+    #   A string of jq filters to apply to the input stream.
+
+    local filter="$1"
+
+    if [ $NO_JQ -ne 0 ] ; then
+        cat
+        return
+    fi
+
+    "${OCTOKIT_SH_JQ_BIN}" -c -r "${filter}"
 }
 
 request() {
