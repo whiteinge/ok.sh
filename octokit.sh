@@ -19,11 +19,18 @@
 #   OCTOKIT_SH_URL=${OCTOKIT_SH_URL}
 #   OCTOKIT_SH_ACCEPT=${OCTOKIT_SH_ACCEPT}
 #
-# Requirements and setup:
+# Requirements:
 #
 # * A POSIX environment (tested against Busybox v1.19.4)
 # * curl (tested against 7.32.0)
+#
+# Optional requirements:
+#
 # * jq <http://stedolan.github.io/jq/> (tested against 1.3)
+#   If jq is not installed commands will output raw JSON; if jq is installed
+#   commands can be pretty-printed for use with other shell tools.
+#
+# Setup
 #
 # Authentication credentials are read from a ~/.netrc file with the following
 # format. Generate the token on GitHub under Account Settings -> Applications.
