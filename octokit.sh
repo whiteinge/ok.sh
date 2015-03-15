@@ -16,8 +16,15 @@
 #
 # Available environment vars:
 #
-#   OCTOKIT_SH_URL=${OCTOKIT_SH_URL}
-#   OCTOKIT_SH_ACCEPT=${OCTOKIT_SH_ACCEPT}
+# OCTOKIT_SH_URL=${OCTOKIT_SH_URL}
+#   Base URL for GitHub or GitHub Enterprise.
+# OCTOKIT_SH_ACCEPT=${OCTOKIT_SH_ACCEPT}
+#   The 'Accept' header to send with each request.
+# OCTOKIT_SH_NEXT=${OCTOKIT_SH_NEXT}
+#   Instructs ${NAME} to automatically follow 'next' links from the 'Links'
+#   header by making additional HTTP requests.
+# OCTOKIT_SH_NEXT_MAX=${OCTOKIT_SH_NEXT_MAX}
+#   The maximum number of 'next' links to follow at one time.
 #
 # Requirements:
 #
@@ -48,6 +55,8 @@ export ALL_FUNCS=$(awk 'BEGIN {ORS=" "} !/^_/ && /^[a-zA-Z0-9_]+\s*\(\)/ {
 
 export OCTOKIT_SH_URL=${OCTOKIT_SH_URL:-'https://api.github.com'}
 export OCTOKIT_SH_ACCEPT='application/vnd.github.v3+json'
+export OCTOKIT_SH_NEXT=${OCTOKIT_SH_NEXT:-0}
+export OCTOKIT_SH_NEXT_MAX=${OCTOKIT_SH_NEXT_MAX:-100}
 export OCTOKIT_SH_RATELIMIT=0
 
 # Customizable logging output.
@@ -155,22 +164,16 @@ request() {
     #   The URL path for the HTTP request.
     # o_method : GET
     #   The HTTP method to send in the request.
-    # o_follow_next : 0
-    #   Whether to automatically follow 'next' links in the 'Link' header.
-    # o_follow_limit : 100
-    #   The maximum number of 'next' links to follow.
     #
     # Usage:
     #   request /repos/:owner/:repo/issues
-    #   request /repos/:owner/:repo/issues GET 1 50
+    #   request /repos/:owner/:repo/issues GET
     #   printf '{"title": "%s", "body": "%s"}\n' "Stuff" "Things" \
     #       | request /repos/:owner/:repo/issues POST | jq -r '.[url]'
 
     awk \
         -v o_path="${1:-/}" \
         -v o_method="${2:-GET}" \
-        -v o_follow_next="${3:-0}" \
-        -v o_follow_limit="${4:-100}" \
     '
     function _log(level, message) {
         # Output log messages to the logging fds of the parent script.
@@ -207,7 +210,7 @@ request() {
 
     function get_next(link_hdr) {
         # Process the Link header into a map.
-        # Return a 'next' link if there is one.
+        # Return a "next" link if there is one.
 
         split(link_hdr, links, ", ")
 
@@ -272,13 +275,15 @@ request() {
     }
 
     BEGIN {
+        follow_next = ENVIRON["OCTOKIT_SH_NEXT"]
+        follow_next_limit = ENVIRON["OCTOKIT_SH_NEXT_MAX"]
         next_url = req(o_method, ENVIRON["OCTOKIT_SH_URL"] "/" o_path)
 
         do {
             next_url = req(o_method, next_url)
-            o_follow_limit -= 1
-            _log("debug", "Following \"next\" links: " o_follow_limit)
-        } while(o_follow_next && o_follow_limit > 0 && next_url)
+            follow_next_limit -= 1
+            _log("debug", "Following \"next\" links: " follow_next_limit)
+        } while(follow_next && follow_next_limit > 0 && next_url)
     }
     '
 }
