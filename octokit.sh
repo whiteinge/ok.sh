@@ -78,21 +78,32 @@ E_NO_COMMAND=71
 E_COMMAND_NOT_FOUND=73
 
 _helptext() {
-    # Extract lines of contiguous comment characters as inline help text
+    # Extract contiguous lines of comments and function params as help text
     #
     # Indentation will be ignored. The first line of the match will be ignored
-    # (this is to ignore the she-bang of a file or the function name.
+    # (this is to ignore the she-bang of a file or the function name).
+    # Local variable declarations and their default values can also be pulled
+    # in as documentation.
     # Exits upon encountering the first blank line.
     #
     # Exported environment variables can be used for string interpolation in
-    # the extracted text.
+    # the extracted commented text.
 
-    # FIXME: gensub is not Posix (present in busybox & bsd but not solaris(?))
-    awk 'NR != 1 && /^\s*#/ { while(match($0,"[$]{[^}]*}")) {
-            var=substr($0,RSTART+2,RLENGTH -3)
-            gsub("[$]{"var"}",ENVIRON[var])
-            }; print gensub(/^\s*#\s?/, "", $0) }
-        !NF { exit }' "$@"
+    awk 'NR != 1 && /^\s*#/ {
+        line=$0
+        while(match(line, "[$]{[^}]*}")) {
+            var=substr(line, RSTART+2, RLENGTH -3)
+            gsub("[$]{"var"}", ENVIRON[var], line)
+        }
+        gsub(/^\s*#\s?/, "", line)
+        print line
+    }
+    /^\s*local/ {
+        sub(/^\s*local /, "")
+        sub(/=/, " : ")
+        print
+    }
+    !NF { exit }' "$@"
 }
 
 help() {
