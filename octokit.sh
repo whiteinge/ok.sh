@@ -1,35 +1,6 @@
 #!/usr/bin/env sh
 # A GitHub API client library written in POSIX sh
 #
-# Available commands: ${ALL_FUNCS}
-#
-# Usage: ${NAME} [<options>] command [<args>]
-# Command-specific help: ${NAME} help command
-#
-# Options:
-#   -h      Show this screen.
-#   -V      Show version.
-#   -v      Enable verbose output; can be specified multiple times.
-#   -d      Enable xtrace debug logging.
-#   -r      Print your current GitHub API rate limit to stderr.
-#   -q      Quiet; don't print to stdout.
-#   -j      Output raw JSON; don't process with jq.
-#               (Default if jq is not installed).
-#
-# Available environment vars:
-#
-# OCTOKIT_SH_URL=${OCTOKIT_SH_URL}
-#   Base URL for GitHub or GitHub Enterprise.
-# OCTOKIT_SH_ACCEPT=${OCTOKIT_SH_ACCEPT}
-#   The 'Accept' header to send with each request.
-# OCTOKIT_SH_NEXT=${OCTOKIT_SH_NEXT}
-#   Instructs ${NAME} to automatically follow 'next' links from the 'Links'
-#   header by making additional HTTP requests.
-# OCTOKIT_SH_NEXT_MAX=${OCTOKIT_SH_NEXT_MAX}
-#   The maximum number of 'next' links to follow at one time.
-# OCTOKIT_SH_JQ_BIN=${OCTOKIT_SH_JQ_BIN}
-#   The name of the jq binary, if installed.
-#
 # Requirements:
 #
 # * A POSIX environment (tested against Busybox v1.19.4)
@@ -50,6 +21,22 @@
 #   machine api.github.com
 #       login <username>
 #       password <token>
+#
+# Configuration
+#
+# The following environment variables may be set to customize ${NAME}.
+#
+# OCTOKIT_SH_URL=${OCTOKIT_SH_URL}
+#   Base URL for GitHub or GitHub Enterprise.
+# OCTOKIT_SH_ACCEPT=${OCTOKIT_SH_ACCEPT}
+#   The 'Accept' header to send with each request.
+# OCTOKIT_SH_NEXT=${OCTOKIT_SH_NEXT}
+#   Instructs ${NAME} to automatically follow 'next' links from the 'Links'
+#   header by making additional HTTP requests.
+# OCTOKIT_SH_NEXT_MAX=${OCTOKIT_SH_NEXT_MAX}
+#   The maximum number of 'next' links to follow at one time.
+# OCTOKIT_SH_JQ_BIN=${OCTOKIT_SH_JQ_BIN}
+#   The name of the jq binary, if installed.
 
 export NAME=$(basename $0)
 export VERSION='0.1.0'
@@ -89,6 +76,11 @@ _helptext() {
     #
     # Exported environment variables can be used for string interpolation in
     # the extracted commented text.
+    #
+    # - (stdin)
+    #   The text of a function body to parse.
+    # $1
+    #   A file name to parse.
 
     awk 'NR != 1 && /^\s*#/ {
         line=$0
@@ -110,17 +102,36 @@ _helptext() {
 help() {
     # Output the help text for a command
     #
-    # Usage: ${NAME} help commandname
+    # Usage:
+    #   help commandname
+    #
+    # $1
+    #   Function name to search for; if omitted searches whole file.
 
     if [ $# -gt 0 ]; then
         awk -v fname="^$1" '$0 ~ fname, /^}/ { print }' $0 | _helptext
     else
         _helptext $0
+        printf '\n'
+        help _main
     fi
 }
 
 _main() {
-    # Parse command line options and call the given command
+    # Available commands: ${ALL_FUNCS}
+    #
+    # Usage: ${NAME} [<options>] command [<name=value>]
+    # Command-specific help: ${NAME} help command
+    #
+    # Options:
+    #   -h      Show this screen.
+    #   -V      Show version.
+    #   -v      Enable verbose output; can be specified multiple times.
+    #   -d      Enable xtrace debug logging.
+    #   -r      Print your current GitHub API rate limit to stderr.
+    #   -q      Quiet; don't print to stdout.
+    #   -j      Output raw JSON; don't process with jq.
+    #               (Default if jq is not installed).
 
     local cmd opt OPTARG OPTIND
     local quiet=0
@@ -144,9 +155,10 @@ _main() {
             exit;;
         d)  set -x;;
         h)  help
+            help _main
             printf '\n'
             exit;;
-        \?) help
+        \?) help _main
             exit 3;;
         esac
     done
@@ -154,7 +166,7 @@ _main() {
 
     if [ -z "$1" ] ; then
         printf 'No command given\n\n'
-        help
+        help _main
         exit ${E_NO_COMMAND}
     fi
 
@@ -171,7 +183,8 @@ _main() {
     case $? in
     0)      :
             ;;
-    127)    help
+    127)    printf '\n'
+            help _main
             exit $(( E_COMMAND_NOT_FOUND ));;
     *)      exit $?;;
     esac
@@ -182,10 +195,8 @@ _filter() {
     #
     # - (stdin)
     #   JSON input.
-    # filter
-    #   A string of jq filters to apply to the input stream.
-
     local filter="$1"
+    #   A string of jq filters to apply to the input stream.
 
     if [ $NO_JQ -ne 0 ] ; then
         cat
@@ -198,18 +209,18 @@ _filter() {
 request() {
     # Return JSON from one or more HTTP calls
     #
+    # Usage:
+    #   request /repos/:owner/:repo/issues
+    #   request /repos/:owner/:repo/issues GET
+    #   printf '{"title": "%s", "body": "%s"}\n' "Stuff" "Things" \
+    #       | request /repos/:owner/:repo/issues POST | jq -r '.[url]'
+    #
     # - (stdin)
     #   JSON data to send as the request body.
     # o_path : /
     #   The URL path for the HTTP request.
     # o_method : GET
     #   The HTTP method to send in the request.
-    #
-    # Usage:
-    #   request /repos/:owner/:repo/issues
-    #   request /repos/:owner/:repo/issues GET
-    #   printf '{"title": "%s", "body": "%s"}\n' "Stuff" "Things" \
-    #       | request /repos/:owner/:repo/issues POST | jq -r '.[url]'
 
     awk \
         -v o_path="${1:-/}" \
