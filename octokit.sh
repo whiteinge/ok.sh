@@ -54,8 +54,9 @@
 export NAME=$(basename $0)
 export VERSION='0.1.0'
 
-export ALL_FUNCS=$(awk 'BEGIN {ORS=" "} !/^_/ && /^[a-zA-Z0-9_]+\s*\(\)/ {
+ALL_FUNCS=$(awk 'BEGIN {ORS=" "} !/^_/ && /^[a-zA-Z0-9_]+\s*\(\)/ {
     sub(/\(\)$/, "", $1); print $1 }' $0 | sort)
+export ALL_FUNCS
 
 export OCTOKIT_SH_URL=${OCTOKIT_SH_URL:-'https://api.github.com'}
 export OCTOKIT_SH_ACCEPT='application/vnd.github.v3+json'
