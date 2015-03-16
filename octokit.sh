@@ -133,7 +133,7 @@ _main() {
         echo $excode
     ' INT TERM EXIT
 
-    while getopts l:jqrvVdh opt; do
+    while getopts jqrvVdh opt; do
         case $opt in
         j)  NO_JQ=1;;
         q)  quiet=1;;
