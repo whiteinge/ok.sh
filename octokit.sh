@@ -327,4 +327,40 @@ request() {
     '
 }
 
+org_repos() {
+    # List organization repositories
+    #
+    # Usage:
+    #   org_repos myorg
+    #   org_repos myorg type=private per_page=10
+    #   org_repos myorg filter='\(.name)\t\(.ssh_url)\t\(.owner.login)'
+    #
+    # Positional arguments
+    #
+    local org="$1"; shift
+    #   Organization GitHub login or id for which to list repos.
+    #
+    # Keyword arguments
+    #
+    local type=all
+    #   Filter by repository type. all, public, member, sources, forks, or
+    #   private.
+    local per_page=100
+    #   The number of repositories to return in each single request.
+    local filter='\(.name)\t\(.ssh_url)'
+    #   A jq filter using string-interpolation syntax that is applied to each
+    #   repository in the return data.
+
+    for arg in "$@"; do
+        case $arg in
+            (type=*) type="${arg#*=}";;
+            (per_page=*) per_page="${arg#*=}";;
+            (filter=*) filter="${arg#*=}";;
+        esac
+    done
+
+    request "orgs/${org}/repos?type=${type}&per_page=${per_page}" \
+        | _filter '.[] | "'"${filter}"'"'
+}
+
 _main "$@"
