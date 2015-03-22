@@ -190,6 +190,41 @@ _main() {
     esac
 }
 
+_format() {
+    # Create formatted JSON from name=value pairs
+    #
+    # Tries not to quote numbers and booleans. If jq is installed it will also
+    # validate the output.
+    #
+    # Usage:
+    #   _format foo=Foo bar=123 baz=true qux=Qux=Qux quux='Multi-line
+    # string'
+    #
+    # Return:
+    #   {"bar":123,"qux":"Qux=Qux","foo":"Foo","quux":"Multi-line\nstring","baz":true}
+
+    env -i "$@" awk '
+    BEGIN {
+        bools["true"] = 1; bools["false"] = 1;
+        printf("{")
+
+        for (name in ENVIRON) {
+            val = ENVIRON[name]
+
+            # If not bool or number, quote it.
+            if ((!(val in bools)) && match(val, /[0-9.-]+/) != 1) {
+                val = "\"" val "\""
+            }
+
+            printf("%s\"%s\": %s", sep, name, val)
+            sep = ", "
+        }
+
+        printf("}\n")
+    }
+    ' | _filter
+}
+
 _filter() {
     # Filter JSON input using jq; outputs raw JSON if jq is not installed
     #
