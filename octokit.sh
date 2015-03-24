@@ -62,8 +62,10 @@ exec 5>/dev/null
 export LINFO=4
 export LDEBUG=5
 
+E_INVALID_FLAG=70
 E_NO_COMMAND=71
 E_COMMAND_NOT_FOUND=73
+E_INVALID_ARGS=74
 
 _err() {
     # Print error message to stderr and exit
@@ -174,15 +176,14 @@ _main() {
             printf '\n'
             exit;;
         \?) help _main
-            exit 3;;
+            _err 'Invalid flag.' E_INVALID_FLAG;;
         esac
     done
-    shift $(($OPTIND - 1))
+    shift $(( $OPTIND - 1 ))
 
     if [ -z "$1" ] ; then
-        printf 'No command given\n\n'
-        help _main
-        exit ${E_NO_COMMAND}
+        help _main 1>&2; printf '\n'
+        _err 'No command given.' E_NO_COMMAND
     fi
 
     [ $verbose -gt 0 ] && exec 4>&2
@@ -192,15 +193,14 @@ _main() {
     fi
 
     # Run the command.
-    local cmd="${1}" && shift
-    ${cmd} "$@"
+    local cmd="$1" && shift
+    "$cmd" "$@"
 
     case $? in
     0)      :
             ;;
-    127)    printf '\n'
-            help _main
-            exit $(( E_COMMAND_NOT_FOUND ));;
+    127)    help _main; printf '\n'
+            _err 'Command not found.' E_COMMAND_NOT_FOUND;;
     *)      exit $?;;
     esac
 }
