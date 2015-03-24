@@ -65,6 +65,21 @@ export LDEBUG=5
 E_NO_COMMAND=71
 E_COMMAND_NOT_FOUND=73
 
+_err() {
+    # Print error message to stderr and exit
+    #
+    # Usage:
+    #   _err 'Oh noes!' E_SOME_ERROR
+    #
+    local msg="$1"
+    #   Error message.
+    local code="$2"
+    #   Exit code.
+
+    printf '%s\n' "$msg" 1>&2
+    exit $(( $code ))
+}
+
 _helptext() {
     # Extract contiguous lines of comments and function params as help text
     #
