@@ -312,10 +312,17 @@ request() {
         if ("next" in links) return links["next"]
     }
 
-    function req(o_method, url) {
+    function req(o_method, url, body) {
         # Separate status from headers from body.
 
-        cmd = sprintf("curl -nsSi -H \"Accept: %s\" -X %s \"%s\"",
+        curl = "curl -nsSi -H \"Accept: %s\" -X %s \"%s\""
+
+        if (body) {
+            curl = "printf '\''" body "'\'' | " \
+                curl " -H \"Content-type: application/json\" --data-binary @-"
+        }
+
+        cmd = sprintf(curl,
             ENVIRON["OCTOKIT_SH_ACCEPT"],
             o_method,
             url)
@@ -361,9 +368,16 @@ request() {
     }
 
     BEGIN {
+
+        if (o_method == "POST" || o_method == "PUT") {
+            while((getline line) > 0) {
+                body = body line "\n"
+            }
+        }
+
         follow_next = ENVIRON["OCTOKIT_SH_NEXT"]
         follow_next_limit = ENVIRON["OCTOKIT_SH_NEXT_MAX"]
-        next_url = req(o_method, ENVIRON["OCTOKIT_SH_URL"] "/" o_path)
+        next_url = req(o_method, ENVIRON["OCTOKIT_SH_URL"] o_path, body)
 
         do {
             next_url = req(o_method, next_url)
