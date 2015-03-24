@@ -441,6 +441,29 @@ org_repos() {
         | _filter ".[] | \"${filter}\""
 }
 
+org_teams() {
+    # List teams
+    #
+    # Usage:
+    #   org_teams org
+    #
+    # Positional arguments
+    #
+    local org=$1
+    #   Organization GitHub login or id.
+    #
+    # Keyword arguments
+    #
+    local filter='\(.name)\t\(.id)\t\(.permission)'
+    #   A jq filter using string-interpolation syntax that is applied to each
+    #   team in the return data.
+
+    [ -n "$org" ] && shift || _err 'Org name required.' E_INVALID_ARGS
+
+    request "/orgs/${org}/teams" \
+        | _filter ".[] | \"${filter}\""
+}
+
 create_repo() {
     # Create a repository for a user or organization
     #
