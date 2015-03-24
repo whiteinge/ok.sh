@@ -413,7 +413,7 @@ org_repos() {
     #
     # Positional arguments
     #
-    local org="$1"; shift
+    local org=$1
     #   Organization GitHub login or id for which to list repos.
     #
     # Keyword arguments
@@ -427,6 +427,8 @@ org_repos() {
     #   A jq filter using string-interpolation syntax that is applied to each
     #   repository in the return data.
 
+    [ -n "$org" ] && shift || _err 'Org name required.' E_INVALID_ARGS
+
     for arg in "$@"; do
         case $arg in
             (type=*) type="${arg#*=}";;
@@ -435,8 +437,8 @@ org_repos() {
         esac
     done
 
-    request "orgs/${org}/repos?type=${type}&per_page=${per_page}" \
-        | _filter '.[] | "'"${filter}"'"'
+    request "/orgs/${org}/repos?type=${type}&per_page=${per_page}" \
+        | _filter ".[] | \"${filter}\""
 }
 
 create_repo() {
@@ -449,7 +451,7 @@ create_repo() {
     #
     # Positional arguments
     #
-    local name="$1"
+    local name=$1
     #   Name of the new repo
     #
     # Keyword arguments
