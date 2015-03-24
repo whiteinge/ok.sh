@@ -439,4 +439,41 @@ org_repos() {
         | _filter '.[] | "'"${filter}"'"'
 }
 
+create_repo() {
+    # Create a repository for a user or organization
+    #
+    # Usage:
+    #   create_repo foo
+    #   create_repo bar description='Stuff and things' homepage='example.com'
+    #   create_repo baz organization=myorg
+    #
+    # Positional arguments
+    #
+    local name="$1"
+    #   Name of the new repo
+    #
+    # Keyword arguments
+    #
+    # description, homepage, private, has_issues, has_wiki, has_downloads,
+    # organization, team_id, auto_init, gitignore_template
+
+    local url organization
+
+    [ -n "$name" ] && shift || _err 'Repo name required.' E_INVALID_ARGS
+
+    for arg in "$@"; do
+        case $arg in
+            (organization=*) organization="${arg#*=}";;
+        esac
+    done
+
+    if [ -n "$organization" ] ; then
+        url="/orgs/${organization}/repos"
+    else
+        url='/user/repos'
+    fi
+
+    _format "name=${name}" "$@" | request "$url" POST
+}
+
 _main "$@"
