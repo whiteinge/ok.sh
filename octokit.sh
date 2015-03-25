@@ -384,7 +384,7 @@ request() {
 
     BEGIN {
 
-        if (o_method == "POST" || o_method == "PUT") {
+        if (o_method == "POST" || o_method == "PUT" || o_method == "PATCH") {
             while((getline line) > 0) {
                 body = body line "\n"
             }
