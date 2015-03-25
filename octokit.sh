@@ -394,11 +394,11 @@ request() {
         follow_next_limit = ENVIRON["OCTOKIT_SH_NEXT_MAX"]
         next_url = req(o_method, ENVIRON["OCTOKIT_SH_URL"] o_path, body)
 
-        do {
+        while(follow_next && follow_next_limit > 0 && next_url) {
             next_url = req(o_method, next_url)
             follow_next_limit -= 1
             _log("debug", "Following \"next\" links: " follow_next_limit)
-        } while(follow_next && follow_next_limit > 0 && next_url)
+        }
     }
     '
 }
