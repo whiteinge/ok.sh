@@ -37,6 +37,9 @@
 #   The maximum number of 'next' links to follow at one time.
 # OCTOKIT_SH_JQ_BIN=${OCTOKIT_SH_JQ_BIN}
 #   The name of the jq binary, if installed.
+# OCTOKIT_SH_VERBOSE=${OCTOKIT_SH_VERBOSE}
+#   The debug logging verbosity level.
+#   1 for info; 2 for debug; 3 for trace (full curl request/reponse output).
 
 export NAME=$(basename $0)
 export VERSION='0.1.0'
@@ -51,6 +54,7 @@ export OCTOKIT_SH_NEXT=${OCTOKIT_SH_NEXT:-0}
 export OCTOKIT_SH_NEXT_MAX=${OCTOKIT_SH_NEXT_MAX:-100}
 export OCTOKIT_SH_RATELIMIT=0
 export OCTOKIT_SH_JQ_BIN="${OCTOKIT_SH_JQ_BIN:-jq}"
+export OCTOKIT_SH_VERBOSE="${OCTOKIT_SH_VERBOSE:-0}"
 
 # Detect if jq is installed.
 type "$OCTOKIT_SH_JQ_BIN" 1>/dev/null 2>/dev/null
@@ -143,7 +147,7 @@ _main() {
     # Options:
     #   -h      Show this screen.
     #   -V      Show version.
-    #   -v      Enable verbose output; can be specified multiple times.
+    #   -v      Enable verbose output; same as OCTOKIT_SH_VERBOSE.
     #   -d      Enable xtrace debug logging.
     #   -r      Print your current GitHub API rate limit to stderr.
     #   -q      Quiet; don't print to stdout.
@@ -152,7 +156,6 @@ _main() {
 
     local cmd opt OPTARG OPTIND
     local quiet=0
-    local verbose=0
 
     trap '
         excode=$?; trap - EXIT;
@@ -167,7 +170,7 @@ _main() {
         j)  NO_JQ=1;;
         q)  quiet=1;;
         r)  OCTOKIT_SH_RATELIMIT=1;;
-        v)  verbose=$(( $verbose + 1 ));;
+        v)  OCTOKIT_SH_VERBOSE=$(( $OCTOKIT_SH_VERBOSE + 1 ));;
         V)  printf 'Version: %s\n' $VERSION
             exit;;
         d)  set -x;;
@@ -186,8 +189,8 @@ _main() {
         _err 'No command given.' E_NO_COMMAND
     fi
 
-    [ $verbose -gt 0 ] && exec 4>&2
-    [ $verbose -gt 1 ] && exec 5>&2
+    [ $OCTOKIT_SH_VERBOSE -gt 0 ] && exec 4>&2
+    [ $OCTOKIT_SH_VERBOSE -gt 1 ] && exec 5>&2
     if [ $quiet -eq 1 ]; then
         exec 1>/dev/null 2>/dev/null
     fi
@@ -335,6 +338,10 @@ request() {
         if (body) {
             curl = "printf '\''" body "'\'' | " \
                 curl " -H \"Content-type: application/json\" --data-binary @-"
+        }
+
+        if (ENVIRON["OCTOKIT_SH_VERBOSE"] == 3) {
+            curl = curl " --trace-ascii /dev/stderr"
         }
 
         cmd = sprintf(curl,
