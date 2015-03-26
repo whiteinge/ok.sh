@@ -514,4 +514,143 @@ create_repo() {
     _format "name=${name}" "$@" | request "$url" POST
 }
 
+list_releases() {
+    # List releases for a repository
+    #
+    # Usage:
+    #   list_releases org repo '\(.assets[0].name)\t\(.name.id)'
+    #
+    # Positional arguments
+    #
+    local owner=$1
+    #   A GitHub user or organization.
+    local repo=$2
+    #   A GitHub repository.
+    #
+    # Keyword arguments
+    #
+    local filter='\(.name)\t\(.id)\t\(.html_url)'
+    #   A jq filter using string-interpolation syntax that is applied to each
+    #   release in the return data.
+
+    [ -n "$owner" ] && shift || _err 'Owner name required.' E_INVALID_ARGS
+    [ -n "$repo" ] && shift || _err 'Repo name required.' E_INVALID_ARGS
+
+    for arg in "$@"; do
+        case $arg in
+            (filter=*) filter="${arg#*=}";;
+        esac
+    done
+
+    request "/repos/${owner}/${repo}/releases" \
+        | _filter ".[] | \"${filter}\""
+}
+
+release() {
+    # Get a release
+    #
+    # Usage:
+    #   release user repo 1087855
+    #
+    # Positional arguments
+    #
+    local owner=$1
+    #   A GitHub user or organization.
+    local repo=$2
+    #   A GitHub repository.
+    local release_id=$3
+    #   The unique ID of the release; see list_releases.
+    #
+    # Keyword arguments
+    #
+    local filter='\(.author.login)\t\(.published_at)'
+    #   A jq filter using string-interpolation syntax that is applied to each
+    #   release in the return data.
+
+    [ -n "$owner" ] && shift || _err 'Owner name required.' E_INVALID_ARGS
+    [ -n "$repo" ] && shift || _err 'Repo name required.' E_INVALID_ARGS
+    [ -n "$release_id" ] && shift || _err 'Release ID required.' E_INVALID_ARGS
+
+    for arg in "$@"; do
+        case $arg in
+            (filter=*) filter="${arg#*=}";;
+        esac
+    done
+
+    request "/repos/${owner}/${repo}/releases/${release_id}" \
+        | _filter "\"${filter}\""
+}
+
+create_release() {
+    # Create a release
+    #
+    # Usage:
+    #   create_release org repo v1.2.3
+    #   create_release user repo v3.2.1 draft=true
+    #
+    # Positional arguments
+    #
+    local owner=$1
+    #   A GitHub user or organization.
+    local repo=$2
+    #   A GitHub repository.
+    local tag_name=$3
+    #   Git tag from which to create release.
+    #
+    # Keyword arguments
+    #
+    # body, draft, name, prerelease, target_commitish
+
+    [ -n "$owner" ] && shift || _err 'Owner name required.' E_INVALID_ARGS
+    [ -n "$repo" ] && shift || _err 'Repo name required.' E_INVALID_ARGS
+    [ -n "$tag_name" ] && shift || _err 'Tag name required.' E_INVALID_ARGS
+
+    _format "tag_name=${tag_name}" "$@" \
+        | request "/repos/${owner}/${repo}/releases" POST
+}
+
+delete_release() {
+    # Delete a release
+    #
+    # Usage:
+    #   delete_release org repo 1087855
+    #
+    # Positional arguments
+    #
+    local owner=$1
+    #   A GitHub user or organization.
+    local repo=$2
+    #   A GitHub repository.
+    local release_id=$3
+    #   The unique ID of the release; see list_releases.
+
+    [ -n "$owner" ] && shift || _err 'Owner name required.' E_INVALID_ARGS
+    [ -n "$repo" ] && shift || _err 'Repo name required.' E_INVALID_ARGS
+    [ -n "$release_id" ] && shift || _err 'Release ID required.' E_INVALID_ARGS
+
+    request "/repos/${owner}/${repo}/releases/${release_id}" DELETE
+}
+
+release_assets() {
+    # List release assets
+    #
+    # Usage:
+    #   release_assets user repo 1087855
+    #
+    # Positional arguments
+    #
+    local owner=$1
+    #   A GitHub user or organization.
+    local repo=$2
+    #   A GitHub repository.
+    local release_id=$3
+    #   The unique ID of the release; see list_releases.
+
+    [ -n "$owner" ] && shift || _err 'Owner name required.' E_INVALID_ARGS
+    [ -n "$repo" ] && shift || _err 'Repo name required.' E_INVALID_ARGS
+    [ -n "$release_id" ] && shift || _err 'Release ID required.' E_INVALID_ARGS
+
+    request "/repos/${owner}/${repo}/releases/${release_id}/assets"
+}
+
 _main "$@"
