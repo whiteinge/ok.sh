@@ -467,6 +467,12 @@ org_teams() {
 
     [ -n "$org" ] && shift || _err 'Org name required.' E_INVALID_ARGS
 
+    for arg in "$@"; do
+        case $arg in
+            (filter=*) filter="${arg#*=}";;
+        esac
+    done
+
     request "/orgs/${org}/teams" \
         | _filter ".[] | \"${filter}\""
 }
