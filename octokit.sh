@@ -30,11 +30,6 @@
 #   Base URL for GitHub or GitHub Enterprise.
 # OCTOKIT_SH_ACCEPT=${OCTOKIT_SH_ACCEPT}
 #   The 'Accept' header to send with each request.
-# OCTOKIT_SH_NEXT=${OCTOKIT_SH_NEXT}
-#   Instructs ${NAME} to automatically follow 'next' links from the 'Links'
-#   header by making additional HTTP requests.
-# OCTOKIT_SH_NEXT_MAX=${OCTOKIT_SH_NEXT_MAX}
-#   The maximum number of 'next' links to follow at one time.
 # OCTOKIT_SH_JQ_BIN=${OCTOKIT_SH_JQ_BIN}
 #   The name of the jq binary, if installed.
 # OCTOKIT_SH_VERBOSE=${OCTOKIT_SH_VERBOSE}
@@ -50,8 +45,6 @@ export ALL_FUNCS
 
 export OCTOKIT_SH_URL=${OCTOKIT_SH_URL:-'https://api.github.com'}
 export OCTOKIT_SH_ACCEPT='application/vnd.github.v3+json'
-export OCTOKIT_SH_NEXT=${OCTOKIT_SH_NEXT:-0}
-export OCTOKIT_SH_NEXT_MAX=${OCTOKIT_SH_NEXT_MAX:-100}
 export OCTOKIT_SH_RATELIMIT=0
 export OCTOKIT_SH_JQ_BIN="${OCTOKIT_SH_JQ_BIN:-jq}"
 export OCTOKIT_SH_VERBOSE="${OCTOKIT_SH_VERBOSE:-0}"
@@ -260,24 +253,68 @@ _filter() {
 }
 
 request() {
-    # Return JSON from one or more HTTP calls
+    # A wrapper around making HTTP requests with curl
     #
     # Usage:
     #   request /repos/:owner/:repo/issues
-    #   request /repos/:owner/:repo/issues GET
     #   printf '{"title": "%s", "body": "%s"}\n' "Stuff" "Things" \
-    #       | request /repos/:owner/:repo/issues POST | jq -r '.[url]'
+    #       | request /repos/:owner/:repo/issues | jq -r '.[url]'
+    #   printf '{"title": "%s", "body": "%s"}\n' "Stuff" "Things" \
+    #       | request /repos/:owner/:repo/issues method=PUT | jq -r '.[url]'
+    #
+    # Input
     #
     # - (stdin)
-    #   JSON data to send as the request body.
-    # o_path : /
+    #   Data that will be used as the request body. If present the HTTP request
+    #   method used will be 'POST' unless overridden.
+    #
+    # Positional arguments
+    #
+    local path=$1
     #   The URL path for the HTTP request.
-    # o_method : GET
-    #   The HTTP method to send in the request.
+    #   Must be an absolute path that starts with a '/' or a full URL that
+    #   starts with http(s). Absolute paths will be append to the value in
+    #   $OCTOKIT_SH_URL.
+    #
+    # Keyword arguments
+    #
+    # method : GET or POST
+    #   The method to use for the HTTP request.
+    #   If data is passed to this function via stdin, 'POST' will be used as
+    #   the default instead of 'GET'.
+    local content_type='application/json'
+    #   The value of the Content-Type header to use for the request.
+    local follow_next=0
+    #   Whether to automatically look for a 'Links' header and follow any
+    #   'next' URLs found there.
+    local follow_next_limit=50
+    #   The maximum number of 'next' URLs to follow before stopping.
+
+    [ -n "$path" ] && shift || _err 'Path is required.' E_INVALID_ARGS
+
+    case $path in
+        (http*) : ;;
+        *) path="${OCTOKIT_SH_URL}${path}" ;;
+    esac
+
+    local method='GET'
+    [ ! -t 0 ] && method='POST'
+
+    for arg in "$@"; do
+        case $arg in
+            (method=*) method="${arg#*=}";;
+            (follow_next=*) follow_next="${arg#*=}";;
+            (follow_next_limit=*) follow_next_limit="${arg#*=}";;
+            (content_type=*) content_type="${arg#*=}";;
+        esac
+    done
 
     awk \
-        -v o_path="${1:-/}" \
-        -v o_method="${2:-GET}" \
+        -v o_path="$path" \
+        -v o_method="$method" \
+        -v o_follow_next="$follow_next" \
+        -v o_follow_next_limit="$follow_next_limit" \
+        -v h_Content_Type="$content_type" \
     '
     function _log(level, message) {
         # Output log messages to the logging fds of the parent script.
@@ -397,14 +434,12 @@ request() {
             }
         }
 
-        follow_next = ENVIRON["OCTOKIT_SH_NEXT"]
-        follow_next_limit = ENVIRON["OCTOKIT_SH_NEXT_MAX"]
-        next_url = req(o_method, ENVIRON["OCTOKIT_SH_URL"] o_path, body)
+        next_url = req(o_method, o_path, body)
 
-        while(follow_next && follow_next_limit > 0 && next_url) {
+        while(o_follow_next && o_follow_next_limit > 0 && next_url) {
             next_url = req(o_method, next_url)
-            follow_next_limit -= 1
-            _log("debug", "Following \"next\" links: " follow_next_limit)
+            o_follow_next_limit -= 1
+            _log("debug", "Following \"next\" links: " o_follow_next_limit)
         }
     }
     '
