@@ -546,7 +546,7 @@ create_repo() {
         url='/user/repos'
     fi
 
-    _format "name=${name}" "$@" | request "$url" POST
+    _format "name=${name}" "$@" | request "$url"
 }
 
 list_releases() {
@@ -641,7 +641,7 @@ create_release() {
     [ -n "$tag_name" ] && shift || _err 'Tag name required.' E_INVALID_ARGS
 
     _format "tag_name=${tag_name}" "$@" \
-        | request "/repos/${owner}/${repo}/releases" POST
+        | request "/repos/${owner}/${repo}/releases"
 }
 
 delete_release() {
@@ -663,7 +663,7 @@ delete_release() {
     [ -n "$repo" ] && shift || _err 'Repo name required.' E_INVALID_ARGS
     [ -n "$release_id" ] && shift || _err 'Release ID required.' E_INVALID_ARGS
 
-    request "/repos/${owner}/${repo}/releases/${release_id}" DELETE
+    request "/repos/${owner}/${repo}/releases/${release_id}" method=DELETE
 }
 
 release_assets() {
