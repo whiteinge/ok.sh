@@ -45,9 +45,10 @@ export ALL_FUNCS
 
 export OCTOKIT_SH_URL=${OCTOKIT_SH_URL:-'https://api.github.com'}
 export OCTOKIT_SH_ACCEPT='application/vnd.github.v3+json'
-export OCTOKIT_SH_RATELIMIT=0
 export OCTOKIT_SH_JQ_BIN="${OCTOKIT_SH_JQ_BIN:-jq}"
 export OCTOKIT_SH_VERBOSE="${OCTOKIT_SH_VERBOSE:-0}"
+export OCTOKIT_SH_RATE_LIMIT
+export OCTOKIT_SH_RATE_RESET
 
 # Detect if jq is installed.
 type "$OCTOKIT_SH_JQ_BIN" 1>/dev/null 2>/dev/null
@@ -148,7 +149,7 @@ _main() {
     #               (Default if jq is not installed).
 
     local cmd opt OPTARG OPTIND
-    local quiet=0
+    local quiet=0 ratelimit=0
 
     trap '
         excode=$?; trap - EXIT;
@@ -162,7 +163,7 @@ _main() {
         case $opt in
         j)  NO_JQ=1;;
         q)  quiet=1;;
-        r)  OCTOKIT_SH_RATELIMIT=1;;
+        r)  ratelimit=1;;
         v)  OCTOKIT_SH_VERBOSE=$(( $OCTOKIT_SH_VERBOSE + 1 ));;
         V)  printf 'Version: %s\n' $VERSION
             exit;;
@@ -191,6 +192,11 @@ _main() {
     # Run the command.
     local cmd="$1" && shift
     "$cmd" "$@"
+
+    if [ $ratelimit -ne 0 ]; then
+        printf '\nGitHub rate limit:\t%s remaining requests\t %s seconds to reset\n' \
+            "${OCTOKIT_SH_RATE_LIMIT:-Unknown}" "${OCTOKIT_SH_RATE_RESET:-Unkown}"
+    fi
 
     case $? in
     0)      :
@@ -443,6 +449,90 @@ request() {
         }
     }
     '
+}
+
+response() {
+    # Process an HTTP response from curl
+    #
+    # Output only headers of interest. Additional processing is performed on
+    # select headers to make them easier to work with in sh. See below.
+    #
+    # Usage:
+    #   request /some/path | response status_code ETag Link_next
+    #   curl -isS example.com/some/path | response status_text
+    #   curl -IsS example.com/some/path | response status_text
+    #
+    # Header reformatting
+    #
+    # HTTP Status
+    #   The HTTP line is split into `http_version`, `status_code`, and
+    #   `status_text` variables.
+    # ETag
+    #   The surrounding quotes are removed.
+    # Link
+    #   Each URL in the Link header is expanded with the URL type appended to
+    #   the name. E.g., `Link_first`, `Link_last`, `Link_next`.
+    #
+    # Positional arguments
+    #
+    # $1 - $9
+    #   Each positional arg is the name of an HTTP header. Each header value is
+    #   output in the order requested; each on a single line. A blank line is
+    #   output for headers that cannot be found.
+
+    local hdr val http_version status_code status_text headers output
+
+    read -r http_version status_code status_text
+    status_text="${status_text%}"
+    http_version="${http_version#HTTP/}"
+
+    headers="http_version: ${http_version}
+status_code: ${status_code}
+status_text: ${status_text}
+"
+    while IFS=": " read -r hdr val; do
+        # Headers stop at the first blank line.
+        [ "$hdr" == "" ] && break
+        val="${val%}"
+
+        # Process each header; reformat some to work better with sh tools.
+        case "$hdr" in
+            # Update the GitHub rate limit trackers.
+            X-RateLimit-Remaining) OCTOKIT_SH_RATE_LIMIT=$val ;;
+            X-RateLimit-Reset)
+                curtime=$(PATH=$(getconf PATH) awk 'BEGIN{srand(); print srand()}')
+                OCTOKIT_SH_RATE_RESET=$(( $val - $curtime )) ;;
+
+            # Remove quotes from the etag header.
+            ETag) val="${val#\"}"; val="${val%\"}" ;;
+
+            # Split the URLs in the Link header into separate pseudo-headers.
+            Link) headers="${headers}$(printf '%s' "$val" | awk '
+                BEGIN { RS=", "; FS="; "; OFS=": " }
+                {
+                    sub(/^rel="/, "", $2); sub(/"$/, "", $2)
+                    sub(/^</, "", $1); sub(/>$/, "", $1)
+                    print "Link_" $2, $1
+                }')
+"  # need trailing newline
+            ;;
+        esac
+
+        headers="${headers}${hdr}: ${val}
+"  # need trailing newline
+
+    done
+
+    # Output requested headers in deterministic order.
+    for arg in "$@"; do
+        output=$(printf '%s' "$headers" | while IFS=": " read -r hdr val; do
+            [ "$hdr" = "$arg" ] && printf '%s' "$val"
+        done)
+        printf '%s\n' "$output"
+    done
+
+    # Output the response body.
+    cat
 }
 
 org_repos() {
