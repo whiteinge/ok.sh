@@ -60,26 +60,6 @@ exec 5>/dev/null
 export LINFO=4
 export LDEBUG=5
 
-E_INVALID_FLAG=70
-E_NO_COMMAND=71
-E_COMMAND_NOT_FOUND=73
-E_INVALID_ARGS=74
-
-_err() {
-    # Print error message to stderr and exit
-    #
-    # Usage:
-    #   _err 'Oh noes!' E_SOME_ERROR
-    #
-    local msg="$1"
-    #   Error message.
-    local code="$2"
-    #   Exit code.
-
-    printf '%s\n' "$msg" 1>&2
-    exit $(( $code ))
-}
-
 _helptext() {
     # Extract contiguous lines of comments and function params as help text
     #
@@ -108,7 +88,9 @@ _helptext() {
     }
     /^\s*local/ {
         sub(/^\s*local /, "")
+        sub(/:.*$/, "")
         sub(/=/, " : ")
+        sub(/\${/, "$")
         print
     }
     !NF { exit }' "$@"
@@ -148,7 +130,7 @@ _main() {
     #   -j      Output raw JSON; don't process with jq.
     #               (Default if jq is not installed).
 
-    local cmd opt OPTARG OPTIND
+    local cmd ret opt OPTARG OPTIND
     local quiet=0 ratelimit=0
 
     trap '
@@ -172,15 +154,13 @@ _main() {
             help _main
             printf '\n'
             exit;;
-        \?) help _main
-            _err 'Invalid flag.' E_INVALID_FLAG;;
         esac
     done
     shift $(( $OPTIND - 1 ))
 
     if [ -z "$1" ] ; then
         help _main 1>&2; printf '\n'
-        _err 'No command given.' E_NO_COMMAND
+        : ${1:?No command given; see available commands above.}
     fi
 
     [ $OCTOKIT_SH_VERBOSE -gt 0 ] && exec 4>&2
@@ -190,21 +170,16 @@ _main() {
     fi
 
     # Run the command.
-    local cmd="$1" && shift
+    cmd="$1" && shift
     "$cmd" "$@"
+    ret=$?
 
     if [ $ratelimit -ne 0 ]; then
         printf '\nGitHub rate limit:\t%s remaining requests\t %s seconds to reset\n' \
             "${OCTOKIT_SH_RATE_LIMIT:-Unknown}" "${OCTOKIT_SH_RATE_RESET:-Unkown}"
     fi
 
-    case $? in
-    0)      :
-            ;;
-    127)    help _main; printf '\n'
-            _err 'Command not found.' E_COMMAND_NOT_FOUND;;
-    *)      exit $?;;
-    esac
+    exit $ret
 }
 
 _format() {
@@ -276,7 +251,7 @@ request() {
     #
     # Positional arguments
     #
-    local path=$1
+    local path=${1:?Path is required.}
     #   The URL path for the HTTP request.
     #   Must be an absolute path that starts with a '/' or a full URL that
     #   starts with http(s). Absolute paths will be append to the value in
@@ -296,9 +271,9 @@ request() {
     local follow_next_limit=50
     #   The maximum number of 'next' URLs to follow before stopping.
 
-    local method cmd arg has_stdin trace_curl
+    shift 1
 
-    [ -n "$path" ] && shift || _err 'Path is required.' E_INVALID_ARGS
+    local method cmd arg has_stdin trace_curl
 
     case $path in
         (http*) : ;;
@@ -428,7 +403,7 @@ org_repos() {
     #
     # Positional arguments
     #
-    local org=$1
+    local org=${1:?Org name required.}
     #   Organization GitHub login or id for which to list repos.
     #
     # Keyword arguments
@@ -442,7 +417,7 @@ org_repos() {
     #   A jq filter using string-interpolation syntax that is applied to each
     #   repository in the return data.
 
-    [ -n "$org" ] && shift || _err 'Org name required.' E_INVALID_ARGS
+    shift 1
 
     for arg in "$@"; do
         case $arg in
@@ -464,7 +439,7 @@ org_teams() {
     #
     # Positional arguments
     #
-    local org=$1
+    local org=${1:?Org name required.}
     #   Organization GitHub login or id.
     #
     # Keyword arguments
@@ -473,7 +448,7 @@ org_teams() {
     #   A jq filter using string-interpolation syntax that is applied to each
     #   team in the return data.
 
-    [ -n "$org" ] && shift || _err 'Org name required.' E_INVALID_ARGS
+    shift 1
 
     for arg in "$@"; do
         case $arg in
@@ -495,7 +470,7 @@ create_repo() {
     #
     # Positional arguments
     #
-    local name=$1
+    local name=${1:?Repo name required.}
     #   Name of the new repo
     #
     # Keyword arguments
@@ -503,9 +478,9 @@ create_repo() {
     # description, homepage, private, has_issues, has_wiki, has_downloads,
     # organization, team_id, auto_init, gitignore_template
 
-    local url organization
+    shift 1
 
-    [ -n "$name" ] && shift || _err 'Repo name required.' E_INVALID_ARGS
+    local url organization
 
     for arg in "$@"; do
         case $arg in
@@ -530,9 +505,9 @@ list_releases() {
     #
     # Positional arguments
     #
-    local owner=$1
+    local owner=${1:?Owner name required.}
     #   A GitHub user or organization.
-    local repo=$2
+    local repo=${2:?Repo name required.}
     #   A GitHub repository.
     #
     # Keyword arguments
@@ -541,8 +516,7 @@ list_releases() {
     #   A jq filter using string-interpolation syntax that is applied to each
     #   release in the return data.
 
-    [ -n "$owner" ] && shift || _err 'Owner name required.' E_INVALID_ARGS
-    [ -n "$repo" ] && shift || _err 'Repo name required.' E_INVALID_ARGS
+    shift 2
 
     for arg in "$@"; do
         case $arg in
@@ -562,11 +536,11 @@ release() {
     #
     # Positional arguments
     #
-    local owner=$1
+    local owner=${1:?Owner name required.}
     #   A GitHub user or organization.
-    local repo=$2
+    local repo=${2:?Repo name required.}
     #   A GitHub repository.
-    local release_id=$3
+    local release_id=${3:?Release ID required.}
     #   The unique ID of the release; see list_releases.
     #
     # Keyword arguments
@@ -575,9 +549,7 @@ release() {
     #   A jq filter using string-interpolation syntax that is applied to each
     #   release in the return data.
 
-    [ -n "$owner" ] && shift || _err 'Owner name required.' E_INVALID_ARGS
-    [ -n "$repo" ] && shift || _err 'Repo name required.' E_INVALID_ARGS
-    [ -n "$release_id" ] && shift || _err 'Release ID required.' E_INVALID_ARGS
+    shift 3
 
     for arg in "$@"; do
         case $arg in
@@ -598,20 +570,18 @@ create_release() {
     #
     # Positional arguments
     #
-    local owner=$1
+    local owner=${1:?Owner name required.}
     #   A GitHub user or organization.
-    local repo=$2
+    local repo=${2:?Repo name required.}
     #   A GitHub repository.
-    local tag_name=$3
+    local tag_name=${3:?Tag name required.}
     #   Git tag from which to create release.
     #
     # Keyword arguments
     #
     # body, draft, name, prerelease, target_commitish
 
-    [ -n "$owner" ] && shift || _err 'Owner name required.' E_INVALID_ARGS
-    [ -n "$repo" ] && shift || _err 'Repo name required.' E_INVALID_ARGS
-    [ -n "$tag_name" ] && shift || _err 'Tag name required.' E_INVALID_ARGS
+    shift 3
 
     _format "tag_name=${tag_name}" "$@" \
         | request "/repos/${owner}/${repo}/releases"
@@ -625,16 +595,14 @@ delete_release() {
     #
     # Positional arguments
     #
-    local owner=$1
+    local owner=${1:?Owner name required.}
     #   A GitHub user or organization.
-    local repo=$2
+    local repo=${2:?Repo name required.}
     #   A GitHub repository.
-    local release_id=$3
+    local release_id=${3:?Release ID required.}
     #   The unique ID of the release; see list_releases.
 
-    [ -n "$owner" ] && shift || _err 'Owner name required.' E_INVALID_ARGS
-    [ -n "$repo" ] && shift || _err 'Repo name required.' E_INVALID_ARGS
-    [ -n "$release_id" ] && shift || _err 'Release ID required.' E_INVALID_ARGS
+    shift 3
 
     request "/repos/${owner}/${repo}/releases/${release_id}" method=DELETE
 }
@@ -647,16 +615,14 @@ release_assets() {
     #
     # Positional arguments
     #
-    local owner=$1
+    local owner=${1:?Owner name required.}
     #   A GitHub user or organization.
-    local repo=$2
+    local repo=${2:?Repo name required.}
     #   A GitHub repository.
-    local release_id=$3
+    local release_id=${3:?Release ID required.}
     #   The unique ID of the release; see list_releases.
 
-    [ -n "$owner" ] && shift || _err 'Owner name required.' E_INVALID_ARGS
-    [ -n "$repo" ] && shift || _err 'Repo name required.' E_INVALID_ARGS
-    [ -n "$release_id" ] && shift || _err 'Release ID required.' E_INVALID_ARGS
+    shift 3
 
     request "/repos/${owner}/${repo}/releases/${release_id}/assets"
 }
