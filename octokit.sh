@@ -296,6 +296,8 @@ request() {
     local follow_next_limit=50
     #   The maximum number of 'next' URLs to follow before stopping.
 
+    local method cmd arg has_stdin trace_curl
+
     [ -n "$path" ] && shift || _err 'Path is required.' E_INVALID_ARGS
 
     case $path in
@@ -303,7 +305,7 @@ request() {
         *) path="${OCTOKIT_SH_URL}${path}" ;;
     esac
 
-    local method='GET'
+    method='GET'
     [ ! -t 0 ] && method='POST'
 
     for arg in "$@"; do
@@ -315,140 +317,21 @@ request() {
         esac
     done
 
-    awk \
-        -v o_path="$path" \
-        -v o_method="$method" \
-        -v o_follow_next="$follow_next" \
-        -v o_follow_next_limit="$follow_next_limit" \
-        -v h_Content_Type="$content_type" \
-    '
-    function _log(level, message) {
-        # Output log messages to the logging fds of the parent script.
+    case "$method" in
+        POST | PUT | PATCH) has_stdin=1;;
+    esac
 
-        if (level == "ratelimit") log_file = 2
-        if (level == "error") log_file = 2
-        if (level == "info")  log_file = ENVIRON["LINFO"]
-        if (level == "debug") log_file = ENVIRON["LDEBUG"]
+    [[ $OCTOKIT_SH_VERBOSE -eq 3 ]] && trace_curl=1
 
-        printf("%s %s: %s\n", ENVIRON["NAME"], toupper(level), message) \
-            | "cat 1>&" log_file
-    }
-
-    function check_status(response_code, response_text) {
-        # Exit early on failure response codes.
-
-        if (substr(response_code, 1, 1) == 2) level = "info"
-        else level = "error"
-
-        _log(level, "Response code " response_code " " response_text)
-
-        if (substr(response_code, 1, 1) == 2) return
-        else if (substr(response_code, 1, 1) == 4) exit 4
-        else if (substr(response_code, 1, 1) == 5) exit 5
-        else exit 1
-    }
-
-    function show_rate_limit(rate_limit) {
-        # Output the GitHub rate limit from the last HTTP response.
-
-        if (ENVIRON["OCTOKIT_SH_RATELIMIT"])
-            _log("ratelimit", "Remaining GitHub requests: " rate_limit)
-    }
-
-    function get_next(link_hdr) {
-        # Process the Link header into a map.
-        # Return a "next" link if there is one.
-
-        split(link_hdr, links, ", ")
-
-        for (i in links) {
-            sub(/</, "", links[i])
-            sub(/>;/, "", links[i])
-            sub(/rel="/, "", links[i])
-            sub(/"/, "", links[i])
-            split(links[i], a, " ")
-            links[a[2]] = a[1]
-        }
-
-        if ("next" in links) return links["next"]
-    }
-
-    function req(o_method, url, body) {
-        # Separate status from headers from body.
-
-        curl = "curl -nsSi -H \"Accept: %s\" -X %s \"%s\""
-
-        if (body) {
-            curl = "printf '\''" body "'\'' | " \
-                curl " -H \"Content-type: application/json\" --data-binary @-"
-        }
-
-        if (ENVIRON["OCTOKIT_SH_VERBOSE"] == 3) {
-            curl = curl " --trace-ascii /dev/stderr"
-        }
-
-        cmd = sprintf(curl,
-            ENVIRON["OCTOKIT_SH_ACCEPT"],
-            o_method,
-            url)
-
-        _log("info", "Executing: " cmd)
-
-        response_code=""
-        is_headers = 1
-        split("", headers, ":")  # initialize headers array
-        while((cmd | getline line) > 0) {
-            sub(/\r$/, "", line)
-            if (line == "") {
-                is_headers = 0
-                continue
-            }
-
-            if (!response_code) {
-                idx = index(line, " ")
-                response_code = substr(line, idx + 1, 3)
-                response_text = substr(line, idx + 5)
-
-                check_status(response_code, response_text)
-                continue
-            }
-
-            if (is_headers) {
-                idx = index(line, ": ")
-                headers[substr(line, 0, idx - 1)] = substr(line, idx + 2)
-                continue
-            }
-
-            # Output body
-            print line
-        }
-
-        close(cmd)
-
-        if ("X-RateLimit-Remaining" in headers)
-            show_rate_limit(headers["X-RateLimit-Remaining"])
-
-        if ("Link" in headers)
-            return get_next(headers["Link"])
-    }
-
-    BEGIN {
-
-        if (o_method == "POST" || o_method == "PUT" || o_method == "PATCH") {
-            while((getline line) > 0) {
-                body = body line "\n"
-            }
-        }
-
-        next_url = req(o_method, o_path, body)
-
-        while(o_follow_next && o_follow_next_limit > 0 && next_url) {
-            next_url = req(o_method, next_url)
-            o_follow_next_limit -= 1
-            _log("debug", "Following \"next\" links: " o_follow_next_limit)
-        }
-    }
-    '
+    (( $OCTOKIT_SH_VERBOSE )) && set -x
+    curl -nsSi \
+        -H "Accept: ${OCTOKIT_SH_ACCEPT}" \
+        -H "Content-type: ${content_type}" \
+        ${has_stdin:+--data-binary @-} \
+        ${trace_curl:+--trace-ascii /dev/stderr} \
+        -X "${method}" \
+        "${path}"
+    set +x
 }
 
 response() {
