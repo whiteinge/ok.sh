@@ -44,7 +44,7 @@ ALL_FUNCS=$(awk 'BEGIN {ORS=" "} !/^_/ && /^[a-zA-Z0-9_]+\s*\(\)/ {
 export ALL_FUNCS
 
 export OCTOKIT_SH_URL=${OCTOKIT_SH_URL:-'https://api.github.com'}
-export OCTOKIT_SH_ACCEPT='application/vnd.github.v3+json'
+export OCTOKIT_SH_ACCEPT=${OCTOKIT_SH_ACCEPT:-'application/vnd.github.v3+json'}
 export OCTOKIT_SH_JQ_BIN="${OCTOKIT_SH_JQ_BIN:-jq}"
 export OCTOKIT_SH_VERBOSE="${OCTOKIT_SH_VERBOSE:-0}"
 export OCTOKIT_SH_RATE_LIMIT
