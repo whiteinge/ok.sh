@@ -196,15 +196,17 @@ _format() {
     #   {"bar":123,"qux":"Qux=Qux","foo":"Foo","quux":"Multi-line\nstring","baz":true}
 
     env -i "$@" awk '
+    function isnum(x){ return (x == x + 0) }
+    function isbool(x){ if (x == "true" || x == "false") return 1 }
     BEGIN {
-        bools["true"] = 1; bools["false"] = 1;
         printf("{")
 
         for (name in ENVIRON) {
             val = ENVIRON[name]
 
             # If not bool or number, quote it.
-            if ((!(val in bools)) && match(val, /[0-9.-]+/) != 1) {
+            if (!isbool(val) && !isnum(val)) {
+                gsub(/"/, "\\\"", val)
                 val = "\"" val "\""
             }
 
