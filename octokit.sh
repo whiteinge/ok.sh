@@ -64,10 +64,9 @@ _helptext() {
     # Extract contiguous lines of comments and function params as help text
     #
     # Indentation will be ignored. The first line of the match will be ignored
-    # (this is to ignore the she-bang of a file or the function name).
-    # Local variable declarations and their default values can also be pulled
-    # in as documentation.
-    # Exits upon encountering the first blank line.
+    # (this is to ignore the she-bang of a file or the function name).  Local
+    # variable declarations and their default values can also be pulled in as
+    # documentation.  Exits upon encountering the first blank line.
     #
     # Exported environment variables can be used for string interpolation in
     # the extracted commented text.
