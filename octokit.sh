@@ -122,12 +122,11 @@ _main() {
     # Options:
     #   -h      Show this screen.
     #   -V      Show version.
-    #   -v      Enable verbose output; same as OCTOKIT_SH_VERBOSE.
-    #   -d      Enable xtrace debug logging.
+    #   -v      Enable verbose output; same as `$OCTOKIT_SH_VERBOSE`.
+    #   -x      Enable xtrace debug logging.
     #   -r      Print your current GitHub API rate limit to stderr.
     #   -q      Quiet; don't print to stdout.
     #   -j      Output raw JSON; don't process with jq.
-    #               (Default if jq is not installed).
 
     local cmd ret opt OPTARG OPTIND
     local quiet=0 ratelimit=0
@@ -140,7 +139,7 @@ _main() {
         echo $excode
     ' INT TERM EXIT
 
-    while getopts jqrvVdh opt; do
+    while getopts jqrvVxh opt; do
         case $opt in
         j)  NO_JQ=1;;
         q)  quiet=1;;
@@ -148,7 +147,7 @@ _main() {
         v)  OCTOKIT_SH_VERBOSE=$(( $OCTOKIT_SH_VERBOSE + 1 ));;
         V)  printf 'Version: %s\n' $VERSION
             exit;;
-        d)  set -x;;
+        x)  set -x;;
         h)  help
             help _main
             printf '\n'
