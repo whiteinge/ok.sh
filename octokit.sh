@@ -60,6 +60,30 @@ exec 5>/dev/null
 export LINFO=4
 export LDEBUG=5
 
+_log() {
+    # A lightweight logging system based on file descriptors
+    #
+    local level=${1:?Level is required.}
+    #   The level for a given log message. (info or debug)
+    local message=${2:?Message is required.}
+    #   The log message.
+    #
+    # Usage:
+    #   _log debug 'Starting the combobulator!'
+
+    shift 2
+
+    local lname
+
+    case "$level" in
+        info) lname='INFO'; level=$LINFO ;;
+        debug) lname='DEBUG'; level=$LDEBUG ;;
+        *) printf 'Invalid logging level: %s\n' "$level" ;;
+    esac
+
+    printf '%s %s: %s\n' "$NAME" "$lname" "$message" 1>&$level
+}
+
 _helptext() {
     # Extract contiguous lines of comments and function params as help text
     #
