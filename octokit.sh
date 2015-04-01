@@ -246,7 +246,7 @@ _filter() {
     #
     # - (stdin)
     #   JSON input.
-    local filter="$1"
+    local filter=$1
     #   A string of jq filters to apply to the input stream.
 
     if [ $NO_JQ -ne 0 ] ; then
@@ -255,6 +255,7 @@ _filter() {
     fi
 
     "${OCTOKIT_SH_JQ_BIN}" -c -r "${filter}"
+    [ $? -eq 0 ] || printf 'jq parse error; invalid JSON.\n' 1>&2
 }
 
 request() {
