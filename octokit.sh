@@ -406,6 +406,68 @@ status_text: ${status_text}
     cat
 }
 
+get() {
+    # A wrapper around request() for common GET patterns
+    #
+    # Will automatically follow 'next' pagination URLs in the Link header.
+    #
+    # Usage:
+    #   get /some/path
+    #   get /some/path follow_next=0
+    #   get /some/path follow_next_limit=200 | jq -c .
+    #
+    # Positional arguments
+    #
+    local path=${1:?Path is required.}
+    #   The HTTP path or URL to pass to request().
+    #
+    # Keyword arguments
+    #
+    local follow_next=1
+    #   Whether to automatically look for a 'Links' header and follow any
+    #   'next' URLs found there.
+    local follow_next_limit=50
+    #   The maximum number of 'next' URLs to follow before stopping.
+
+    shift 1
+
+    local status_code status_text next_url
+
+    for arg in "$@"; do
+        case $arg in
+            (follow_next=*) follow_next="${arg#*=}";;
+            (follow_next_limit=*) follow_next_limit="${arg#*=}";;
+        esac
+    done
+
+    request "$path" | response status_code status_text Link_next | {
+        read -r status_code
+        read -r status_text
+        read -r next_url
+
+        case "$status_code" in
+            20*) : ;;
+            4*) printf 'Client Error: %s %s\n' \
+                "$status_code" "$status_text" 1>&2; exit 1 ;;
+            5*) printf 'Server Error: %s %s\n' \
+                "$status_code" "$status_text" 1>&2; exit 1 ;;
+        esac
+
+        # Output response body.
+        cat
+
+        (( $follow_next )) || return
+
+        _log info "Remaining next link follows: ${follow_next_limit}"
+        if [ -n "$next_url" ] && [ $follow_next_limit -gt 0 ] ; then
+            follow_next_limit=$(( $follow_next_limit - 1 ))
+
+            # Using exec here as a form of TCO to keep the call stack small.
+            exec "$NAME" get "$next_url" "follow_next_limit=${follow_next_limit}"
+        fi
+    }
+}
+
 org_repos() {
     # List organization repositories
     #
