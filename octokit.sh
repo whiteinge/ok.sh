@@ -284,24 +284,19 @@ request() {
     #
     # Keyword arguments
     #
-    # method : GET or POST
+    local method='GET'
     #   The method to use for the HTTP request.
-    #   If data is passed to this function via stdin, 'POST' will be used as
-    #   the default instead of 'GET'.
     local content_type='application/json'
     #   The value of the Content-Type header to use for the request.
 
     shift 1
 
-    local method cmd arg has_stdin trace_curl
+    local cmd arg has_stdin trace_curl
 
     case $path in
         (http*) : ;;
         *) path="${OCTOKIT_SH_URL}${path}" ;;
     esac
-
-    method='GET'
-    [ ! -t 0 ] && method='POST'
 
     for arg in "$@"; do
         case $arg in
