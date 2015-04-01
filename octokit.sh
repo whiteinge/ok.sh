@@ -290,11 +290,6 @@ request() {
     #   the default instead of 'GET'.
     local content_type='application/json'
     #   The value of the Content-Type header to use for the request.
-    local follow_next=0
-    #   Whether to automatically look for a 'Links' header and follow any
-    #   'next' URLs found there.
-    local follow_next_limit=50
-    #   The maximum number of 'next' URLs to follow before stopping.
 
     shift 1
 
@@ -311,8 +306,6 @@ request() {
     for arg in "$@"; do
         case $arg in
             (method=*) method="${arg#*=}";;
-            (follow_next=*) follow_next="${arg#*=}";;
-            (follow_next_limit=*) follow_next_limit="${arg#*=}";;
             (content_type=*) content_type="${arg#*=}";;
         esac
     done
