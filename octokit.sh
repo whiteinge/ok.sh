@@ -864,4 +864,36 @@ release_assets() {
         | _filter '.[]'
 }
 
+upload_asset() {
+    # Upload a release asset
+    #
+    # Usage:
+    #   upload_asset username reponame 1087938 \
+    #       foo.tar application/x-tar < foo.tar
+    #
+    # - (stdin)
+    #   The contents of the file to upload.
+    #
+    # Positional arguments
+    #
+    local owner=${1:?Owner name required.}
+    #   A GitHub user or organization.
+    local repo=${2:?Repo name required.}
+    #   A GitHub repository.
+    local release_id=${3:?Release ID required.}
+    #   The unique ID of the release; see list_releases.
+    local name=${4:?File name is required.}
+    #   The file name of the asset.
+
+    shift 4
+
+    local upload_url=$(release "$owner" "$repo" "$release_id" \
+        "filter=\(.upload_url)" | sed -e 's/{?name}/?name='"$name"'/g')
+
+    : ${upload_url:?Upload URL could not be retrieved.}
+
+    post "/repos/${owner}/${repo}/releases/${release_id}/assets?name=${name}" \
+        filename=$name
+}
+
 _main "$@"
