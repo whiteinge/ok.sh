@@ -804,12 +804,23 @@ create_release() {
     #
     # Keyword arguments
     #
+    local filter='\(.name)\t\(.id)\t\(.html_url)'
+    #   A jq filter using string-interpolation syntax that is applied to the
+    #   release data.
+    #
     # body, draft, name, prerelease, target_commitish
 
     shift 3
 
+    for arg in "$@"; do
+        case $arg in
+            (filter=*) filter="${arg#*=}";;
+        esac
+    done
+
     _format "tag_name=${tag_name}" "$@" \
-        | request "/repos/${owner}/${repo}/releases"
+        | post "/repos/${owner}/${repo}/releases" \
+        | _filter "\"${filter}\""
 }
 
 delete_release() {
