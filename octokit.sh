@@ -645,6 +645,43 @@ org_teams() {
         | _filter ".[] | \"${filter}\""
 }
 
+list_repos() {
+    # List user repositories
+    #
+    # Usage:
+    #   list_repos
+    #   list_repos user
+    #
+    # Positional arguments
+    #
+    local user=$1
+    #   Optional GitHub user login or id for which to list repos.
+    #
+    # Keyword arguments
+    #
+    local filter='\(.name)\t\(.html_url)'
+    #   A jq filter using string-interpolation syntax that is applied to each
+    #   repository in the return data.
+    #
+    # type, sort, direction
+
+    shift 1
+
+    for arg in "$@"; do
+        case $arg in
+            (filter=*) filter="${arg#*=}";;
+        esac
+    done
+
+    if [ -n "$user" ] ; then
+        url="/users/${user}/repos"
+    else
+        url='/user/repos'
+    fi
+
+    get "$url" | _filter ".[] | \"${filter}\""
+}
+
 create_repo() {
     # Create a repository for a user or organization
     #
