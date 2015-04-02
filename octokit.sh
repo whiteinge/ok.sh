@@ -198,7 +198,7 @@ _main() {
 
     if [ $ratelimit -ne 0 ]; then
         printf '\nGitHub rate limit:\t%s remaining requests\t %s seconds to reset\n' \
-            "${OCTOKIT_SH_RATE_LIMIT:-Unknown}" "${OCTOKIT_SH_RATE_RESET:-Unkown}"
+            "${OCTOKIT_SH_RATE_LIMIT:-Unknown}" "${OCTOKIT_SH_RATE_RESET:-Unkown}" 1>&2
     fi
 
     exit $ret
