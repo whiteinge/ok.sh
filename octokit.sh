@@ -467,6 +467,117 @@ get() {
     }
 }
 
+_get_mime_type() {
+    # Guess the mime type for a file based on the file extension
+    #
+    # Sets the global variable `mime_type` with the result. (If this function
+    # is called from a function that has declared a local variable of that name
+    # it will update the local copy and not set a global.)
+    #
+    # Positional arguments
+    #
+    local filename=${1:?Filename is required.}
+    #   The full name of the file, with exension.
+
+    local ext="${filename#*.}"
+
+    # Taken from Apache's mime.types file (public domain).
+    case "$ext" in
+        bz2) mime_type=application/x-bzip2 ;;
+        exe) mime_type=application/x-msdownload ;;
+        gz | tgz) mime_type=application/x-gzip ;;
+        jpg | jpeg | jpe | jfif) mime_type=image/jpeg ;;
+        json) mime_type=application/json ;;
+        pdf) mime_type=application/pdf ;;
+        png) mime_type=image/png ;;
+        rpm) mime_type=application/x-rpm ;;
+        svg | svgz) mime_type=image/svg+xml ;;
+        tar) mime_type=application/x-tar ;;
+        yaml) mime_type=application/x-yaml ;;
+        zip) mime_type=application/zip ;;
+    esac
+}
+
+post() {
+    # A wrapper around request() for commoon POST / PUT patterns
+    #
+    # Usage:
+    #   _format foo=Foo bar=Bar | post /some/path
+    #   _format foo=Foo bar=Bar | post /some/path method='PUT'
+    #   post /some/path filename=somearchive.tar
+    #   post /some/path filename=somearchive.tar mime_type=application/x-tar
+    #   post /some/path filename=somearchive.tar \
+    #       mime_type=$(file -b --mime-type somearchive.tar)
+    #
+    # Input
+    #
+    # - (stdin)
+    #   Optional. See the `filename` argument also.
+    #   Data that will be used as the request body.
+    #
+    # Positional arguments
+    #
+    local path=${1:?Path is required.}
+    #
+    # Keyword arguments
+    #
+    local method='POST'
+    #   The method to use for the HTTP request.
+    local filename
+    #   Optional. See the `stdin` option above also.
+    #   Takes precedence over any data passed as stdin and loads a file off the
+    #   file system to serve as the request body.
+    local mime_type
+    #   The value of the Content-Type header to use for the request.
+    #   If the `filename` argument is given this value will be guessed from the
+    #   file extension. If the `filename` argument is not given (i.e., using
+    #   stdin) this value defaults to `application/json`. Specifying this
+    #   argument overrides all other defaults or guesses.
+
+    shift 1
+
+    for arg in "$@"; do
+        case $arg in
+            (method=*) method="${arg#*=}";;
+            (filename=*) filename="${arg#*=}";;
+            (mime_type=*) mime_type="${arg#*=}";;
+        esac
+    done
+
+    # Make either the file or stdin available as fd7.
+    if [ -n "$filename" ] ; then
+        if [ -r "$filename" ] ; then
+            [ -n "$mime_type" ] || _get_mime_type "$filename"
+            : ${mime_type:?The MIME type could not be guessed.}
+            exec 7<"$filename"
+        else
+            printf 'File could not be found or read.\n' 1>&2
+            exit 1
+        fi
+    else
+        mime_type='application/json'
+        exec 7<&0
+    fi
+
+    request "$path" method="$method" content_type="$mime_type" 0<&7 \
+            | response status_code status_text \
+            | {
+        read -r status_code
+        read -r status_text
+
+        case "$status_code" in
+            20*) : ;;
+            4*) printf 'Client Error: %s %s\n' \
+                "$status_code" "$status_text" 1>&2; exit 1 ;;
+            5*) printf 'Server Error: %s %s\n' \
+                "$status_code" "$status_text" 1>&2; exit 1 ;;
+        esac
+
+        # Output response body.
+        cat
+    }
+}
+
 org_repos() {
     # List organization repositories
     #
