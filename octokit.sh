@@ -502,7 +502,7 @@ org_repos() {
         esac
     done
 
-    request "/orgs/${org}/repos?type=${type}&per_page=${per_page}" \
+    get "/orgs/${org}/repos?type=${type}&per_page=${per_page}" \
         | _filter ".[] | \"${filter}\""
 }
 
@@ -531,7 +531,7 @@ org_teams() {
         esac
     done
 
-    request "/orgs/${org}/teams" \
+    get "/orgs/${org}/teams" \
         | _filter ".[] | \"${filter}\""
 }
 
@@ -599,7 +599,7 @@ list_releases() {
         esac
     done
 
-    request "/repos/${owner}/${repo}/releases" \
+    get "/repos/${owner}/${repo}/releases" \
         | _filter ".[] | \"${filter}\""
 }
 
@@ -632,7 +632,7 @@ release() {
         esac
     done
 
-    request "/repos/${owner}/${repo}/releases/${release_id}" \
+    get "/repos/${owner}/${repo}/releases/${release_id}" \
         | _filter "\"${filter}\""
 }
 
@@ -699,7 +699,8 @@ release_assets() {
 
     shift 3
 
-    request "/repos/${owner}/${repo}/releases/${release_id}/assets"
+    get "/repos/${owner}/${repo}/releases/${release_id}/assets" \
+        | _filter '.[]'
 }
 
 _main "$@"
