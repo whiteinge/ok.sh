@@ -271,8 +271,7 @@ request() {
     # Input
     #
     # - (stdin)
-    #   Data that will be used as the request body. If present the HTTP request
-    #   method used will be 'POST' unless overridden.
+    #   Data that will be used as the request body.
     #
     # Positional arguments
     #
@@ -314,7 +313,7 @@ request() {
     (( $OCTOKIT_SH_VERBOSE )) && set -x
     curl -nsSi \
         -H "Accept: ${OCTOKIT_SH_ACCEPT}" \
-        -H "Content-type: ${content_type}" \
+        -H "Content-Type: ${content_type}" \
         ${has_stdin:+--data-binary @-} \
         ${trace_curl:+--trace-ascii /dev/stderr} \
         -X "${method}" \
