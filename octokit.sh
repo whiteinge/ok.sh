@@ -697,6 +697,8 @@ create_repo() {
     #
     # Keyword arguments
     #
+    local filter='\(.name)\t\(.html_url)'
+    #
     # description, homepage, private, has_issues, has_wiki, has_downloads,
     # organization, team_id, auto_init, gitignore_template
 
@@ -707,6 +709,7 @@ create_repo() {
     for arg in "$@"; do
         case $arg in
             (organization=*) organization="${arg#*=}";;
+            (filter=*) filter="${arg#*=}";;
         esac
     done
 
@@ -716,7 +719,7 @@ create_repo() {
         url='/user/repos'
     fi
 
-    _format "name=${name}" "$@" | request "$url"
+    _format "name=${name}" "$@" | post "$url" | _filter ".[] | \"${filter}\""
 }
 
 list_releases() {
