@@ -752,9 +752,9 @@ list_repos() {
     done
 
     if [ -n "$user" ] ; then
-        url="/users/${user}/repos"
+        url="/users/${user}/repos?per_page=100"
     else
-        url='/user/repos'
+        url='/user/repos?per_page=100'
     fi
 
     get "$url" | _filter "${filter}"
