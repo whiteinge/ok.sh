@@ -36,6 +36,8 @@
 #   The debug logging verbosity level. Same as the verbose flag.
 # * OCTOKIT_SH_RATE_LIMIT=${OCTOKIT_SH_RATE_LIMIT}
 #   Output current GitHub rate limit information to stderr.
+# * OCTOKIT_SH_DESTRUCTIVE=${OCTOKIT_SH_DESTRUCTIVE}
+#   Allow destructive operations without prompting for confirmation.
 
 export NAME=$(basename $0)
 export VERSION='0.1.0'
@@ -49,6 +51,7 @@ export OCTOKIT_SH_ACCEPT=${OCTOKIT_SH_ACCEPT:-'application/vnd.github.v3+json'}
 export OCTOKIT_SH_JQ_BIN="${OCTOKIT_SH_JQ_BIN:-jq}"
 export OCTOKIT_SH_VERBOSE="${OCTOKIT_SH_VERBOSE:-0}"
 export OCTOKIT_SH_RATE_LIMIT="${OCTOKIT_SH_RATE_LIMIT:-0}"
+export OCTOKIT_SH_DESTRUCTIVE="${OCTOKIT_SH_DESTRUCTIVE:-0}"
 
 # Detect if jq is installed.
 type "$OCTOKIT_SH_JQ_BIN" 1>/dev/null 2>/dev/null
@@ -165,6 +168,7 @@ _main() {
     # -r   | Print current GitHub API rate limit to stderr.
     # -v   | Logging output; specify multiple times: info, debug, trace.
     # -x   | Enable xtrace debug logging.
+    # -y   | Answer 'yes' to any prompts.
 
     local cmd ret opt OPTARG OPTIND
     local quiet=0
@@ -181,7 +185,7 @@ _main() {
         echo $excode
     ' INT TERM EXIT
 
-    while getopts Vhjqrvx opt; do
+    while getopts Vhjqrvxy opt; do
         case $opt in
         V)  printf 'Version: %s\n' $VERSION
             exit;;
@@ -194,6 +198,7 @@ _main() {
         r)  OCTOKIT_SH_RATE_LIMIT=1;;
         v)  OCTOKIT_SH_VERBOSE=$(( $OCTOKIT_SH_VERBOSE + 1 ));;
         x)  set -x;;
+        y)  OCTOKIT_SH_DESTRUCTIVE=1;;
         esac
     done
     shift $(( $OPTIND - 1 ))
@@ -567,6 +572,38 @@ _get_mime_type() {
     esac
 
     _log debug "Guessed mime type of '${mime_type}' for '${filename}'."
+}
+
+_get_confirm() {
+    # Prompt the user for confirmation
+    #
+    # Usage:
+    #
+    #     local confirm; _get_confirm
+    #     (( $confirm )) && printf 'Good to go!\n'
+    #
+    # If global confirmation is set via `$OCTOKIT_SH_DESTRUCTIVE` then the user
+    # is not prompted. Assigns the user's confirmation to the `confirm` global
+    # variable. (If this function is called within a function that has a local
+    # variable of that name, the local variable will be updated instead.)
+    #
+    # Positional arguments
+    #
+    local message=${1:-'Are you sure?'}
+    #   The message to prompt the user with.
+
+    local answer
+
+    if (( $OCTOKIT_SH_DESTRUCTIVE )) ; then
+        confirm=$OCTOKIT_SH_DESTRUCTIVE
+        return
+    fi
+
+    printf '%s ' "$message"
+    read -r answer
+
+    ! printf '%s\n' "$answer" | grep -Eq "$(locale yesexpr)"
+    confirm=$?
 }
 
 post() {
