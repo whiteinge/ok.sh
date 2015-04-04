@@ -158,13 +158,13 @@ _main() {
     #
     # Flag | Description
     # ---- | -----------
-    # -h   | Show this screen.
     # -V   | Show version.
+    # -h   | Show this screen.
+    # -j   | Output raw JSON; don't process with jq.
+    # -q   | Quiet; don't print to stdout.
+    # -r   | Print current GitHub API rate limit to stderr.
     # -v   | Logging output; specify multiple times: info, debug, trace.
     # -x   | Enable xtrace debug logging.
-    # -r   | Print current GitHub API rate limit to stderr.
-    # -q   | Quiet; don't print to stdout.
-    # -j   | Output raw JSON; don't process with jq.
 
     local cmd ret opt OPTARG OPTIND
     local quiet=0
@@ -181,19 +181,19 @@ _main() {
         echo $excode
     ' INT TERM EXIT
 
-    while getopts jqrvVxh opt; do
+    while getopts Vhjqrvx opt; do
         case $opt in
-        j)  NO_JQ=1;;
-        q)  quiet=1;;
-        r)  OCTOKIT_SH_RATE_LIMIT=1;;
-        v)  OCTOKIT_SH_VERBOSE=$(( $OCTOKIT_SH_VERBOSE + 1 ));;
         V)  printf 'Version: %s\n' $VERSION
             exit;;
-        x)  set -x;;
         h)  help
             help _main
             printf '\n'
             exit;;
+        j)  NO_JQ=1;;
+        q)  quiet=1;;
+        r)  OCTOKIT_SH_RATE_LIMIT=1;;
+        v)  OCTOKIT_SH_VERBOSE=$(( $OCTOKIT_SH_VERBOSE + 1 ));;
+        x)  set -x;;
         esac
     done
     shift $(( $OPTIND - 1 ))
