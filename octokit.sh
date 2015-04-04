@@ -941,11 +941,23 @@ release_assets() {
     #   A GitHub repository.
     local release_id=${3:?Release ID required.}
     #   The unique ID of the release; see list_releases.
+    #
+    # Keyword arguments
+    #
+    local filter='.[] | "\(.id)\t\(.name)\t\(.updated_at)"'
+    #   A jq filter using string-interpolation syntax that is applied to each
+    #   release asset in the return data.
 
     shift 3
 
+    for arg in "$@"; do
+        case $arg in
+            (filter=*) filter="${arg#*=}";;
+        esac
+    done
+
     get "/repos/${owner}/${repo}/releases/${release_id}/assets" \
-        | _filter '.[]'
+        | _filter "$filter"
 }
 
 upload_asset() {
@@ -969,16 +981,28 @@ upload_asset() {
     #   The unique ID of the release; see list_releases.
     local name=${4:?File name is required.}
     #   The file name of the asset.
+    #
+    # Keyword arguments
+    #
+    local filter='"\(.state)\t\(.browser_download_url)"'
+    #   A jq filter using string-interpolation syntax that is applied to each
+    #   release asset in the return data.
 
     shift 4
+
+    for arg in "$@"; do
+        case $arg in
+            (filter=*) filter="${arg#*=}";;
+        esac
+    done
 
     local upload_url=$(release "$owner" "$repo" "$release_id" \
         'filter="\(.upload_url)"' | sed -e 's/{?name}/?name='"$name"'/g')
 
     : ${upload_url:?Upload URL could not be retrieved.}
 
-    post "/repos/${owner}/${repo}/releases/${release_id}/assets?name=${name}" \
-        filename=$name
+    post "$upload_url" filename="$name" \
+        | _filter "$filter"
 }
 
 _main "$@"
