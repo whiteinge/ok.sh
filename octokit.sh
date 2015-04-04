@@ -33,8 +33,7 @@
 # OCTOKIT_SH_JQ_BIN=${OCTOKIT_SH_JQ_BIN}
 #   The name of the jq binary, if installed.
 # OCTOKIT_SH_VERBOSE=${OCTOKIT_SH_VERBOSE}
-#   The debug logging verbosity level.
-#   1 for info; 2 for debug; 3 for trace (full curl request/reponse output).
+#   The debug logging verbosity level. Same as the verbose flag.
 # OCTOKIT_SH_RATE_LIMIT=${OCTOKIT_SH_RATE_LIMIT}
 #   Output current GitHub rate limit information to stderr.
 
@@ -149,9 +148,10 @@ _main() {
     # Options:
     #   -h      Show this screen.
     #   -V      Show version.
-    #   -v      Enable verbose output; same as `$OCTOKIT_SH_VERBOSE`.
+    #   -v      Enable verbose output to stderr. 1 for info; 2 for debug;
+    #           3 for trace (full curl request/reponse output).
     #   -x      Enable xtrace debug logging.
-    #   -r      Print your current GitHub API rate limit to stderr.
+    #   -r      Print current GitHub API rate limit to stderr.
     #   -q      Quiet; don't print to stdout.
     #   -j      Output raw JSON; don't process with jq.
 
