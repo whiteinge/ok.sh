@@ -880,6 +880,34 @@ create_repo() {
     _format "name=${name}" "$@" | post "$url" | _filter "${filter}"
 }
 
+delete_repo() {
+    # Create a repository for a user or organization
+    #
+    # Usage:
+    #
+    #     delete_repo owner repo
+    #
+    # The currently authenticated user must have the `delete_repo` scope. View
+    # current scopes with the `show_scopes()` function.
+    #
+    # Positional arguments
+    #
+    local owner=${1:?Owner name required.}
+    #   Name of the new repo
+    local repo=${2:?Repo name required.}
+    #   Name of the new repo
+
+    shift 2
+
+    local confirm
+
+    _get_confirm 'This will permanently delete a repository! Continue?'
+    (( $confirm )) || exit 0
+
+    delete "/repos/${owner}/${repo}"
+    exit $?
+}
+
 list_releases() {
     # List releases for a repository
     #
@@ -991,6 +1019,8 @@ delete_release() {
     #
     #     delete_release org repo 1087855
     #
+    # Return: 0 for success; 1 for failure.
+    #
     # Positional arguments
     #
     local owner=${1:?Owner name required.}
@@ -1002,7 +1032,13 @@ delete_release() {
 
     shift 3
 
-    request "/repos/${owner}/${repo}/releases/${release_id}" method=DELETE
+    local confirm
+
+    _get_confirm 'This will permanently delete a release. Continue?'
+    (( $confirm )) || exit 0
+
+    delete "/repos/${owner}/${repo}/releases/${release_id}"
+    exit $?
 }
 
 release_assets() {
