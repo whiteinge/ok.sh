@@ -35,6 +35,8 @@
 # OCTOKIT_SH_VERBOSE=${OCTOKIT_SH_VERBOSE}
 #   The debug logging verbosity level.
 #   1 for info; 2 for debug; 3 for trace (full curl request/reponse output).
+# OCTOKIT_SH_RATE_LIMIT=${OCTOKIT_SH_RATE_LIMIT}
+#   Output current GitHub rate limit information to stderr.
 
 export NAME=$(basename $0)
 export VERSION='0.1.0'
@@ -47,8 +49,7 @@ export OCTOKIT_SH_URL=${OCTOKIT_SH_URL:-'https://api.github.com'}
 export OCTOKIT_SH_ACCEPT=${OCTOKIT_SH_ACCEPT:-'application/vnd.github.v3+json'}
 export OCTOKIT_SH_JQ_BIN="${OCTOKIT_SH_JQ_BIN:-jq}"
 export OCTOKIT_SH_VERBOSE="${OCTOKIT_SH_VERBOSE:-0}"
-export OCTOKIT_SH_RATE_LIMIT
-export OCTOKIT_SH_RATE_RESET
+export OCTOKIT_SH_RATE_LIMIT="${OCTOKIT_SH_RATE_LIMIT:-0}"
 
 # Detect if jq is installed.
 type "$OCTOKIT_SH_JQ_BIN" 1>/dev/null 2>/dev/null
@@ -57,8 +58,10 @@ NO_JQ=$?
 # Customizable logging output.
 exec 4>/dev/null
 exec 5>/dev/null
-export LINFO=4
-export LDEBUG=5
+exec 6>/dev/null
+export LINFO=4      # Info-level log messages.
+export LDEBUG=5     # Debug-level log messages.
+export LSUMMARY=6    # Summary output.
 
 _log() {
     # A lightweight logging system based on file descriptors
@@ -153,12 +156,16 @@ _main() {
     #   -j      Output raw JSON; don't process with jq.
 
     local cmd ret opt OPTARG OPTIND
-    local quiet=0 ratelimit=0
+    local quiet=0
+    local temp_dir="/tmp/oksh-${RANDOM}-${$}"
+    local summary_fifo="${temp_dir}/oksh_summary.fifo"
 
     trap '
         excode=$?; trap - EXIT;
         exec 4>&-
         exec 5>&-
+        exec 6>&-
+        rm -rf '"$temp_dir"'
         exit
         echo $excode
     ' INT TERM EXIT
@@ -167,7 +174,7 @@ _main() {
         case $opt in
         j)  NO_JQ=1;;
         q)  quiet=1;;
-        r)  ratelimit=1;;
+        r)  OCTOKIT_SH_RATE_LIMIT=1;;
         v)  OCTOKIT_SH_VERBOSE=$(( $OCTOKIT_SH_VERBOSE + 1 ));;
         V)  printf 'Version: %s\n' $VERSION
             exit;;
@@ -191,14 +198,24 @@ _main() {
         exec 1>/dev/null 2>/dev/null
     fi
 
+    if (( $OCTOKIT_SH_RATE_LIMIT )) ; then
+        mkdir -m 700 "$temp_dir" || {
+            printf 'failed to create temp_dir\n' >&2; exit 1;
+        }
+        mkfifo "$summary_fifo"
+        # Hold the fifo open so it will buffer input until emptied.
+        exec 6<>$summary_fifo
+    fi
+
     # Run the command.
     cmd="$1" && shift
     "$cmd" "$@"
     ret=$?
 
-    if [ $ratelimit -ne 0 ]; then
-        printf '\nGitHub rate limit:\t%s remaining requests\t %s seconds to reset\n' \
-            "${OCTOKIT_SH_RATE_LIMIT:-Unknown}" "${OCTOKIT_SH_RATE_RESET:-Unkown}" 1>&2
+    # Output any summary messages.
+    if (( $OCTOKIT_SH_RATE_LIMIT )) ; then
+        cat "$summary_fifo" 1>&2 &
+        exec 6>&-
     fi
 
     exit $ret
@@ -368,10 +385,13 @@ status_text: ${status_text}
         # Process each header; reformat some to work better with sh tools.
         case "$hdr" in
             # Update the GitHub rate limit trackers.
-            X-RateLimit-Remaining) OCTOKIT_SH_RATE_LIMIT=$val ;;
+            X-RateLimit-Remaining)
+                printf 'GitHub remaining requests: %s\n' "$val" 1>&$LSUMMARY ;;
             X-RateLimit-Reset)
-                curtime=$(PATH=$(getconf PATH) awk 'BEGIN{srand(); print srand()}')
-                OCTOKIT_SH_RATE_RESET=$(( $val - $curtime )) ;;
+                awk -v gh_reset="$val" 'BEGIN {
+                    srand(); curtime = srand()
+                    print "GitHub seconds to reset: " gh_reset - curtime
+                }' 1>&$LSUMMARY ;;
 
             # Remove quotes from the etag header.
             ETag) val="${val#\"}"; val="${val%\"}" ;;
