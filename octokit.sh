@@ -713,6 +713,25 @@ delete() {
     }
 }
 
+show_scopes() {
+    # Show the permission scopes for the currently authenticated user
+    #
+    # Usage:
+    #
+    #     show_authorizations
+
+    local oauth_scopes
+
+    request '/' | response X-OAuth-Scopes | {
+        read -r oauth_scopes
+
+        printf '%s\n' "$oauth_scopes"
+
+        # Dump any remaining response body.
+        cat >/dev/null
+    }
+}
+
 org_repos() {
     # List organization repositories
     #
