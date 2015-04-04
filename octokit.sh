@@ -288,7 +288,7 @@ _filter() {
     #
     # Usage:
     #
-    #     _filter '.[] | \(.foo)\' < something.json
+    #     _filter '.[] | "\(.foo)"' < something.json
     #
     # * (stdin)
     #   JSON input.
@@ -660,7 +660,7 @@ org_repos() {
     #
     #     org_repos myorg
     #     org_repos myorg type=private per_page=10
-    #     org_repos myorg filter='\(.name)\t\(.ssh_url)\t\(.owner.login)'
+    #     org_repos myorg filter='.[] | "\(.name)\t\(.owner.login)"'
     #
     # Positional arguments
     #
@@ -674,7 +674,7 @@ org_repos() {
     #   private.
     local per_page=100
     #   The number of repositories to return in each single request.
-    local filter='\(.name)\t\(.ssh_url)'
+    local filter='.[] | "\(.name)\t\(.ssh_url)"'
     #   A jq filter using string-interpolation syntax that is applied to each
     #   repository in the return data.
 
@@ -689,7 +689,7 @@ org_repos() {
     done
 
     get "/orgs/${org}/repos?type=${type}&per_page=${per_page}" \
-        | _filter ".[] | \"${filter}\""
+        | _filter "${filter}"
 }
 
 org_teams() {
@@ -706,7 +706,7 @@ org_teams() {
     #
     # Keyword arguments
     #
-    local filter='\(.name)\t\(.id)\t\(.permission)'
+    local filter='.[] | "\(.name)\t\(.id)\t\(.permission)"'
     #   A jq filter using string-interpolation syntax that is applied to each
     #   team in the return data.
 
@@ -719,7 +719,7 @@ org_teams() {
     done
 
     get "/orgs/${org}/teams" \
-        | _filter ".[] | \"${filter}\""
+        | _filter "${filter}"
 }
 
 list_repos() {
@@ -737,7 +737,7 @@ list_repos() {
     #
     # Keyword arguments
     #
-    local filter='\(.name)\t\(.html_url)'
+    local filter='.[] | "\(.name)\t\(.html_url)"'
     #   A jq filter using string-interpolation syntax that is applied to each
     #   repository in the return data.
     #
@@ -757,7 +757,7 @@ list_repos() {
         url='/user/repos'
     fi
 
-    get "$url" | _filter ".[] | \"${filter}\""
+    get "$url" | _filter "${filter}"
 }
 
 create_repo() {
@@ -776,7 +776,7 @@ create_repo() {
     #
     # Keyword arguments
     #
-    local filter='\(.name)\t\(.html_url)'
+    local filter='.[] | "\(.name)\t\(.html_url)"'
     #
     # description, homepage, private, has_issues, has_wiki, has_downloads,
     # organization, team_id, auto_init, gitignore_template
@@ -798,7 +798,7 @@ create_repo() {
         url='/user/repos'
     fi
 
-    _format "name=${name}" "$@" | post "$url" | _filter ".[] | \"${filter}\""
+    _format "name=${name}" "$@" | post "$url" | _filter "${filter}"
 }
 
 list_releases() {
@@ -817,7 +817,7 @@ list_releases() {
     #
     # Keyword arguments
     #
-    local filter='\(.name)\t\(.id)\t\(.html_url)'
+    local filter='.[] | "\(.name)\t\(.id)\t\(.html_url)"'
     #   A jq filter using string-interpolation syntax that is applied to each
     #   release in the return data.
 
@@ -830,7 +830,7 @@ list_releases() {
     done
 
     get "/repos/${owner}/${repo}/releases" \
-        | _filter ".[] | \"${filter}\""
+        | _filter "${filter}"
 }
 
 release() {
@@ -851,7 +851,7 @@ release() {
     #
     # Keyword arguments
     #
-    local filter='\(.author.login)\t\(.published_at)'
+    local filter='"\(.author.login)\t\(.published_at)"'
     #   A jq filter using string-interpolation syntax that is applied to each
     #   release in the return data.
 
@@ -864,7 +864,7 @@ release() {
     done
 
     get "/repos/${owner}/${repo}/releases/${release_id}" \
-        | _filter "\"${filter}\""
+        | _filter "${filter}"
 }
 
 create_release() {
@@ -886,7 +886,7 @@ create_release() {
     #
     # Keyword arguments
     #
-    local filter='\(.name)\t\(.id)\t\(.html_url)'
+    local filter='"\(.name)\t\(.id)\t\(.html_url)"'
     #   A jq filter using string-interpolation syntax that is applied to the
     #   release data.
     #
@@ -902,7 +902,7 @@ create_release() {
 
     _format "tag_name=${tag_name}" "$@" \
         | post "/repos/${owner}/${repo}/releases" \
-        | _filter "\"${filter}\""
+        | _filter "${filter}"
 }
 
 delete_release() {
@@ -973,7 +973,7 @@ upload_asset() {
     shift 4
 
     local upload_url=$(release "$owner" "$repo" "$release_id" \
-        "filter=\(.upload_url)" | sed -e 's/{?name}/?name='"$name"'/g')
+        'filter="\(.upload_url)"' | sed -e 's/{?name}/?name='"$name"'/g')
 
     : ${upload_url:?Upload URL could not be retrieved.}
 
