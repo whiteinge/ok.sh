@@ -690,6 +690,29 @@ post() {
     }
 }
 
+delete() {
+    # A wrapper around request() for common DELETE patterns
+    #
+    # Usage:
+    #
+    #     delete '/some/url'
+    #
+    # Return: 0 for success; 1 for failure.
+    #
+    # Positional arguments
+    #
+    local url=${1:?URL is required.}
+    #   The URL to send the DELETE request to.
+
+    local status_code
+
+    request "${url}" method='DELETE' | response status_code | {
+        read -r status_code
+        [ "$status_code" = "204" ]
+        exit $?
+    }
+}
+
 org_repos() {
     # List organization repositories
     #
