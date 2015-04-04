@@ -1,12 +1,12 @@
 #!/usr/bin/env sh
 # A GitHub API client library written in POSIX sh
 #
-# Requirements:
+# Requirements
 #
 # * A POSIX environment (tested against Busybox v1.19.4)
 # * curl (tested against 7.32.0)
 #
-# Optional requirements:
+# Optional requirements
 #
 # * jq <http://stedolan.github.io/jq/> (tested against 1.3)
 #   If jq is not installed commands will output raw JSON; if jq is installed
@@ -18,23 +18,23 @@
 # format. Generate the token on GitHub under Account Settings -> Applications.
 # Restrict permissions on that file with `chmod 600 ~/.netrc`!
 #
-#   machine api.github.com
-#       login <username>
-#       password <token>
+#     machine api.github.com
+#         login <username>
+#         password <token>
 #
 # Configuration
 #
 # The following environment variables may be set to customize ${NAME}.
 #
-# OCTOKIT_SH_URL=${OCTOKIT_SH_URL}
+# * OCTOKIT_SH_URL=${OCTOKIT_SH_URL}
 #   Base URL for GitHub or GitHub Enterprise.
-# OCTOKIT_SH_ACCEPT=${OCTOKIT_SH_ACCEPT}
+# * OCTOKIT_SH_ACCEPT=${OCTOKIT_SH_ACCEPT}
 #   The 'Accept' header to send with each request.
-# OCTOKIT_SH_JQ_BIN=${OCTOKIT_SH_JQ_BIN}
+# * OCTOKIT_SH_JQ_BIN=${OCTOKIT_SH_JQ_BIN}
 #   The name of the jq binary, if installed.
-# OCTOKIT_SH_VERBOSE=${OCTOKIT_SH_VERBOSE}
+# * OCTOKIT_SH_VERBOSE=${OCTOKIT_SH_VERBOSE}
 #   The debug logging verbosity level. Same as the verbose flag.
-# OCTOKIT_SH_RATE_LIMIT=${OCTOKIT_SH_RATE_LIMIT}
+# * OCTOKIT_SH_RATE_LIMIT=${OCTOKIT_SH_RATE_LIMIT}
 #   Output current GitHub rate limit information to stderr.
 
 export NAME=$(basename $0)
@@ -60,18 +60,21 @@ exec 5>/dev/null
 exec 6>/dev/null
 export LINFO=4      # Info-level log messages.
 export LDEBUG=5     # Debug-level log messages.
-export LSUMMARY=6    # Summary output.
+export LSUMMARY=6   # Summary output.
 
 _log() {
     # A lightweight logging system based on file descriptors
+    #
+    # Usage:
+    #
+    #     _log debug 'Starting the combobulator!'
+    #
+    # Positional arguments
     #
     local level=${1:?Level is required.}
     #   The level for a given log message. (info or debug)
     local message=${2:?Message is required.}
     #   The log message.
-    #
-    # Usage:
-    #   _log debug 'Starting the combobulator!'
 
     shift 2
 
@@ -90,16 +93,21 @@ _helptext() {
     # Extract contiguous lines of comments and function params as help text
     #
     # Indentation will be ignored. The first line of the match will be ignored
-    # (this is to ignore the she-bang of a file or the function name).  Local
+    # (this is to ignore the she-bang of a file or the function name). Local
     # variable declarations and their default values can also be pulled in as
-    # documentation.  Exits upon encountering the first blank line.
+    # documentation. Exits upon encountering the first blank line.
     #
     # Exported environment variables can be used for string interpolation in
     # the extracted commented text.
     #
-    # - (stdin)
+    # Input
+    #
+    # * (stdin)
     #   The text of a function body to parse.
-    # $1
+    #
+    # Positional arguments
+    #
+    local name=$1
     #   A file name to parse.
 
     awk 'NR != 1 && /^\s*#/ {
@@ -112,26 +120,29 @@ _helptext() {
         print line
     }
     /^\s*local/ {
-        sub(/^\s*local /, "")
+        sub(/^\s*local /, "* ")
         sub(/:.*$/, "")
         sub(/=/, " : ")
         sub(/\${/, "$")
         print
     }
-    !NF { exit }' "$@"
+    !NF { exit }' "$name"
 }
 
 help() {
     # Output the help text for a command
     #
     # Usage:
-    #   help commandname
     #
-    # $1
+    #     help commandname
+    #
+    # Positional arguments
+    #
+    local fname=$1
     #   Function name to search for; if omitted searches whole file.
 
     if [ $# -gt 0 ]; then
-        awk -v fname="^$1" '$0 ~ fname, /^}/ { print }' $0 | _helptext
+        awk -v fname="^$fname" '$0 ~ fname, /^}/ { print }' $0 | _helptext
     else
         _helptext $0
         printf '\n'
@@ -142,18 +153,18 @@ help() {
 _main() {
     # Available commands: ${ALL_FUNCS}
     #
-    # Usage: ${NAME} [<options>] command [<name=value>]
-    # Command-specific help: ${NAME} help command
+    # Usage: `${NAME} [<options>] command [<name=value>]`
+    # Command-specific help: `${NAME} help command`
     #
-    # Options:
-    #   -h      Show this screen.
-    #   -V      Show version.
-    #   -v      Enable verbose output to stderr. 1 for info; 2 for debug;
-    #           3 for trace (full curl request/reponse output).
-    #   -x      Enable xtrace debug logging.
-    #   -r      Print current GitHub API rate limit to stderr.
-    #   -q      Quiet; don't print to stdout.
-    #   -j      Output raw JSON; don't process with jq.
+    # Flag | Description
+    # ---- | -----------
+    # -h   | Show this screen.
+    # -V   | Show version.
+    # -v   | Logging output; specify multiple times: info, debug, trace.
+    # -x   | Enable xtrace debug logging.
+    # -r   | Print current GitHub API rate limit to stderr.
+    # -q   | Quiet; don't print to stdout.
+    # -j   | Output raw JSON; don't process with jq.
 
     local cmd ret opt OPTARG OPTIND
     local quiet=0
@@ -224,15 +235,25 @@ _main() {
 _format() {
     # Create formatted JSON from name=value pairs
     #
+    # Usage:
+    # ```
+    # _format foo=Foo bar=123 baz=true qux=Qux=Qux quux='Multi-line
+    # string'
+    # ```
+    #
+    # Return:
+    # ```
+    # {"bar":123,"qux":"Qux=Qux","foo":"Foo","quux":"Multi-line\nstring","baz":true}
+    # ```
+    #
     # Tries not to quote numbers and booleans. If jq is installed it will also
     # validate the output.
     #
-    # Usage:
-    #   _format foo=Foo bar=123 baz=true qux=Qux=Qux quux='Multi-line
-    # string'
+    # Positional arguments
     #
-    # Return:
-    #   {"bar":123,"qux":"Qux=Qux","foo":"Foo","quux":"Multi-line\nstring","baz":true}
+    # * $1 - $9
+    #   Each positional arg must be in the format of `name=value` which will be
+    #   added to a single, flat JSON object.
 
     env -i "$@" awk '
     function isnum(x){ return (x == x + 0) }
@@ -261,7 +282,11 @@ _format() {
 _filter() {
     # Filter JSON input using jq; outputs raw JSON if jq is not installed
     #
-    # - (stdin)
+    # Usage:
+    #
+    #     _filter '.[] | \(.foo)\' < something.json
+    #
+    # * (stdin)
     #   JSON input.
     local filter=$1
     #   A string of jq filters to apply to the input stream.
@@ -279,24 +304,26 @@ request() {
     # A wrapper around making HTTP requests with curl
     #
     # Usage:
-    #   request /repos/:owner/:repo/issues
-    #   printf '{"title": "%s", "body": "%s"}\n' "Stuff" "Things" \
-    #       | request /repos/:owner/:repo/issues | jq -r '.[url]'
-    #   printf '{"title": "%s", "body": "%s"}\n' "Stuff" "Things" \
-    #       | request /repos/:owner/:repo/issues method=PUT | jq -r '.[url]'
+    # ```
+    # request /repos/:owner/:repo/issues
+    # printf '{"title": "%s", "body": "%s"}\n' "Stuff" "Things" \
+    #   | request /repos/:owner/:repo/issues | jq -r '.[url]'
+    # printf '{"title": "%s", "body": "%s"}\n' "Stuff" "Things" \
+    #   | request /repos/:owner/:repo/issues method=PUT | jq -r '.[url]'
+    # ```
     #
     # Input
     #
-    # - (stdin)
+    # * (stdin)
     #   Data that will be used as the request body.
     #
     # Positional arguments
     #
     local path=${1:?Path is required.}
     #   The URL path for the HTTP request.
-    #   Must be an absolute path that starts with a '/' or a full URL that
+    #   Must be an absolute path that starts with a `/` or a full URL that
     #   starts with http(s). Absolute paths will be append to the value in
-    #   $OCTOKIT_SH_URL.
+    #   `$OCTOKIT_SH_URL`.
     #
     # Keyword arguments
     #
@@ -341,31 +368,37 @@ request() {
 response() {
     # Process an HTTP response from curl
     #
-    # Output only headers of interest. Additional processing is performed on
-    # select headers to make them easier to work with in sh. See below.
+    # Output only headers of interest followed by the response body. Additional
+    # processing is performed on select headers to make them easier to work
+    # with in sh. See below.
     #
     # Usage:
-    #   request /some/path | response status_code ETag Link_next
-    #   curl -isS example.com/some/path | response status_text
-    #   curl -IsS example.com/some/path | response status_text
+    # ```
+    # request /some/path | response status_code ETag Link_next
+    # curl -isS example.com/some/path | response status_code status_text | {
+    #   local status_code status_text
+    #   read -r status_code
+    #   read -r status_text
+    # }
+    # ```
     #
     # Header reformatting
     #
-    # HTTP Status
+    # * HTTP Status
     #   The HTTP line is split into `http_version`, `status_code`, and
     #   `status_text` variables.
-    # ETag
+    # * ETag
     #   The surrounding quotes are removed.
-    # Link
+    # * Link
     #   Each URL in the Link header is expanded with the URL type appended to
     #   the name. E.g., `Link_first`, `Link_last`, `Link_next`.
     #
     # Positional arguments
     #
-    # $1 - $9
+    # * $1 - $9
     #   Each positional arg is the name of an HTTP header. Each header value is
-    #   output in the order requested; each on a single line. A blank line is
-    #   output for headers that cannot be found.
+    #   output in the same order as each argument; each on a single line. A
+    #   blank line is output for headers that cannot be found.
 
     local hdr val http_version status_code status_text headers output
 
@@ -431,9 +464,10 @@ get() {
     # Will automatically follow 'next' pagination URLs in the Link header.
     #
     # Usage:
-    #   get /some/path
-    #   get /some/path follow_next=0
-    #   get /some/path follow_next_limit=200 | jq -c .
+    #
+    #     get /some/path
+    #     get /some/path follow_next=0
+    #     get /some/path follow_next_limit=200 | jq -c .
     #
     # Positional arguments
     #
@@ -490,9 +524,14 @@ get() {
 _get_mime_type() {
     # Guess the mime type for a file based on the file extension
     #
+    # Usage:
+    #
+    #     local mime_type
+    #     _get_mime_type "foo.tar"; printf 'mime is: %s' "$mime_type"
+    #
     # Sets the global variable `mime_type` with the result. (If this function
-    # is called from a function that has declared a local variable of that name
-    # it will update the local copy and not set a global.)
+    # is called from within a function that has declared a local variable of
+    # that name it will update the local copy and not set a global.)
     #
     # Positional arguments
     #
@@ -522,22 +561,24 @@ post() {
     # A wrapper around request() for commoon POST / PUT patterns
     #
     # Usage:
-    #   _format foo=Foo bar=Bar | post /some/path
-    #   _format foo=Foo bar=Bar | post /some/path method='PUT'
-    #   post /some/path filename=somearchive.tar
-    #   post /some/path filename=somearchive.tar mime_type=application/x-tar
-    #   post /some/path filename=somearchive.tar \
+    #
+    #     _format foo=Foo bar=Bar | post /some/path
+    #     _format foo=Foo bar=Bar | post /some/path method='PUT'
+    #     post /some/path filename=somearchive.tar
+    #     post /some/path filename=somearchive.tar mime_type=application/x-tar
+    #     post /some/path filename=somearchive.tar \
     #       mime_type=$(file -b --mime-type somearchive.tar)
     #
     # Input
     #
-    # - (stdin)
+    # * (stdin)
     #   Optional. See the `filename` argument also.
     #   Data that will be used as the request body.
     #
     # Positional arguments
     #
     local path=${1:?Path is required.}
+    #   The HTTP path or URL to pass to request().
     #
     # Keyword arguments
     #
@@ -602,9 +643,10 @@ org_repos() {
     # List organization repositories
     #
     # Usage:
-    #   org_repos myorg
-    #   org_repos myorg type=private per_page=10
-    #   org_repos myorg filter='\(.name)\t\(.ssh_url)\t\(.owner.login)'
+    #
+    #     org_repos myorg
+    #     org_repos myorg type=private per_page=10
+    #     org_repos myorg filter='\(.name)\t\(.ssh_url)\t\(.owner.login)'
     #
     # Positional arguments
     #
@@ -640,7 +682,8 @@ org_teams() {
     # List teams
     #
     # Usage:
-    #   org_teams org
+    #
+    #     org_teams org
     #
     # Positional arguments
     #
@@ -669,8 +712,9 @@ list_repos() {
     # List user repositories
     #
     # Usage:
-    #   list_repos
-    #   list_repos user
+    #
+    #     list_repos
+    #     list_repos user
     #
     # Positional arguments
     #
@@ -706,9 +750,10 @@ create_repo() {
     # Create a repository for a user or organization
     #
     # Usage:
-    #   create_repo foo
-    #   create_repo bar description='Stuff and things' homepage='example.com'
-    #   create_repo baz organization=myorg
+    #
+    #     create_repo foo
+    #     create_repo bar description='Stuff and things' homepage='example.com'
+    #     create_repo baz organization=myorg
     #
     # Positional arguments
     #
@@ -746,7 +791,8 @@ list_releases() {
     # List releases for a repository
     #
     # Usage:
-    #   list_releases org repo '\(.assets[0].name)\t\(.name.id)'
+    #
+    #     list_releases org repo '\(.assets[0].name)\t\(.name.id)'
     #
     # Positional arguments
     #
@@ -777,7 +823,8 @@ release() {
     # Get a release
     #
     # Usage:
-    #   release user repo 1087855
+    #
+    #     release user repo 1087855
     #
     # Positional arguments
     #
@@ -810,8 +857,9 @@ create_release() {
     # Create a release
     #
     # Usage:
-    #   create_release org repo v1.2.3
-    #   create_release user repo v3.2.1 draft=true
+    #
+    #     create_release org repo v1.2.3
+    #     create_release user repo v3.2.1 draft=true
     #
     # Positional arguments
     #
@@ -847,7 +895,8 @@ delete_release() {
     # Delete a release
     #
     # Usage:
-    #   delete_release org repo 1087855
+    #
+    #     delete_release org repo 1087855
     #
     # Positional arguments
     #
@@ -867,7 +916,8 @@ release_assets() {
     # List release assets
     #
     # Usage:
-    #   release_assets user repo 1087855
+    #
+    #     release_assets user repo 1087855
     #
     # Positional arguments
     #
@@ -888,10 +938,11 @@ upload_asset() {
     # Upload a release asset
     #
     # Usage:
-    #   upload_asset username reponame 1087938 \
-    #       foo.tar application/x-tar < foo.tar
     #
-    # - (stdin)
+    #     upload_asset username reponame 1087938 \
+    #         foo.tar application/x-tar < foo.tar
+    #
+    # * (stdin)
     #   The contents of the file to upload.
     #
     # Positional arguments
