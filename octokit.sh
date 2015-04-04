@@ -220,8 +220,10 @@ _main() {
 
     # Run the command.
     cmd="$1" && shift
+    _log debug "Running command ${cmd}."
     "$cmd" "$@"
     ret=$?
+    _log debug "Command ${cmd} exited with ${?}."
 
     # Output any summary messages.
     if (( $OCTOKIT_SH_RATE_LIMIT )) ; then
@@ -254,6 +256,8 @@ _format() {
     # * $1 - $9
     #   Each positional arg must be in the format of `name=value` which will be
     #   added to a single, flat JSON object.
+
+    _log debug "Formatting ${#} parameters as JSON."
 
     env -i "$@" awk '
     function isnum(x){ return (x == x + 0) }
@@ -290,6 +294,8 @@ _filter() {
     #   JSON input.
     local filter=$1
     #   A string of jq filters to apply to the input stream.
+
+    _log debug 'Filtering JSON.'
 
     if [ $NO_JQ -ne 0 ] ; then
         cat
@@ -402,9 +408,13 @@ response() {
 
     local hdr val http_version status_code status_text headers output
 
+    _log debug 'Processing response.'
+
     read -r http_version status_code status_text
     status_text="${status_text%}"
     http_version="${http_version#HTTP/}"
+
+    _log debug "Response status is: ${status_code} ${status_text}"
 
     headers="http_version: ${http_version}
 status_code: ${status_code}
@@ -448,6 +458,7 @@ status_text: ${status_text}
 
     # Output requested headers in deterministic order.
     for arg in "$@"; do
+        _log debug "Outputting requested header '${arg}'."
         output=$(printf '%s' "$headers" | while IFS=": " read -r hdr val; do
             [ "$hdr" = "$arg" ] && printf '%s' "$val"
         done)
@@ -555,6 +566,8 @@ _get_mime_type() {
         yaml) mime_type=application/x-yaml ;;
         zip) mime_type=application/zip ;;
     esac
+
+    _log debug "Guessed mime type of '${mime_type}' for '${filename}'."
 }
 
 post() {
@@ -608,6 +621,7 @@ post() {
     # Make either the file or stdin available as fd7.
     if [ -n "$filename" ] ; then
         if [ -r "$filename" ] ; then
+            _log debug "Using '${filename}' as POST data."
             [ -n "$mime_type" ] || _get_mime_type "$filename"
             : ${mime_type:?The MIME type could not be guessed.}
             exec 7<"$filename"
@@ -616,6 +630,7 @@ post() {
             exit 1
         fi
     else
+        _log debug "Using stdin as POST data."
         mime_type='application/json'
         exec 7<&0
     fi
