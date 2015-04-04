@@ -526,8 +526,7 @@ get() {
         if [ -n "$next_url" ] && [ $follow_next_limit -gt 0 ] ; then
             follow_next_limit=$(( $follow_next_limit - 1 ))
 
-            # Using exec here as a form of TCO to keep the call stack small.
-            exec "$NAME" get "$next_url" "follow_next_limit=${follow_next_limit}"
+            get "$next_url" "follow_next_limit=${follow_next_limit}"
         fi
     }
 }
