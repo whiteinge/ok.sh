@@ -125,10 +125,10 @@ _log() {
 _helptext() {
     # Extract contiguous lines of comments and function params as help text
     #
-    # Indentation will be ignored. The first line of the match will be ignored
-    # (this is to ignore the she-bang of a file or the function name). Local
-    # variable declarations and their default values can also be pulled in as
-    # documentation. Exits upon encountering the first blank line.
+    # Indentation will be ignored. She-bangs will be ignored. The _main()
+    # function will be ignored. Local variable declarations and their default
+    # values can also be pulled in as documentation. Exits upon encountering
+    # the first blank line.
     #
     # Exported environment variables can be used for string interpolation in
     # the extracted commented text.
@@ -143,7 +143,12 @@ _helptext() {
     local name=$1
     #   A file name to parse.
 
-    awk 'NR != 1 && /^\s*#/ {
+    awk '
+    NR == 1 && ! /^#!/ && ! /_main\(\)/ {
+        sub(/\s*{\s*$/, "", $0)
+        printf("### %s\n\n", $0)
+    }
+    NR != 1 && /^\s*#/ {
         line=$0
         while(match(line, "[$]{[^}]*}")) {
             var=substr(line, RSTART+2, RLENGTH -3)
