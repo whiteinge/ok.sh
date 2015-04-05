@@ -1,8 +1,7 @@
 #!/usr/bin/env sh
 # Unit tests for the octokit.sh script.
 
-abs_path=$(dirname $0)
-SCRIPT="${abs_path}/../octokit.sh"
+SCRIPT="octokit.sh"
 JQ="${OCTOKIT_SH_JQ_BIN:-jq}"
 JQ_V="$(jq --version 2>&1 | awk '{ print $3 }')"
 
