@@ -1,0 +1,3 @@
+language: sh
+script: |
+    PATH=$PATH:$TRAVIS_BUILD_DIR make test
