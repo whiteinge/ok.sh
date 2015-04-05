@@ -281,12 +281,12 @@ _helptext() {
     !NF { exit }' "$name"
 }
 
-_format() {
+_format_json() {
     # Create formatted JSON from name=value pairs
     #
     # Usage:
     # ```
-    # _format foo=Foo bar=123 baz=true qux=Qux=Qux quux='Multi-line
+    # _format_json foo=Foo bar=123 baz=true qux=Qux=Qux quux='Multi-line
     # string'
     # ```
     #
@@ -327,15 +327,15 @@ _format() {
 
         printf("}\n")
     }
-    ' | _filter
+    ' | _filter_json
 }
 
-_filter() {
+_filter_json() {
     # Filter JSON input using jq; outputs raw JSON if jq is not installed
     #
     # Usage:
     #
-    #     _filter '.[] | "\(.foo)"' < something.json
+    #     _filter_json '.[] | "\(.foo)"' < something.json
     #
     # * (stdin)
     #   JSON input.
@@ -655,8 +655,8 @@ _post() {
     #
     # Usage:
     #
-    #     _format foo=Foo bar=Bar | _post /some/path
-    #     _format foo=Foo bar=Bar | _post /some/path method='PUT'
+    #     _format_json foo=Foo bar=Bar | _post /some/path
+    #     _format_json foo=Foo bar=Bar | _post /some/path method='PUT'
     #     _post /some/path filename=somearchive.tar
     #     _post /some/path filename=somearchive.tar mime_type=application/x-tar
     #     _post /some/path filename=somearchive.tar \
@@ -818,7 +818,7 @@ org_repos() {
     done
 
     _get "/orgs/${org}/repos?type=${type}&per_page=${per_page}" \
-        | _filter "${filter}"
+        | _filter_json "${filter}"
 }
 
 org_teams() {
@@ -848,7 +848,7 @@ org_teams() {
     done
 
     _get "/orgs/${org}/teams" \
-        | _filter "${filter}"
+        | _filter_json "${filter}"
 }
 
 list_repos() {
@@ -886,7 +886,7 @@ list_repos() {
         url='/user/repos?per_page=100'
     fi
 
-    _get "$url" | _filter "${filter}"
+    _get "$url" | _filter_json "${filter}"
 }
 
 create_repo() {
@@ -927,7 +927,7 @@ create_repo() {
         url='/user/repos'
     fi
 
-    _format "name=${name}" "$@" | _post "$url" | _filter "${filter}"
+    _format_json "name=${name}" "$@" | _post "$url" | _filter_json "${filter}"
 }
 
 delete_repo() {
@@ -989,7 +989,7 @@ list_releases() {
     done
 
     _get "/repos/${owner}/${repo}/releases" \
-        | _filter "${filter}"
+        | _filter_json "${filter}"
 }
 
 release() {
@@ -1023,7 +1023,7 @@ release() {
     done
 
     _get "/repos/${owner}/${repo}/releases/${release_id}" \
-        | _filter "${filter}"
+        | _filter_json "${filter}"
 }
 
 create_release() {
@@ -1059,9 +1059,9 @@ create_release() {
         esac
     done
 
-    _format "tag_name=${tag_name}" "$@" \
+    _format_json "tag_name=${tag_name}" "$@" \
         | _post "/repos/${owner}/${repo}/releases" \
-        | _filter "${filter}"
+        | _filter_json "${filter}"
 }
 
 delete_release() {
@@ -1124,7 +1124,7 @@ release_assets() {
     done
 
     _get "/repos/${owner}/${repo}/releases/${release_id}/assets" \
-        | _filter "$filter"
+        | _filter_json "$filter"
 }
 
 upload_asset() {
@@ -1169,7 +1169,7 @@ upload_asset() {
     : ${upload_url:?Upload URL could not be retrieved.}
 
     _post "$upload_url" filename="$name" \
-        | _filter "$filter"
+        | _filter_json "$filter"
 }
 
 _main "$@"
