@@ -82,4 +82,29 @@ test_filter_json_args() {
     }
 }
 
+test_response_headers() {
+    # Test that process response outputs headers in deterministic order.
+
+    local baz bar foo
+
+    printf 'HTTP/1.1 200 OK
+Server: example.com
+Foo: Foo!
+Bar: Bar!
+Baz: Baz!
+
+Hi\n' | $SCRIPT _response Baz Bad Foo | {
+        read -r baz
+        read -r bar     # Ensure unfound items are blank.
+        read -r foo
+
+        ret=0
+        [ "$baz" = 'Baz!' ] || { ret=1; printf '`Baz!` != `%s`\n' "$baz"; }
+        [ "$bar" = '' ] || { ret=1; printf '`` != `%s`\n' "$bar"; }
+        [ "$foo" = 'Foo!' ] || { ret=1; printf '`Foo!` != `%s`\n' "$foo"; }
+
+        return $ret
+    }
+}
+
 _main "$@"
