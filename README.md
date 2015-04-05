@@ -61,24 +61,24 @@ Flag | Description
 
 ## Available commands
 
-help, request, response, get, post, delete, show_scopes, org_repos, org_teams, 
-list_repos, create_repo, delete_repo, list_releases, release, create_release, 
-delete_release, release_assets, upload_asset
+help, show_scopes, org_repos, org_teams, list_repos, create_repo, delete_repo, 
+list_releases, release, create_release, delete_release, release_assets, 
+upload_asset
 
 ## Table of Contents
+* [help](#help)
 * [_all_funcs](#_all_funcs)
 * [_log](#_log)
 * [_helptext](#_helptext)
-* [help](#help)
 * [_format](#_format)
 * [_filter](#_filter)
-* [request](#request)
-* [response](#response)
-* [get](#get)
 * [_get_mime_type](#_get_mime_type)
 * [_get_confirm](#_get_confirm)
-* [post](#post)
-* [delete](#delete)
+* [_request](#_request)
+* [_response](#_response)
+* [_get](#_get)
+* [_post](#_post)
+* [_delete](#_delete)
 * [show_scopes](#show_scopes)
 * [org_repos](#org_repos)
 * [org_teams](#org_teams)
@@ -91,6 +91,19 @@ delete_release, release_assets, upload_asset
 * [delete_release](#delete_release)
 * [release_assets](#release_assets)
 * [upload_asset](#upload_asset)
+
+### help()
+
+Output the help text for a command
+
+Usage:
+
+    help commandname
+
+Positional arguments
+
+* fname : $1
+  Function name to search for; if omitted searches whole file.
 
 ### _all_funcs()
 
@@ -140,19 +153,6 @@ Positional arguments
 * name : $1
   A file name to parse.
 
-### help()
-
-Output the help text for a command
-
-Usage:
-
-    help commandname
-
-Positional arguments
-
-* fname : $1
-  Function name to search for; if omitted searches whole file.
-
 ### _format()
 
 Create formatted JSON from name=value pairs
@@ -189,100 +189,6 @@ Usage:
   JSON input.
 * filter : $1
   A string of jq filters to apply to the input stream.
-
-### request()
-
-A wrapper around making HTTP requests with curl
-
-Usage:
-```
-request /repos/:owner/:repo/issues
-printf '{"title": "%s", "body": "%s"}\n' "Stuff" "Things" \
-  | request /repos/:owner/:repo/issues | jq -r '.[url]'
-printf '{"title": "%s", "body": "%s"}\n' "Stuff" "Things" \
-  | request /repos/:owner/:repo/issues method=PUT | jq -r '.[url]'
-```
-
-Input
-
-* (stdin)
-  Data that will be used as the request body.
-
-Positional arguments
-
-* path : $1
-  The URL path for the HTTP request.
-  Must be an absolute path that starts with a `/` or a full URL that
-  starts with http(s). Absolute paths will be append to the value in
-  `$OCTOKIT_SH_URL`.
-
-Keyword arguments
-
-* method : 'GET'
-  The method to use for the HTTP request.
-* content_type : 'application/json'
-  The value of the Content-Type header to use for the request.
-
-### response()
-
-Process an HTTP response from curl
-
-Output only headers of interest followed by the response body. Additional
-processing is performed on select headers to make them easier to work
-with in sh. See below.
-
-Usage:
-```
-request /some/path | response status_code ETag Link_next
-curl -isS example.com/some/path | response status_code status_text | {
-  local status_code status_text
-  read -r status_code
-  read -r status_text
-}
-```
-
-Header reformatting
-
-* HTTP Status
-  The HTTP line is split into `http_version`, `status_code`, and
-  `status_text` variables.
-* ETag
-  The surrounding quotes are removed.
-* Link
-  Each URL in the Link header is expanded with the URL type appended to
-  the name. E.g., `Link_first`, `Link_last`, `Link_next`.
-
-Positional arguments
-
-* $1 - $9
-  Each positional arg is the name of an HTTP header. Each header value is
-  output in the same order as each argument; each on a single line. A
-  blank line is output for headers that cannot be found.
-
-### get()
-
-A wrapper around request() for common GET patterns
-
-Will automatically follow 'next' pagination URLs in the Link header.
-
-Usage:
-
-    get /some/path
-    get /some/path follow_next=0
-    get /some/path follow_next_limit=200 | jq -c .
-
-Positional arguments
-
-* path : $1
-  The HTTP path or URL to pass to request().
-
-Keyword arguments
-
-* follow_next : 1
-  Whether to automatically look for a 'Links' header and follow any
-  'next' URLs found there.
-* follow_next_limit : 50
-  The maximum number of 'next' URLs to follow before stopping.
 
 ### _get_mime_type()
 
@@ -321,17 +227,104 @@ Positional arguments
 * message : $1
   The message to prompt the user with.
 
-### post()
+### _request()
 
-A wrapper around request() for commoon POST / PUT patterns
+A wrapper around making HTTP requests with curl
+
+Usage:
+```
+_request /repos/:owner/:repo/issues
+printf '{"title": "%s", "body": "%s"}\n' "Stuff" "Things" \
+  | _request /repos/:owner/:repo/issues | jq -r '.[url]'
+printf '{"title": "%s", "body": "%s"}\n' "Stuff" "Things" \
+  | _request /repos/:owner/:repo/issues method=PUT | jq -r '.[url]'
+```
+
+Input
+
+* (stdin)
+  Data that will be used as the request body.
+
+Positional arguments
+
+* path : $1
+  The URL path for the HTTP request.
+  Must be an absolute path that starts with a `/` or a full URL that
+  starts with http(s). Absolute paths will be append to the value in
+  `$OCTOKIT_SH_URL`.
+
+Keyword arguments
+
+* method : 'GET'
+  The method to use for the HTTP request.
+* content_type : 'application/json'
+  The value of the Content-Type header to use for the request.
+
+### _response()
+
+Process an HTTP response from curl
+
+Output only headers of interest followed by the response body. Additional
+processing is performed on select headers to make them easier to work
+with in sh. See below.
+
+Usage:
+```
+_request /some/path | _response status_code ETag Link_next
+curl -isS example.com/some/path | _response status_code status_text | {
+  local status_code status_text
+  read -r status_code
+  read -r status_text
+}
+```
+
+Header reformatting
+
+* HTTP Status
+  The HTTP line is split into `http_version`, `status_code`, and
+  `status_text` variables.
+* ETag
+  The surrounding quotes are removed.
+* Link
+  Each URL in the Link header is expanded with the URL type appended to
+  the name. E.g., `Link_first`, `Link_last`, `Link_next`.
+
+Positional arguments
+
+* $1 - $9
+  Each positional arg is the name of an HTTP header. Each header value is
+  output in the same order as each argument; each on a single line. A
+  blank line is output for headers that cannot be found.
+
+### _get_mime_type()
+
+Guess the mime type for a file based on the file extension
 
 Usage:
 
-    _format foo=Foo bar=Bar | post /some/path
-    _format foo=Foo bar=Bar | post /some/path method='PUT'
-    post /some/path filename=somearchive.tar
-    post /some/path filename=somearchive.tar mime_type=application/x-tar
-    post /some/path filename=somearchive.tar \
+    local mime_type
+    _get_mime_type "foo.tar"; printf 'mime is: %s' "$mime_type"
+
+Sets the global variable `mime_type` with the result. (If this function
+is called from within a function that has declared a local variable of
+that name it will update the local copy and not set a global.)
+
+Positional arguments
+
+* filename : $1
+  The full name of the file, with exension.
+
+### _post()
+
+A wrapper around _request() for commoon POST / PUT patterns
+
+Usage:
+
+    _format foo=Foo bar=Bar | _post /some/path
+    _format foo=Foo bar=Bar | _post /some/path method='PUT'
+    _post /some/path filename=somearchive.tar
+    _post /some/path filename=somearchive.tar mime_type=application/x-tar
+    _post /some/path filename=somearchive.tar \
       mime_type=$(file -b --mime-type somearchive.tar)
 
 Input
@@ -343,7 +336,7 @@ Input
 Positional arguments
 
 * path : $1
-  The HTTP path or URL to pass to request().
+  The HTTP path or URL to pass to _request().
 
 Keyword arguments
 
@@ -360,13 +353,13 @@ Keyword arguments
   stdin) this value defaults to `application/json`. Specifying this
   argument overrides all other defaults or guesses.
 
-### delete()
+### _delete()
 
-A wrapper around request() for common DELETE patterns
+A wrapper around _request() for common DELETE patterns
 
 Usage:
 
-    delete '/some/url'
+    _delete '/some/url'
 
 Return: 0 for success; 1 for failure.
 
