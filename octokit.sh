@@ -156,7 +156,9 @@ help() {
 _main() {
     # Available commands: ${ALL_FUNCS}
     #
-    # Usage: `${NAME} [<options>] command [<name=value>]`
+    # Usage: `${NAME} [<options>] (command [<name=value>...])`
+    #
+    # Full help output: `${NAME} help`
     # Command-specific help: `${NAME} help command`
     #
     # Flag | Description
@@ -189,8 +191,7 @@ _main() {
         case $opt in
         V)  printf 'Version: %s\n' $VERSION
             exit;;
-        h)  help
-            help _main
+        h) help _main
             printf '\n'
             exit;;
         j)  NO_JQ=1;;
