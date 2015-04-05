@@ -61,6 +61,29 @@ export LINFO=4      # Info-level log messages.
 export LDEBUG=5     # Debug-level log messages.
 export LSUMMARY=6   # Summary output.
 
+## Library functions for generating of fetching content from the local file.
+
+help() {
+    # Output the help text for a command
+    #
+    # Usage:
+    #
+    #     help commandname
+    #
+    # Positional arguments
+    #
+    local fname=$1
+    #   Function name to search for; if omitted searches whole file.
+
+    if [ $# -gt 0 ]; then
+        awk -v fname="^$fname" '$0 ~ fname, /^}/ { print }' $0 | _helptext
+    else
+        _helptext $0
+        printf '\n'
+        help _main
+    fi
+}
+
 _all_funcs() {
     # List all functions found in the current file in the order they appear
     #
@@ -94,99 +117,6 @@ _all_funcs() {
 }
 ALL_FUNCS="$(_all_funcs pretty=1)"
 export ALL_FUNCS
-
-_log() {
-    # A lightweight logging system based on file descriptors
-    #
-    # Usage:
-    #
-    #     _log debug 'Starting the combobulator!'
-    #
-    # Positional arguments
-    #
-    local level=${1:?Level is required.}
-    #   The level for a given log message. (info or debug)
-    local message=${2:?Message is required.}
-    #   The log message.
-
-    shift 2
-
-    local lname
-
-    case "$level" in
-        info) lname='INFO'; level=$LINFO ;;
-        debug) lname='DEBUG'; level=$LDEBUG ;;
-        *) printf 'Invalid logging level: %s\n' "$level" ;;
-    esac
-
-    printf '%s %s: %s\n' "$NAME" "$lname" "$message" 1>&$level
-}
-
-_helptext() {
-    # Extract contiguous lines of comments and function params as help text
-    #
-    # Indentation will be ignored. She-bangs will be ignored. The _main()
-    # function will be ignored. Local variable declarations and their default
-    # values can also be pulled in as documentation. Exits upon encountering
-    # the first blank line.
-    #
-    # Exported environment variables can be used for string interpolation in
-    # the extracted commented text.
-    #
-    # Input
-    #
-    # * (stdin)
-    #   The text of a function body to parse.
-    #
-    # Positional arguments
-    #
-    local name=$1
-    #   A file name to parse.
-
-    awk '
-    NR == 1 && ! /^#!/ && ! /_main\(\)/ {
-        sub(/\s*{\s*$/, "", $0)
-        printf("### %s\n\n", $0)
-    }
-    NR != 1 && /^\s*#/ {
-        line=$0
-        while(match(line, "[$]{[^}]*}")) {
-            var=substr(line, RSTART+2, RLENGTH -3)
-            gsub("[$]{"var"}", ENVIRON[var], line)
-        }
-        gsub(/^\s*#\s?/, "", line)
-        print line
-    }
-    /^\s*local/ {
-        sub(/^\s*local /, "* ")
-        sub(/:.*$/, "")
-        sub(/=/, " : ")
-        sub(/\${/, "$")
-        print
-    }
-    !NF { exit }' "$name"
-}
-
-help() {
-    # Output the help text for a command
-    #
-    # Usage:
-    #
-    #     help commandname
-    #
-    # Positional arguments
-    #
-    local fname=$1
-    #   Function name to search for; if omitted searches whole file.
-
-    if [ $# -gt 0 ]; then
-        awk -v fname="^$fname" '$0 ~ fname, /^}/ { print }' $0 | _helptext
-    else
-        _helptext $0
-        printf '\n'
-        help _main
-    fi
-}
 
 _main() {
     # ## Usage
@@ -279,6 +209,78 @@ _main() {
     exit $ret
 }
 
+_log() {
+    # A lightweight logging system based on file descriptors
+    #
+    # Usage:
+    #
+    #     _log debug 'Starting the combobulator!'
+    #
+    # Positional arguments
+    #
+    local level=${1:?Level is required.}
+    #   The level for a given log message. (info or debug)
+    local message=${2:?Message is required.}
+    #   The log message.
+
+    shift 2
+
+    local lname
+
+    case "$level" in
+        info) lname='INFO'; level=$LINFO ;;
+        debug) lname='DEBUG'; level=$LDEBUG ;;
+        *) printf 'Invalid logging level: %s\n' "$level" ;;
+    esac
+
+    printf '%s %s: %s\n' "$NAME" "$lname" "$message" 1>&$level
+}
+
+_helptext() {
+    # Extract contiguous lines of comments and function params as help text
+    #
+    # Indentation will be ignored. She-bangs will be ignored. The _main()
+    # function will be ignored. Local variable declarations and their default
+    # values can also be pulled in as documentation. Exits upon encountering
+    # the first blank line.
+    #
+    # Exported environment variables can be used for string interpolation in
+    # the extracted commented text.
+    #
+    # Input
+    #
+    # * (stdin)
+    #   The text of a function body to parse.
+    #
+    # Positional arguments
+    #
+    local name=$1
+    #   A file name to parse.
+
+    awk '
+    NR == 1 && ! /^#!/ && ! /_main\(\)/ {
+        sub(/\s*{\s*$/, "", $0)
+        printf("### %s\n\n", $0)
+    }
+    NR != 1 && /^\s*#/ {
+        line=$0
+        while(match(line, "[$]{[^}]*}")) {
+            var=substr(line, RSTART+2, RLENGTH -3)
+            gsub("[$]{"var"}", ENVIRON[var], line)
+        }
+        gsub(/^\s*#\s?/, "", line)
+        print line
+    }
+    /^\s*local/ {
+        sub(/^\s*local /, "* ")
+        sub(/:.*$/, "")
+        sub(/=/, " : ")
+        sub(/\${/, "$")
+        print
+    }
+    !NF { exit }' "$name"
+}
+
 _format() {
     # Create formatted JSON from name=value pairs
     #
@@ -351,16 +353,88 @@ _filter() {
     [ $? -eq 0 ] || printf 'jq parse error; invalid JSON.\n' 1>&2
 }
 
-request() {
+_get_mime_type() {
+    # Guess the mime type for a file based on the file extension
+    #
+    # Usage:
+    #
+    #     local mime_type
+    #     _get_mime_type "foo.tar"; printf 'mime is: %s' "$mime_type"
+    #
+    # Sets the global variable `mime_type` with the result. (If this function
+    # is called from within a function that has declared a local variable of
+    # that name it will update the local copy and not set a global.)
+    #
+    # Positional arguments
+    #
+    local filename=${1:?Filename is required.}
+    #   The full name of the file, with exension.
+
+    local ext="${filename#*.}"
+
+    # Taken from Apache's mime.types file (public domain).
+    case "$ext" in
+        bz2) mime_type=application/x-bzip2 ;;
+        exe) mime_type=application/x-msdownload ;;
+        gz | tgz) mime_type=application/x-gzip ;;
+        jpg | jpeg | jpe | jfif) mime_type=image/jpeg ;;
+        json) mime_type=application/json ;;
+        pdf) mime_type=application/pdf ;;
+        png) mime_type=image/png ;;
+        rpm) mime_type=application/x-rpm ;;
+        svg | svgz) mime_type=image/svg+xml ;;
+        tar) mime_type=application/x-tar ;;
+        yaml) mime_type=application/x-yaml ;;
+        zip) mime_type=application/zip ;;
+    esac
+
+    _log debug "Guessed mime type of '${mime_type}' for '${filename}'."
+}
+
+_get_confirm() {
+    # Prompt the user for confirmation
+    #
+    # Usage:
+    #
+    #     local confirm; _get_confirm
+    #     (( $confirm )) && printf 'Good to go!\n'
+    #
+    # If global confirmation is set via `$OCTOKIT_SH_DESTRUCTIVE` then the user
+    # is not prompted. Assigns the user's confirmation to the `confirm` global
+    # variable. (If this function is called within a function that has a local
+    # variable of that name, the local variable will be updated instead.)
+    #
+    # Positional arguments
+    #
+    local message=${1:-'Are you sure?'}
+    #   The message to prompt the user with.
+
+    local answer
+
+    if (( $OCTOKIT_SH_DESTRUCTIVE )) ; then
+        confirm=$OCTOKIT_SH_DESTRUCTIVE
+        return
+    fi
+
+    printf '%s ' "$message"
+    read -r answer
+
+    ! printf '%s\n' "$answer" | grep -Eq "$(locale yesexpr)"
+    confirm=$?
+}
+
+## Library functions for sending HTTP requests and processing HTTP responses.
+
+_request() {
     # A wrapper around making HTTP requests with curl
     #
     # Usage:
     # ```
-    # request /repos/:owner/:repo/issues
+    # _request /repos/:owner/:repo/issues
     # printf '{"title": "%s", "body": "%s"}\n' "Stuff" "Things" \
-    #   | request /repos/:owner/:repo/issues | jq -r '.[url]'
+    #   | _request /repos/:owner/:repo/issues | jq -r '.[url]'
     # printf '{"title": "%s", "body": "%s"}\n' "Stuff" "Things" \
-    #   | request /repos/:owner/:repo/issues method=PUT | jq -r '.[url]'
+    #   | _request /repos/:owner/:repo/issues method=PUT | jq -r '.[url]'
     # ```
     #
     # Input
@@ -416,7 +490,7 @@ request() {
     set +x
 }
 
-response() {
+_response() {
     # Process an HTTP response from curl
     #
     # Output only headers of interest followed by the response body. Additional
@@ -425,8 +499,8 @@ response() {
     #
     # Usage:
     # ```
-    # request /some/path | response status_code ETag Link_next
-    # curl -isS example.com/some/path | response status_code status_text | {
+    # _request /some/path | _response status_code ETag Link_next
+    # curl -isS example.com/some/path | _response status_code status_text | {
     #   local status_code status_text
     #   read -r status_code
     #   read -r status_text
@@ -514,21 +588,21 @@ status_text: ${status_text}
     cat
 }
 
-get() {
-    # A wrapper around request() for common GET patterns
+_get() {
+    # A wrapper around _request() for common GET patterns
     #
     # Will automatically follow 'next' pagination URLs in the Link header.
     #
     # Usage:
     #
-    #     get /some/path
-    #     get /some/path follow_next=0
-    #     get /some/path follow_next_limit=200 | jq -c .
+    #     _get /some/path
+    #     _get /some/path follow_next=0
+    #     _get /some/path follow_next_limit=200 | jq -c .
     #
     # Positional arguments
     #
     local path=${1:?Path is required.}
-    #   The HTTP path or URL to pass to request().
+    #   The HTTP path or URL to pass to _request().
     #
     # Keyword arguments
     #
@@ -549,7 +623,7 @@ get() {
         esac
     done
 
-    request "$path" | response status_code status_text Link_next | {
+    _request "$path" | _response status_code status_text Link_next | {
         read -r status_code
         read -r status_text
         read -r next_url
@@ -571,91 +645,21 @@ get() {
         if [ -n "$next_url" ] && [ $follow_next_limit -gt 0 ] ; then
             follow_next_limit=$(( $follow_next_limit - 1 ))
 
-            get "$next_url" "follow_next_limit=${follow_next_limit}"
+            _get "$next_url" "follow_next_limit=${follow_next_limit}"
         fi
     }
 }
 
-_get_mime_type() {
-    # Guess the mime type for a file based on the file extension
+_post() {
+    # A wrapper around _request() for commoon POST / PUT patterns
     #
     # Usage:
     #
-    #     local mime_type
-    #     _get_mime_type "foo.tar"; printf 'mime is: %s' "$mime_type"
-    #
-    # Sets the global variable `mime_type` with the result. (If this function
-    # is called from within a function that has declared a local variable of
-    # that name it will update the local copy and not set a global.)
-    #
-    # Positional arguments
-    #
-    local filename=${1:?Filename is required.}
-    #   The full name of the file, with exension.
-
-    local ext="${filename#*.}"
-
-    # Taken from Apache's mime.types file (public domain).
-    case "$ext" in
-        bz2) mime_type=application/x-bzip2 ;;
-        exe) mime_type=application/x-msdownload ;;
-        gz | tgz) mime_type=application/x-gzip ;;
-        jpg | jpeg | jpe | jfif) mime_type=image/jpeg ;;
-        json) mime_type=application/json ;;
-        pdf) mime_type=application/pdf ;;
-        png) mime_type=image/png ;;
-        rpm) mime_type=application/x-rpm ;;
-        svg | svgz) mime_type=image/svg+xml ;;
-        tar) mime_type=application/x-tar ;;
-        yaml) mime_type=application/x-yaml ;;
-        zip) mime_type=application/zip ;;
-    esac
-
-    _log debug "Guessed mime type of '${mime_type}' for '${filename}'."
-}
-
-_get_confirm() {
-    # Prompt the user for confirmation
-    #
-    # Usage:
-    #
-    #     local confirm; _get_confirm
-    #     (( $confirm )) && printf 'Good to go!\n'
-    #
-    # If global confirmation is set via `$OCTOKIT_SH_DESTRUCTIVE` then the user
-    # is not prompted. Assigns the user's confirmation to the `confirm` global
-    # variable. (If this function is called within a function that has a local
-    # variable of that name, the local variable will be updated instead.)
-    #
-    # Positional arguments
-    #
-    local message=${1:-'Are you sure?'}
-    #   The message to prompt the user with.
-
-    local answer
-
-    if (( $OCTOKIT_SH_DESTRUCTIVE )) ; then
-        confirm=$OCTOKIT_SH_DESTRUCTIVE
-        return
-    fi
-
-    printf '%s ' "$message"
-    read -r answer
-
-    ! printf '%s\n' "$answer" | grep -Eq "$(locale yesexpr)"
-    confirm=$?
-}
-
-post() {
-    # A wrapper around request() for commoon POST / PUT patterns
-    #
-    # Usage:
-    #
-    #     _format foo=Foo bar=Bar | post /some/path
-    #     _format foo=Foo bar=Bar | post /some/path method='PUT'
-    #     post /some/path filename=somearchive.tar
-    #     post /some/path filename=somearchive.tar mime_type=application/x-tar
-    #     post /some/path filename=somearchive.tar \
+    #     _format foo=Foo bar=Bar | _post /some/path
+    #     _format foo=Foo bar=Bar | _post /some/path method='PUT'
+    #     _post /some/path filename=somearchive.tar
+    #     _post /some/path filename=somearchive.tar mime_type=application/x-tar
+    #     _post /some/path filename=somearchive.tar \
     #       mime_type=$(file -b --mime-type somearchive.tar)
     #
     # Input
@@ -667,7 +671,7 @@ post() {
     # Positional arguments
     #
     local path=${1:?Path is required.}
-    #   The HTTP path or URL to pass to request().
+    #   The HTTP path or URL to pass to _request().
     #
     # Keyword arguments
     #
@@ -711,8 +715,8 @@ post() {
         exec 7<&0
     fi
 
-    request "$path" method="$method" content_type="$mime_type" 0<&7 \
-            | response status_code status_text \
+    _request "$path" method="$method" content_type="$mime_type" 0<&7 \
+            | _response status_code status_text \
             | {
         read -r status_code
         read -r status_text
@@ -730,12 +734,12 @@ post() {
     }
 }
 
-delete() {
-    # A wrapper around request() for common DELETE patterns
+_delete() {
+    # A wrapper around _request() for common DELETE patterns
     #
     # Usage:
     #
-    #     delete '/some/url'
+    #     _delete '/some/url'
     #
     # Return: 0 for success; 1 for failure.
     #
@@ -746,12 +750,16 @@ delete() {
 
     local status_code
 
-    request "${url}" method='DELETE' | response status_code | {
+    _request "${url}" method='DELETE' | _response status_code | {
         read -r status_code
         [ "$status_code" = "204" ]
         exit $?
     }
 }
+
+## GitHub specific functions below.
+
+### Authentication and authorization functions.
 
 show_scopes() {
     # Show the permission scopes for the currently authenticated user
@@ -762,7 +770,7 @@ show_scopes() {
 
     local oauth_scopes
 
-    request '/' | response X-OAuth-Scopes | {
+    _request '/' | _response X-OAuth-Scopes | {
         read -r oauth_scopes
 
         printf '%s\n' "$oauth_scopes"
@@ -771,6 +779,8 @@ show_scopes() {
         cat >/dev/null
     }
 }
+
+### Repository functions.
 
 org_repos() {
     # List organization repositories
@@ -807,7 +817,7 @@ org_repos() {
         esac
     done
 
-    get "/orgs/${org}/repos?type=${type}&per_page=${per_page}" \
+    _get "/orgs/${org}/repos?type=${type}&per_page=${per_page}" \
         | _filter "${filter}"
 }
 
@@ -837,7 +847,7 @@ org_teams() {
         esac
     done
 
-    get "/orgs/${org}/teams" \
+    _get "/orgs/${org}/teams" \
         | _filter "${filter}"
 }
 
@@ -876,7 +886,7 @@ list_repos() {
         url='/user/repos?per_page=100'
     fi
 
-    get "$url" | _filter "${filter}"
+    _get "$url" | _filter "${filter}"
 }
 
 create_repo() {
@@ -917,7 +927,7 @@ create_repo() {
         url='/user/repos'
     fi
 
-    _format "name=${name}" "$@" | post "$url" | _filter "${filter}"
+    _format "name=${name}" "$@" | _post "$url" | _filter "${filter}"
 }
 
 delete_repo() {
@@ -944,9 +954,11 @@ delete_repo() {
     _get_confirm 'This will permanently delete a repository! Continue?'
     (( $confirm )) || exit 0
 
-    delete "/repos/${owner}/${repo}"
+    _delete "/repos/${owner}/${repo}"
     exit $?
 }
+
+### Releases functions.
 
 list_releases() {
     # List releases for a repository
@@ -976,7 +988,7 @@ list_releases() {
         esac
     done
 
-    get "/repos/${owner}/${repo}/releases" \
+    _get "/repos/${owner}/${repo}/releases" \
         | _filter "${filter}"
 }
 
@@ -1010,7 +1022,7 @@ release() {
         esac
     done
 
-    get "/repos/${owner}/${repo}/releases/${release_id}" \
+    _get "/repos/${owner}/${repo}/releases/${release_id}" \
         | _filter "${filter}"
 }
 
@@ -1048,7 +1060,7 @@ create_release() {
     done
 
     _format "tag_name=${tag_name}" "$@" \
-        | post "/repos/${owner}/${repo}/releases" \
+        | _post "/repos/${owner}/${repo}/releases" \
         | _filter "${filter}"
 }
 
@@ -1077,7 +1089,7 @@ delete_release() {
     _get_confirm 'This will permanently delete a release. Continue?'
     (( $confirm )) || exit 0
 
-    delete "/repos/${owner}/${repo}/releases/${release_id}"
+    _delete "/repos/${owner}/${repo}/releases/${release_id}"
     exit $?
 }
 
@@ -1111,7 +1123,7 @@ release_assets() {
         esac
     done
 
-    get "/repos/${owner}/${repo}/releases/${release_id}/assets" \
+    _get "/repos/${owner}/${repo}/releases/${release_id}/assets" \
         | _filter "$filter"
 }
 
@@ -1156,7 +1168,7 @@ upload_asset() {
 
     : ${upload_url:?Upload URL could not be retrieved.}
 
-    post "$upload_url" filename="$name" \
+    _post "$upload_url" filename="$name" \
         | _filter "$filter"
 }
 
