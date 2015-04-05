@@ -42,10 +42,6 @@
 export NAME=$(basename $0)
 export VERSION='0.1.0'
 
-ALL_FUNCS=$(awk 'BEGIN {ORS=" "} !/^_/ && /^[a-zA-Z0-9_]+\s*\(\)/ {
-    sub(/\(\)$/, "", $1); print $1 }' $0 | sort)
-export ALL_FUNCS
-
 export OCTOKIT_SH_URL=${OCTOKIT_SH_URL:-'https://api.github.com'}
 export OCTOKIT_SH_ACCEPT=${OCTOKIT_SH_ACCEPT:-'application/vnd.github.v3+json'}
 export OCTOKIT_SH_JQ_BIN="${OCTOKIT_SH_JQ_BIN:-jq}"
@@ -64,6 +60,40 @@ exec 6>/dev/null
 export LINFO=4      # Info-level log messages.
 export LDEBUG=5     # Debug-level log messages.
 export LSUMMARY=6   # Summary output.
+
+_all_funcs() {
+    # List all functions found in the current file in the order they appear
+    #
+    # Keyword arguments
+    #
+    local pretty=1
+    #   0 output one function per line; 1 output a formatted paragraph.
+    local public=1
+    #   0 output all functions; 1 output only public functions.
+
+    for arg in "$@"; do
+        case $arg in
+            (pretty=*) pretty="${arg#*=}";;
+            (public=*) public="${arg#*=}";;
+        esac
+    done
+
+    awk -v public="$public" '
+        BEGIN { if (public) is_private="^_"; else is_private="*"; }
+
+        $0 !~ is_private && /^[a-zA-Z0-9_]+\s*\(\)/ {
+            sub(/\(\)$/, "", $1); print $1
+        }
+    ' $0 | {
+        if (( $pretty )) ; then
+            cat | sed ':a;N;$!ba;s/\n/, /g' | fold -w 79 -s
+        else
+            cat
+        fi
+    }
+}
+ALL_FUNCS="$(_all_funcs pretty=1)"
+export ALL_FUNCS
 
 _log() {
     # A lightweight logging system based on file descriptors
@@ -154,7 +184,7 @@ help() {
 }
 
 _main() {
-    # Available commands: ${ALL_FUNCS}
+    # ## Usage
     #
     # Usage: `${NAME} [<options>] (command [<name=value>...])`
     #
@@ -171,6 +201,10 @@ _main() {
     # -v   | Logging output; specify multiple times: info, debug, trace.
     # -x   | Enable xtrace debug logging.
     # -y   | Answer 'yes' to any prompts.
+    #
+    # ## Available commands
+    #
+    # ${ALL_FUNCS}
 
     local cmd ret opt OPTARG OPTIND
     local quiet=0
