@@ -17,3 +17,6 @@ readme:
 	@ $(PROGRAM) _all_funcs pretty=0 public=0 | xargs -n1 -I@ sh -c '[ @ = _main ] && exit; printf "* [@](#@)\n"' >> README.md
 	@ printf '\n' >> README.md
 	@ $(PROGRAM) _all_funcs pretty=0 public=0 | xargs -n1 -I@ sh -c '[ @ = _main ] && exit; $(PROGRAM) help @; printf "\n"' >> README.md
+
+preview:
+	@ pandoc -f markdown_github < README.md > README.html
