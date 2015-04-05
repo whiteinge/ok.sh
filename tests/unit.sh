@@ -65,4 +65,21 @@ string' | {
     }
 }
 
+test_filter_json_args() {
+    local json out
+    json='["foo", "bar", true, {"qux": "Qux"}]'
+
+    printf '%s\n' "$json" | $SCRIPT _filter_json 'length' | {
+        read -r out
+
+        if [ 4 -eq "$out" ] ; then
+            return 0
+        else
+            printf 'Expected output does not match output: `%s` != `%s`\n' \
+                "$expected_out" "$out"
+            return 1
+        fi
+    }
+}
+
 _main "$@"
