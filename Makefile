@@ -1,0 +1,19 @@
+# Install octokit.sh; build the website/README; run the tests.
+
+PROGRAM = octokit.sh
+DESTDIR = $(HOME)
+
+install : $(PROGRAM)
+	cp $(PROGRAM) $(DESTDIR)/bin
+	chmod 755 $(DESTDIR)/bin/$(PROGRAM)
+
+test:
+	make -C tests all
+
+readme:
+	@ printf '<!---\nThis README file is generated. Changes will be overwritten.\n-->\n' > README.md
+	@ $(PROGRAM) help >> README.md
+	@ printf '\n## Table of Contents\n' >> README.md
+	@ $(PROGRAM) _all_funcs pretty=0 public=0 | xargs -n1 -I@ sh -c '[ @ = _main ] && exit; printf "* [@](#@)\n"' >> README.md
+	@ printf '\n' >> README.md
+	@ $(PROGRAM) _all_funcs pretty=0 public=0 | xargs -n1 -I@ sh -c '[ @ = _main ] && exit; $(PROGRAM) help @; printf "\n"' >> README.md
