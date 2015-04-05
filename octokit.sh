@@ -1,18 +1,18 @@
 #!/usr/bin/env sh
-# A GitHub API client library written in POSIX sh
+# # A GitHub API client library written in POSIX sh
 #
-# Requirements
+# ## Requirements
 #
 # * A POSIX environment (tested against Busybox v1.19.4)
 # * curl (tested against 7.32.0)
 #
-# Optional requirements
+# ## Optional requirements
 #
 # * jq <http://stedolan.github.io/jq/> (tested against 1.3)
 #   If jq is not installed commands will output raw JSON; if jq is installed
 #   commands can be pretty-printed for use with other shell tools.
 #
-# Setup
+# ## Setup
 #
 # Authentication credentials are read from a ~/.netrc file with the following
 # format. Generate the token on GitHub under Account Settings -> Applications.
@@ -22,7 +22,7 @@
 #         login <username>
 #         password <token>
 #
-# Configuration
+# ## Configuration
 #
 # The following environment variables may be set to customize ${NAME}.
 #
