@@ -317,7 +317,8 @@ _format_json() {
 
             # If not bool or number, quote it.
             if (!isbool(val) && !isnum(val)) {
-                gsub(/"/, "\\\"", val)
+                gsub(/"/, "\\\"", val)  # Escape double-quotes.
+                gsub(/\n/, "\\n", val)  # Replace newlines with \n text.
                 val = "\"" val "\""
             }
 
