@@ -272,11 +272,13 @@ _helptext() {
         print line
     }
     /^\s*local/ {
-        sub(/^\s*local /, "* ")
-        sub(/:.*$/, "")
-        sub(/=/, " : ")
-        sub(/\${/, "$")
-        print
+        sub(/^\s*local /, "")
+        idx = index($0, "=")
+        name = substr($0, 1, idx - 1)
+        val = substr($0, idx + 1)
+        sub(/\${/, "$", val)
+        sub(/:.*$/, "", val)
+        print "* " name " : `" val "`"
     }
     !NF { exit }' "$name"
 }
