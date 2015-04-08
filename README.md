@@ -70,8 +70,8 @@ upload_asset
 * [_all_funcs](#_all_funcs)
 * [_log](#_log)
 * [_helptext](#_helptext)
-* [_format](#_format)
-* [_filter](#_filter)
+* [_format_json](#_format_json)
+* [_filter_json](#_filter_json)
 * [_get_mime_type](#_get_mime_type)
 * [_get_confirm](#_get_confirm)
 * [_request](#_request)
@@ -102,7 +102,7 @@ Usage:
 
 Positional arguments
 
-* fname : $1
+* fname : `$1`
   Function name to search for; if omitted searches whole file.
 
 ### _all_funcs()
@@ -111,9 +111,9 @@ List all functions found in the current file in the order they appear
 
 Keyword arguments
 
-* pretty : 1
+* pretty : `1`
   0 output one function per line; 1 output a formatted paragraph.
-* public : 1
+* public : `1`
   0 output all functions; 1 output only public functions.
 
 ### _log()
@@ -126,9 +126,9 @@ Usage:
 
 Positional arguments
 
-* level : $1
+* level : `$1`
   The level for a given log message. (info or debug)
-* message : $2
+* message : `$2`
   The log message.
 
 ### _helptext()
@@ -150,16 +150,16 @@ Input
 
 Positional arguments
 
-* name : $1
+* name : `$1`
   A file name to parse.
 
-### _format()
+### _format_json()
 
 Create formatted JSON from name=value pairs
 
 Usage:
 ```
-_format foo=Foo bar=123 baz=true qux=Qux=Qux quux='Multi-line
+_format_json foo=Foo bar=123 baz=true qux=Qux=Qux quux='Multi-line
 string'
 ```
 
@@ -177,17 +177,17 @@ Positional arguments
   Each positional arg must be in the format of `name=value` which will be
   added to a single, flat JSON object.
 
-### _filter()
+### _filter_json()
 
 Filter JSON input using jq; outputs raw JSON if jq is not installed
 
 Usage:
 
-    _filter '.[] | "\(.foo)"' < something.json
+    _filter_json '.[] | "\(.foo)"' < something.json
 
 * (stdin)
   JSON input.
-* filter : $1
+* filter : `$1`
   A string of jq filters to apply to the input stream.
 
 ### _get_mime_type()
@@ -205,7 +205,7 @@ that name it will update the local copy and not set a global.)
 
 Positional arguments
 
-* filename : $1
+* filename : `$1`
   The full name of the file, with exension.
 
 ### _get_confirm()
@@ -224,7 +224,7 @@ variable of that name, the local variable will be updated instead.)
 
 Positional arguments
 
-* message : $1
+* message : `$1`
   The message to prompt the user with.
 
 ### _request()
@@ -247,7 +247,7 @@ Input
 
 Positional arguments
 
-* path : $1
+* path : `$1`
   The URL path for the HTTP request.
   Must be an absolute path that starts with a `/` or a full URL that
   starts with http(s). Absolute paths will be append to the value in
@@ -255,9 +255,9 @@ Positional arguments
 
 Keyword arguments
 
-* method : 'GET'
+* method : `'GET'`
   The method to use for the HTTP request.
-* content_type : 'application/json'
+* content_type : `'application/json'`
   The value of the Content-Type header to use for the request.
 
 ### _response()
@@ -311,7 +311,7 @@ that name it will update the local copy and not set a global.)
 
 Positional arguments
 
-* filename : $1
+* filename : `$1`
   The full name of the file, with exension.
 
 ### _post()
@@ -320,8 +320,8 @@ A wrapper around _request() for commoon POST / PUT patterns
 
 Usage:
 
-    _format foo=Foo bar=Bar | _post /some/path
-    _format foo=Foo bar=Bar | _post /some/path method='PUT'
+    _format_json foo=Foo bar=Bar | _post /some/path
+    _format_json foo=Foo bar=Bar | _post /some/path method='PUT'
     _post /some/path filename=somearchive.tar
     _post /some/path filename=somearchive.tar mime_type=application/x-tar
     _post /some/path filename=somearchive.tar \
@@ -335,18 +335,18 @@ Input
 
 Positional arguments
 
-* path : $1
+* path : `$1`
   The HTTP path or URL to pass to _request().
 
 Keyword arguments
 
-* method : 'POST'
+* method : `'POST'`
   The method to use for the HTTP request.
-* filename
+*  : `filename`
   Optional. See the `stdin` option above also.
   Takes precedence over any data passed as stdin and loads a file off the
   file system to serve as the request body.
-* mime_type
+*  : `mime_type`
   The value of the Content-Type header to use for the request.
   If the `filename` argument is given this value will be guessed from the
   file extension. If the `filename` argument is not given (i.e., using
@@ -365,7 +365,7 @@ Return: 0 for success; 1 for failure.
 
 Positional arguments
 
-* url : $1
+* url : `$1`
   The URL to send the DELETE request to.
 
 ### show_scopes()
@@ -388,17 +388,17 @@ Usage:
 
 Positional arguments
 
-* org : $1
+* org : `$1`
   Organization GitHub login or id for which to list repos.
 
 Keyword arguments
 
-* type : all
+* type : `all`
   Filter by repository type. all, public, member, sources, forks, or
   private.
-* per_page : 100
+* per_page : `100`
   The number of repositories to return in each single request.
-* filter : '.[] | "\(.name)\t\(.ssh_url)"'
+* filter : `'.[] | "\(.name)\t\(.ssh_url)"'`
   A jq filter using string-interpolation syntax that is applied to each
   repository in the return data.
 
@@ -412,12 +412,12 @@ Usage:
 
 Positional arguments
 
-* org : $1
+* org : `$1`
   Organization GitHub login or id.
 
 Keyword arguments
 
-* filter : '.[] | "\(.name)\t\(.id)\t\(.permission)"'
+* filter : `'.[] | "\(.name)\t\(.id)\t\(.permission)"'`
   A jq filter using string-interpolation syntax that is applied to each
   team in the return data.
 
@@ -432,12 +432,12 @@ Usage:
 
 Positional arguments
 
-* user : $1
+* user : `$1`
   Optional GitHub user login or id for which to list repos.
 
 Keyword arguments
 
-* filter : '.[] | "\(.name)\t\(.html_url)"'
+* filter : `'.[] | "\(.name)\t\(.html_url)"'`
   A jq filter using string-interpolation syntax that is applied to each
   repository in the return data.
 
@@ -455,12 +455,12 @@ Usage:
 
 Positional arguments
 
-* name : $1
+* name : `$1`
   Name of the new repo
 
 Keyword arguments
 
-* filter : '.[] | "\(.name)\t\(.html_url)"'
+* filter : `'.[] | "\(.name)\t\(.html_url)"'`
 
 description, homepage, private, has_issues, has_wiki, has_downloads,
 organization, team_id, auto_init, gitignore_template
@@ -478,9 +478,9 @@ current scopes with the `show_scopes()` function.
 
 Positional arguments
 
-* owner : $1
+* owner : `$1`
   Name of the new repo
-* repo : $2
+* repo : `$2`
   Name of the new repo
 
 ### list_releases()
@@ -493,14 +493,14 @@ Usage:
 
 Positional arguments
 
-* owner : $1
+* owner : `$1`
   A GitHub user or organization.
-* repo : $2
+* repo : `$2`
   A GitHub repository.
 
 Keyword arguments
 
-* filter : '.[] | "\(.name)\t\(.id)\t\(.html_url)"'
+* filter : `'.[] | "\(.name)\t\(.id)\t\(.html_url)"'`
   A jq filter using string-interpolation syntax that is applied to each
   release in the return data.
 
@@ -514,16 +514,16 @@ Usage:
 
 Positional arguments
 
-* owner : $1
+* owner : `$1`
   A GitHub user or organization.
-* repo : $2
+* repo : `$2`
   A GitHub repository.
-* release_id : $3
+* release_id : `$3`
   The unique ID of the release; see list_releases.
 
 Keyword arguments
 
-* filter : '"\(.author.login)\t\(.published_at)"'
+* filter : `'"\(.author.login)\t\(.published_at)"'`
   A jq filter using string-interpolation syntax that is applied to each
   release in the return data.
 
@@ -538,16 +538,16 @@ Usage:
 
 Positional arguments
 
-* owner : $1
+* owner : `$1`
   A GitHub user or organization.
-* repo : $2
+* repo : `$2`
   A GitHub repository.
-* tag_name : $3
+* tag_name : `$3`
   Git tag from which to create release.
 
 Keyword arguments
 
-* filter : '"\(.name)\t\(.id)\t\(.html_url)"'
+* filter : `'"\(.name)\t\(.id)\t\(.html_url)"'`
   A jq filter using string-interpolation syntax that is applied to the
   release data.
 
@@ -565,11 +565,11 @@ Return: 0 for success; 1 for failure.
 
 Positional arguments
 
-* owner : $1
+* owner : `$1`
   A GitHub user or organization.
-* repo : $2
+* repo : `$2`
   A GitHub repository.
-* release_id : $3
+* release_id : `$3`
   The unique ID of the release; see list_releases.
 
 ### release_assets()
@@ -582,16 +582,16 @@ Usage:
 
 Positional arguments
 
-* owner : $1
+* owner : `$1`
   A GitHub user or organization.
-* repo : $2
+* repo : `$2`
   A GitHub repository.
-* release_id : $3
+* release_id : `$3`
   The unique ID of the release; see list_releases.
 
 Keyword arguments
 
-* filter : '.[] | "\(.id)\t\(.name)\t\(.updated_at)"'
+* filter : `'.[] | "\(.id)\t\(.name)\t\(.updated_at)"'`
   A jq filter using string-interpolation syntax that is applied to each
   release asset in the return data.
 
@@ -609,18 +609,18 @@ Usage:
 
 Positional arguments
 
-* owner : $1
+* owner : `$1`
   A GitHub user or organization.
-* repo : $2
+* repo : `$2`
   A GitHub repository.
-* release_id : $3
+* release_id : `$3`
   The unique ID of the release; see list_releases.
-* name : $4
+* name : `$4`
   The file name of the asset.
 
 Keyword arguments
 
-* filter : '"\(.state)\t\(.browser_download_url)"'
+* filter : `'"\(.state)\t\(.browser_download_url)"'`
   A jq filter using string-interpolation syntax that is applied to each
   release asset in the return data.
 
