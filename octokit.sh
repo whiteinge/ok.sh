@@ -108,7 +108,7 @@ _all_funcs() {
             sub(/\(\)$/, "", $1); print $1
         }
     ' $0 | {
-        if (( $pretty )) ; then
+        if [ "$pretty" -eq 1 ] ; then
             cat | sed ':a;N;$!ba;s/\n/, /g' | fold -w 79 -s
         else
             cat
@@ -184,7 +184,7 @@ _main() {
         exec 1>/dev/null 2>/dev/null
     fi
 
-    if (( $OCTOKIT_SH_RATE_LIMIT )) ; then
+    if [ "$OCTOKIT_SH_RATE_LIMIT" -eq 1 ] ; then
         mkdir -m 700 "$temp_dir" || {
             printf 'failed to create temp_dir\n' >&2; exit 1;
         }
@@ -201,7 +201,7 @@ _main() {
     _log debug "Command ${cmd} exited with ${?}."
 
     # Output any summary messages.
-    if (( $OCTOKIT_SH_RATE_LIMIT )) ; then
+    if [ "$OCTOKIT_SH_RATE_LIMIT" -eq 1 ] ; then
         cat "$summary_fifo" 1>&2 &
         exec 6>&-
     fi
@@ -400,7 +400,7 @@ _get_confirm() {
     # Usage:
     #
     #     local confirm; _get_confirm
-    #     (( $confirm )) && printf 'Good to go!\n'
+    #     [ "$confirm" -eq 1 ] && printf 'Good to go!\n'
     #
     # If global confirmation is set via `$OCTOKIT_SH_DESTRUCTIVE` then the user
     # is not prompted. Assigns the user's confirmation to the `confirm` global
@@ -414,7 +414,7 @@ _get_confirm() {
 
     local answer
 
-    if (( $OCTOKIT_SH_DESTRUCTIVE )) ; then
+    if [ "$OCTOKIT_SH_DESTRUCTIVE" -eq 1 ] ; then
         confirm=$OCTOKIT_SH_DESTRUCTIVE
         return
     fi
@@ -482,7 +482,7 @@ _request() {
 
     [[ $OCTOKIT_SH_VERBOSE -eq 3 ]] && trace_curl=1
 
-    (( $OCTOKIT_SH_VERBOSE )) && set -x
+    [ "$OCTOKIT_SH_VERBOSE" -eq 1 ] && set -x
     curl -nsSi \
         -H "Accept: ${OCTOKIT_SH_ACCEPT}" \
         -H "Content-Type: ${content_type}" \
@@ -642,7 +642,7 @@ _get() {
         # Output response body.
         cat
 
-        (( $follow_next )) || return
+        [ "$follow_next" -eq 1 ] || return
 
         _log info "Remaining next link follows: ${follow_next_limit}"
         if [ -n "$next_url" ] && [ $follow_next_limit -gt 0 ] ; then
@@ -955,7 +955,7 @@ delete_repo() {
     local confirm
 
     _get_confirm 'This will permanently delete a repository! Continue?'
-    (( $confirm )) || exit 0
+    [ "$confirm" -eq 1 ] || exit 0
 
     _delete "/repos/${owner}/${repo}"
     exit $?
@@ -1090,7 +1090,7 @@ delete_release() {
     local confirm
 
     _get_confirm 'This will permanently delete a release. Continue?'
-    (( $confirm )) || exit 0
+    [ "$confirm" -eq 1 ] || exit 0
 
     _delete "/repos/${owner}/${repo}/releases/${release_id}"
     exit $?
