@@ -12,6 +12,7 @@ test:
 
 readme:
 	@ printf '<!---\nThis README file is generated. Changes will be overwritten.\n-->\n' > README.md
+	@ printf '[![Build Status](https://travis-ci.org/whiteinge/octokit.sh.svg?branch=master)](https://travis-ci.org/whiteinge/octokit.sh)\n' >> README.md
 	@ $(PROGRAM) help >> README.md
 	@ printf '\n## Table of Contents\n' >> README.md
 	@ $(PROGRAM) _all_funcs pretty=0 public=0 | xargs -n1 -I@ sh -c '[ @ = _main ] && exit; printf "* [@](#@)\n"' >> README.md
