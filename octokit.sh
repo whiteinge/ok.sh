@@ -276,7 +276,7 @@ _helptext() {
         idx = index($0, "=")
         name = substr($0, 1, idx - 1)
         val = substr($0, idx + 1)
-        sub(/\${/, "$", val)
+        sub(/"{0,1}\${/, "$", val)
         sub(/:.*$/, "", val)
         print "* " name " : `" val "`"
     }
