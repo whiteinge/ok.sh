@@ -40,21 +40,16 @@ string' | {
 test_format_json_jq() {
     # Test output after filtering through jq.
 
-    local output raw_out expected_out
+    local output keys vals expected_out
 
     $SCRIPT _format_json foo=Foo bar=123 baz=true qux=Qux=Qux quux='Multi-line
 string' | {
         read -r output
 
-        raw_out='{"baz": true, "quux": "Multi-line\nstring", "foo": "Foo", "qux": "Qux=Qux", "bar": 123}'
+        keys=$(printf '%s\n' "$output" | jq -r -c 'keys | .[]' | sort | paste -s -d',' -)
+        vals=$(printf '%s\n' "$output" | jq -r -c '.[]' | sort | paste -s -d',' -)
 
-        # jq 1.4 does not sort keys by default.
-        case "$JQ_V" in
-            1.4) expected_out="$(printf '%s\n' "$raw_out" | jq -S -c .)" ;;
-            *) expected_out="$(printf '%s\n' "$raw_out" | jq -c .)" ;;
-        esac
-
-        if [ "$expected_out" = "$output" ] ; then
+        if [ 'bar,baz,foo,quux,qux' = "$keys" ] && [ '123,Foo,Multi-line,Qux=Qux,string,true' = "$vals" ] ; then
             return 0
         else
             printf 'Expected output does not match output: `%s` != `%s`\n' \
