@@ -218,9 +218,9 @@ _log() {
     #
     # Positional arguments
     #
-    local level=${1:?Level is required.}
+    local level="${1:?Level is required.}"
     #   The level for a given log message. (info or debug)
-    local message=${2:?Message is required.}
+    local message="${2:?Message is required.}"
     #   The log message.
 
     shift 2
@@ -370,7 +370,7 @@ _get_mime_type() {
     #
     # Positional arguments
     #
-    local filename=${1:?Filename is required.}
+    local filename="${1:?Filename is required.}"
     #   The full name of the file, with exension.
 
     local ext="${filename#*.}"
@@ -409,7 +409,7 @@ _get_confirm() {
     #
     # Positional arguments
     #
-    local message=${1:-'Are you sure?'}
+    local message="${1:-Are you sure?}"
     #   The message to prompt the user with.
 
     local answer
@@ -447,7 +447,7 @@ _request() {
     #
     # Positional arguments
     #
-    local path=${1:?Path is required.}
+    local path="${1:?Path is required.}"
     #   The URL path for the HTTP request.
     #   Must be an absolute path that starts with a `/` or a full URL that
     #   starts with http(s). Absolute paths will be append to the value in
@@ -604,7 +604,7 @@ _get() {
     #
     # Positional arguments
     #
-    local path=${1:?Path is required.}
+    local path="${1:?Path is required.}"
     #   The HTTP path or URL to pass to _request().
     #
     # Keyword arguments
@@ -673,7 +673,7 @@ _post() {
     #
     # Positional arguments
     #
-    local path=${1:?Path is required.}
+    local path="${1:?Path is required.}"
     #   The HTTP path or URL to pass to _request().
     #
     # Keyword arguments
@@ -748,7 +748,7 @@ _delete() {
     #
     # Positional arguments
     #
-    local url=${1:?URL is required.}
+    local url="${1:?URL is required.}"
     #   The URL to send the DELETE request to.
 
     local status_code
@@ -796,7 +796,7 @@ org_repos() {
     #
     # Positional arguments
     #
-    local org=${1:?Org name required.}
+    local org="${1:?Org name required.}"
     #   Organization GitHub login or id for which to list repos.
     #
     # Keyword arguments
@@ -833,7 +833,7 @@ org_teams() {
     #
     # Positional arguments
     #
-    local org=${1:?Org name required.}
+    local org="${1:?Org name required.}"
     #   Organization GitHub login or id.
     #
     # Keyword arguments
@@ -903,7 +903,7 @@ create_repo() {
     #
     # Positional arguments
     #
-    local name=${1:?Repo name required.}
+    local name="${1:?Repo name required.}"
     #   Name of the new repo
     #
     # Keyword arguments
@@ -945,9 +945,9 @@ delete_repo() {
     #
     # Positional arguments
     #
-    local owner=${1:?Owner name required.}
+    local owner="${1:?Owner name required.}"
     #   Name of the new repo
-    local repo=${2:?Repo name required.}
+    local repo="${2:?Repo name required.}"
     #   Name of the new repo
 
     shift 2
@@ -972,9 +972,9 @@ list_releases() {
     #
     # Positional arguments
     #
-    local owner=${1:?Owner name required.}
+    local owner="${1:?Owner name required.}"
     #   A GitHub user or organization.
-    local repo=${2:?Repo name required.}
+    local repo="${2:?Repo name required.}"
     #   A GitHub repository.
     #
     # Keyword arguments
@@ -1004,11 +1004,11 @@ release() {
     #
     # Positional arguments
     #
-    local owner=${1:?Owner name required.}
+    local owner="${1:?Owner name required.}"
     #   A GitHub user or organization.
-    local repo=${2:?Repo name required.}
+    local repo="${2:?Repo name required.}"
     #   A GitHub repository.
-    local release_id=${3:?Release ID required.}
+    local release_id="${3:?Release ID required.}"
     #   The unique ID of the release; see list_releases.
     #
     # Keyword arguments
@@ -1039,11 +1039,11 @@ create_release() {
     #
     # Positional arguments
     #
-    local owner=${1:?Owner name required.}
+    local owner="${1:?Owner name required.}"
     #   A GitHub user or organization.
-    local repo=${2:?Repo name required.}
+    local repo="${2:?Repo name required.}"
     #   A GitHub repository.
-    local tag_name=${3:?Tag name required.}
+    local tag_name="${3:?Tag name required.}"
     #   Git tag from which to create release.
     #
     # Keyword arguments
@@ -1078,11 +1078,11 @@ delete_release() {
     #
     # Positional arguments
     #
-    local owner=${1:?Owner name required.}
+    local owner="${1:?Owner name required.}"
     #   A GitHub user or organization.
-    local repo=${2:?Repo name required.}
+    local repo="${2:?Repo name required.}"
     #   A GitHub repository.
-    local release_id=${3:?Release ID required.}
+    local release_id="${3:?Release ID required.}"
     #   The unique ID of the release; see list_releases.
 
     shift 3
@@ -1105,11 +1105,11 @@ release_assets() {
     #
     # Positional arguments
     #
-    local owner=${1:?Owner name required.}
+    local owner="${1:?Owner name required.}"
     #   A GitHub user or organization.
-    local repo=${2:?Repo name required.}
+    local repo="${2:?Repo name required.}"
     #   A GitHub repository.
-    local release_id=${3:?Release ID required.}
+    local release_id="${3:?Release ID required.}"
     #   The unique ID of the release; see list_releases.
     #
     # Keyword arguments
@@ -1143,13 +1143,13 @@ upload_asset() {
     #
     # Positional arguments
     #
-    local owner=${1:?Owner name required.}
+    local owner="${1:?Owner name required.}"
     #   A GitHub user or organization.
-    local repo=${2:?Repo name required.}
+    local repo="${2:?Repo name required.}"
     #   A GitHub repository.
-    local release_id=${3:?Release ID required.}
+    local release_id="${3:?Release ID required.}"
     #   The unique ID of the release; see list_releases.
-    local name=${4:?File name is required.}
+    local name="${4:?File name is required.}"
     #   The file name of the asset.
     #
     # Keyword arguments
