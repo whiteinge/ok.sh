@@ -1,6 +1,7 @@
 <!---
 This README file is generated. Changes will be overwritten.
 -->
+[![Build Status](https://travis-ci.org/whiteinge/octokit.sh.svg?branch=master)](https://travis-ci.org/whiteinge/octokit.sh)
 # A GitHub API client library written in POSIX sh
 
 ## Requirements
@@ -215,7 +216,7 @@ Prompt the user for confirmation
 Usage:
 
     local confirm; _get_confirm
-    (( $confirm )) && printf 'Good to go!\n'
+    [ "$confirm" -eq 1 ] && printf 'Good to go!\n'
 
 If global confirmation is set via `$OCTOKIT_SH_DESTRUCTIVE` then the user
 is not prompted. Assigns the user's confirmation to the `confirm` global
