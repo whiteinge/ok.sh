@@ -312,6 +312,7 @@ _format_json() {
     function isnum(x){ return (x == x + 0) }
     function isbool(x){ if (x == "true" || x == "false") return 1 }
     BEGIN {
+        delete ENVIRON["AWKPATH"]       # GNU addition.
         printf("{")
 
         for (name in ENVIRON) {
