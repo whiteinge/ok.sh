@@ -19,19 +19,26 @@ _main() {
 test_format_json() {
     # Test output without filtering through jq.
 
-    local output expected_out
+    local output
+    local is_fail=0
 
     $SCRIPT -j _format_json foo=Foo bar=123 baz=true qux=Qux=Qux quux='Multi-line
 string' | {
         read -r output
 
-        expected_out='{"baz": true, "quux": "Multi-line\nstring", "foo": "Foo", "qux": "Qux=Qux", "bar": 123}'
+        printf '%s\n' "$output" | grep -q -E '^{' || {
+            printf 'JSON does not start with a { char.\n'; is_fail=1 ;}
+        printf '%s\n' "$output" | grep -q -E '}$' || {
+            printf 'JSON does not end with a } char.\n'; is_fail=1 ;}
+        printf '%s\n' "$output" | grep -q -E '"foo": "Foo"' || {
+            printf 'JSON does not contain "foo": "Foo" text.\n'; is_fail=1 ;}
+        printf '%s\n' "$output" | grep -q -E '"Multi-line\\nstring"' || {
+            printf 'JSON does not have properly formatted multiline string.\n'; is_fail=1 ;}
 
-        if [ "$expected_out" = "$output" ] ; then
+        if [ "$is_fail" -ne 1 ] ; then
             return 0
         else
-            printf 'Expected output does not match output: `%s` != `%s`\n' \
-                "$expected_out" "$output"
+            printf 'Unexpected JSON output: `%s`\n' "$output"
             return 1
         fi
     }
