@@ -544,7 +544,7 @@ status_text: ${status_text}
 "
     while IFS=": " read -r hdr val; do
         # Headers stop at the first blank line.
-        [ "$hdr" == "" ] && break
+        [ "$hdr" = "" ] && break
         val="${val%}"
 
         # Process each header; reformat some to work better with sh tools.
