@@ -61,7 +61,8 @@ export LINFO=4      # Info-level log messages.
 export LDEBUG=5     # Debug-level log messages.
 export LSUMMARY=6   # Summary output.
 
-## Library functions for generating of fetching content from the local file.
+## Help
+# Functions for fetching and formatting help text.
 
 help() {
     # Output the help text for a command
@@ -283,6 +284,9 @@ _helptext() {
     !NF { exit }' "$name"
 }
 
+## Request-response
+# Functions for making HTTP requests and processing HTTP responses.
+
 _format_json() {
     # Create formatted JSON from name=value pairs
     #
@@ -426,8 +430,6 @@ _get_confirm() {
     ! printf '%s\n' "$answer" | grep -Eq "$(locale yesexpr)"
     confirm=$?
 }
-
-## Library functions for sending HTTP requests and processing HTTP responses.
 
 _request() {
     # A wrapper around making HTTP requests with curl
@@ -761,9 +763,11 @@ _delete() {
     }
 }
 
-## GitHub specific functions below.
+## GitHub
+# Friendly functions for common GitHub tasks.
 
-### Authentication and authorization functions.
+### Authorization
+# Perform authentication and authorization.
 
 show_scopes() {
     # Show the permission scopes for the currently authenticated user
@@ -784,7 +788,8 @@ show_scopes() {
     }
 }
 
-### Repository functions.
+### Repository
+# Create, update, delete, list repositories.
 
 org_repos() {
     # List organization repositories
@@ -962,7 +967,8 @@ delete_repo() {
     exit $?
 }
 
-### Releases functions.
+### Releases
+# Create, update, delete, list releases.
 
 list_releases() {
     # List releases for a repository
