@@ -61,7 +61,10 @@ export LINFO=4      # Info-level log messages.
 export LDEBUG=5     # Debug-level log messages.
 export LSUMMARY=6   # Summary output.
 
-## Help
+## Main
+# Generic functions not necessarily specific to working with GitHub.
+
+### Help
 # Functions for fetching and formatting help text.
 
 help() {
@@ -282,7 +285,7 @@ _helptext() {
     !NF { exit }' "$name"
 }
 
-## Request-response
+### Request-response
 # Functions for making HTTP requests and processing HTTP responses.
 
 _format_json() {
