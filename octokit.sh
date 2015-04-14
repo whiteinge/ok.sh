@@ -116,8 +116,6 @@ _all_funcs() {
         fi
     }
 }
-ALL_FUNCS="$(_all_funcs pretty=1)"
-export ALL_FUNCS
 
 _main() {
     # ## Usage
@@ -258,7 +256,7 @@ _helptext() {
     local name=$1
     #   A file name to parse.
 
-    awk '
+    ALL_FUNCS="$(_all_funcs pretty=1)" awk '
     NR == 1 && ! /^#!/ && ! /_main\(\)/ {
         sub(/\s*{\s*$/, "", $0)
         printf("### %s\n\n", $0)
