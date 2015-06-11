@@ -432,6 +432,38 @@ _get_confirm() {
     confirm=$?
 }
 
+_opts_filter() {
+    # Extract common jq filter keyword options and assign to vars
+    #
+    # Usage:
+    #
+    #       local filter
+    #       _opts_filter "$@"
+
+    for arg in "$@"; do
+        case $arg in
+            (filter=*) filter="${arg#*=}";;
+        esac
+    done
+}
+
+_opts_pagination() {
+    # Extract common pagination keyword options and assign to vars
+    #
+    # Usage:
+    #
+    #       local per_page follow_next
+    #       _opts_pagination "$@"
+
+    for arg in "$@"; do
+        case $arg in
+            (per_page=*) per_page="${arg#*=}";;
+            (follow_next=*) follow_next="${arg#*=}";;
+            (follow_next_limit=*) follow_next_limit="${arg#*=}";;
+        esac
+    done
+}
+
 _request() {
     # A wrapper around making HTTP requests with curl
     #
