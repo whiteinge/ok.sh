@@ -47,17 +47,29 @@ string' | {
 test_format_urlencode() {
     # _format_urlencode 
 
-    local output
-    local expected_out='foo=Foo%20Foo&bar=%3CBar%3E%26%2FBar%2F'
+    local output num_params
+    local is_fail=0
 
     $SCRIPT _format_urlencode foo='Foo Foo' bar='<Bar>&/Bar/' | {
         read -r output
 
-        if [ "$expected_out" = "$output" ]; then
+        printf '%s\n' "$output" | grep -q -E 'foo=Foo%20Foo' || {
+            printf 'Urlencoded output malformed foo section.\n'; is_fail=1 ;}
+
+        printf '%s\n' "$output" | grep -q -E 'bar=%3CBar%3E%26%2FBar%2F' || {
+            printf 'Urlencoded output malformed bar section.\n'; is_fail=1 ;}
+
+        num_params="$(printf '%s\n' "$output" | awk -F'&' '{ print NF }')"
+        if [ "$num_params" -ne 2 ] ; then
+            printf 'Urlencoded output has %s sections; expected 2.\n'\
+                "$num_params"
+            is_fail=1
+        fi
+
+        if [ "$is_fail" -ne 1 ] ; then
             return 0
         else
-            printf 'Expected output does not match output: `%s` != `%s`\n' \
-                "$expected_out" "$output"
+            printf 'Unexpected urlencoded output\n' "$output"
             return 1
         fi
     }
