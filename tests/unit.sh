@@ -44,6 +44,25 @@ string' | {
     }
 }
 
+test_format_urlencode() {
+    # _format_urlencode 
+
+    local output
+    local expected_out='foo=Foo%20Foo&bar=%3CBar%3E%26%2FBar%2F'
+
+    $SCRIPT _format_urlencode foo='Foo Foo' bar='<Bar>&/Bar/' | {
+        read -r output
+
+        if [ "$expected_out" = "$output" ]; then
+            return 0
+        else
+            printf 'Expected output does not match output: `%s` != `%s`\n' \
+                "$expected_out" "$output"
+            return 1
+        fi
+    }
+}
+
 test_format_json_jq() {
     # Test output after filtering through jq.
 
