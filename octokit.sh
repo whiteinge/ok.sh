@@ -351,6 +351,8 @@ _format_urlencode() {
     # ```
     # foo=Foo%20Foo&bar=%3CBar%3E%26%2FBar%2F
     # ```
+    #
+    # Ignores pairs if the value begins with an underscore.
 
     _log debug "Formatting ${#} parameters as urlencoded"
 
@@ -367,12 +369,13 @@ _format_urlencode() {
         }
         return res
     }
-    
+
     BEGIN {
         for (i = 0; i <= 255; i += 1) ord[sprintf("%c", i)] = i;
 
         delete ENVIRON["AWKPATH"]       # GNU addition.
         for (name in ENVIRON) {
+            if (substr(name, 1, 1) == "_") continue
             val = ENVIRON[name]
 
             printf("%s%s=%s", sep, name, escape(val))
