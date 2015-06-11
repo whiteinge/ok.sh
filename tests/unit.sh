@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
-# Unit tests for the octokit.sh script.
+# Unit tests for the ok.sh script.
 
-SCRIPT="octokit.sh"
-JQ="${OCTOKIT_SH_JQ_BIN:-jq}"
+SCRIPT="ok.sh"
+JQ="${OK_SH_JQ_BIN:-jq}"
 JQ_V="$(jq --version 2>&1 | awk '{ print $3 }')"
 
 _main() {

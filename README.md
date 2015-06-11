@@ -1,7 +1,7 @@
 <!---
 This README file is generated. Changes will be overwritten.
 -->
-[![Build Status](https://travis-ci.org/whiteinge/octokit.sh.svg?branch=master)](https://travis-ci.org/whiteinge/octokit.sh)
+[![Build Status](https://travis-ci.org/whiteinge/ok.sh.svg?branch=master)](https://travis-ci.org/whiteinge/ok.sh)
 # A GitHub API client library written in POSIX sh
 
 ## Requirements
@@ -27,27 +27,27 @@ Restrict permissions on that file with `chmod 600 ~/.netrc`!
 
 ## Configuration
 
-The following environment variables may be set to customize octokit.sh.
+The following environment variables may be set to customize ok.sh.
 
-* OCTOKIT_SH_URL=https://api.github.com
+* OK_SH_URL=https://api.github.com
   Base URL for GitHub or GitHub Enterprise.
-* OCTOKIT_SH_ACCEPT=application/vnd.github.v3+json
+* OK_SH_ACCEPT=application/vnd.github.v3+json
   The 'Accept' header to send with each request.
-* OCTOKIT_SH_JQ_BIN=jq
+* OK_SH_JQ_BIN=jq
   The name of the jq binary, if installed.
-* OCTOKIT_SH_VERBOSE=0
+* OK_SH_VERBOSE=0
   The debug logging verbosity level. Same as the verbose flag.
-* OCTOKIT_SH_RATE_LIMIT=0
+* OK_SH_RATE_LIMIT=0
   Output current GitHub rate limit information to stderr.
-* OCTOKIT_SH_DESTRUCTIVE=0
+* OK_SH_DESTRUCTIVE=0
   Allow destructive operations without prompting for confirmation.
 
 ## Usage
 
-Usage: `octokit.sh [<options>] (command [<name=value>...])`
+Usage: `ok.sh [<options>] (command [<name=value>...])`
 
-Full help output: `octokit.sh help`
-Command-specific help: `octokit.sh help command`
+Full help output: `ok.sh help`
+Command-specific help: `ok.sh help command`
 
 Flag | Description
 ---- | -----------
@@ -242,7 +242,7 @@ Usage:
     local confirm; _get_confirm
     [ "$confirm" -eq 1 ] && printf 'Good to go!\n'
 
-If global confirmation is set via `$OCTOKIT_SH_DESTRUCTIVE` then the user
+If global confirmation is set via `$OK_SH_DESTRUCTIVE` then the user
 is not prompted. Assigns the user's confirmation to the `confirm` global
 variable. (If this function is called within a function that has a local
 variable of that name, the local variable will be updated instead.)
@@ -276,9 +276,9 @@ Format a querystring to append to an URL or a blank string
 
 Usage:
 
-  local qs
-  _opts_qs "$@"
-  _get "/some/path"
+      local qs
+      _opts_qs "$@"
+      _get "/some/path"
 
 ### _request()
 
@@ -304,7 +304,7 @@ Positional arguments
   The URL path for the HTTP request.
   Must be an absolute path that starts with a `/` or a full URL that
   starts with http(s). Absolute paths will be append to the value in
-  `$OCTOKIT_SH_URL`.
+  `$OK_SH_URL`.
 
 Keyword arguments
 

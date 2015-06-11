@@ -26,31 +26,31 @@
 #
 # The following environment variables may be set to customize ${NAME}.
 #
-# * OCTOKIT_SH_URL=${OCTOKIT_SH_URL}
+# * OK_SH_URL=${OK_SH_URL}
 #   Base URL for GitHub or GitHub Enterprise.
-# * OCTOKIT_SH_ACCEPT=${OCTOKIT_SH_ACCEPT}
+# * OK_SH_ACCEPT=${OK_SH_ACCEPT}
 #   The 'Accept' header to send with each request.
-# * OCTOKIT_SH_JQ_BIN=${OCTOKIT_SH_JQ_BIN}
+# * OK_SH_JQ_BIN=${OK_SH_JQ_BIN}
 #   The name of the jq binary, if installed.
-# * OCTOKIT_SH_VERBOSE=${OCTOKIT_SH_VERBOSE}
+# * OK_SH_VERBOSE=${OK_SH_VERBOSE}
 #   The debug logging verbosity level. Same as the verbose flag.
-# * OCTOKIT_SH_RATE_LIMIT=${OCTOKIT_SH_RATE_LIMIT}
+# * OK_SH_RATE_LIMIT=${OK_SH_RATE_LIMIT}
 #   Output current GitHub rate limit information to stderr.
-# * OCTOKIT_SH_DESTRUCTIVE=${OCTOKIT_SH_DESTRUCTIVE}
+# * OK_SH_DESTRUCTIVE=${OK_SH_DESTRUCTIVE}
 #   Allow destructive operations without prompting for confirmation.
 
 export NAME=$(basename $0)
 export VERSION='0.1.0'
 
-export OCTOKIT_SH_URL=${OCTOKIT_SH_URL:-'https://api.github.com'}
-export OCTOKIT_SH_ACCEPT=${OCTOKIT_SH_ACCEPT:-'application/vnd.github.v3+json'}
-export OCTOKIT_SH_JQ_BIN="${OCTOKIT_SH_JQ_BIN:-jq}"
-export OCTOKIT_SH_VERBOSE="${OCTOKIT_SH_VERBOSE:-0}"
-export OCTOKIT_SH_RATE_LIMIT="${OCTOKIT_SH_RATE_LIMIT:-0}"
-export OCTOKIT_SH_DESTRUCTIVE="${OCTOKIT_SH_DESTRUCTIVE:-0}"
+export OK_SH_URL=${OK_SH_URL:-'https://api.github.com'}
+export OK_SH_ACCEPT=${OK_SH_ACCEPT:-'application/vnd.github.v3+json'}
+export OK_SH_JQ_BIN="${OK_SH_JQ_BIN:-jq}"
+export OK_SH_VERBOSE="${OK_SH_VERBOSE:-0}"
+export OK_SH_RATE_LIMIT="${OK_SH_RATE_LIMIT:-0}"
+export OK_SH_DESTRUCTIVE="${OK_SH_DESTRUCTIVE:-0}"
 
 # Detect if jq is installed.
-type "$OCTOKIT_SH_JQ_BIN" 1>/dev/null 2>/dev/null
+type "$OK_SH_JQ_BIN" 1>/dev/null 2>/dev/null
 NO_JQ=$?
 
 # Customizable logging output.
@@ -167,10 +167,10 @@ _main() {
             exit;;
         j)  NO_JQ=1;;
         q)  quiet=1;;
-        r)  OCTOKIT_SH_RATE_LIMIT=1;;
-        v)  OCTOKIT_SH_VERBOSE=$(( $OCTOKIT_SH_VERBOSE + 1 ));;
+        r)  OK_SH_RATE_LIMIT=1;;
+        v)  OK_SH_VERBOSE=$(( $OK_SH_VERBOSE + 1 ));;
         x)  set -x;;
-        y)  OCTOKIT_SH_DESTRUCTIVE=1;;
+        y)  OK_SH_DESTRUCTIVE=1;;
         esac
     done
     shift $(( $OPTIND - 1 ))
@@ -180,13 +180,13 @@ _main() {
         : ${1:?No command given; see available commands above.}
     fi
 
-    [ $OCTOKIT_SH_VERBOSE -gt 0 ] && exec 4>&2
-    [ $OCTOKIT_SH_VERBOSE -gt 1 ] && exec 5>&2
+    [ $OK_SH_VERBOSE -gt 0 ] && exec 4>&2
+    [ $OK_SH_VERBOSE -gt 1 ] && exec 5>&2
     if [ $quiet -eq 1 ]; then
         exec 1>/dev/null 2>/dev/null
     fi
 
-    if [ "$OCTOKIT_SH_RATE_LIMIT" -eq 1 ] ; then
+    if [ "$OK_SH_RATE_LIMIT" -eq 1 ] ; then
         mkdir -m 700 "$temp_dir" || {
             printf 'failed to create temp_dir\n' >&2; exit 1;
         }
@@ -203,7 +203,7 @@ _main() {
     _log debug "Command ${cmd} exited with ${?}."
 
     # Output any summary messages.
-    if [ "$OCTOKIT_SH_RATE_LIMIT" -eq 1 ] ; then
+    if [ "$OK_SH_RATE_LIMIT" -eq 1 ] ; then
         cat "$summary_fifo" 1>&2 &
         exec 6>&-
     fi
@@ -404,7 +404,7 @@ _filter_json() {
         return
     fi
 
-    "${OCTOKIT_SH_JQ_BIN}" -c -r "${_filter}"
+    "${OK_SH_JQ_BIN}" -c -r "${_filter}"
     [ $? -eq 0 ] || printf 'jq parse error; invalid JSON.\n' 1>&2
 }
 
@@ -454,7 +454,7 @@ _get_confirm() {
     #     local confirm; _get_confirm
     #     [ "$confirm" -eq 1 ] && printf 'Good to go!\n'
     #
-    # If global confirmation is set via `$OCTOKIT_SH_DESTRUCTIVE` then the user
+    # If global confirmation is set via `$OK_SH_DESTRUCTIVE` then the user
     # is not prompted. Assigns the user's confirmation to the `confirm` global
     # variable. (If this function is called within a function that has a local
     # variable of that name, the local variable will be updated instead.)
@@ -466,8 +466,8 @@ _get_confirm() {
 
     local answer
 
-    if [ "$OCTOKIT_SH_DESTRUCTIVE" -eq 1 ] ; then
-        confirm=$OCTOKIT_SH_DESTRUCTIVE
+    if [ "$OK_SH_DESTRUCTIVE" -eq 1 ] ; then
+        confirm=$OK_SH_DESTRUCTIVE
         return
     fi
 
@@ -545,7 +545,7 @@ _request() {
     #   The URL path for the HTTP request.
     #   Must be an absolute path that starts with a `/` or a full URL that
     #   starts with http(s). Absolute paths will be append to the value in
-    #   `$OCTOKIT_SH_URL`.
+    #   `$OK_SH_URL`.
     #
     # Keyword arguments
     #
@@ -560,7 +560,7 @@ _request() {
 
     case $path in
         (http*) : ;;
-        *) path="${OCTOKIT_SH_URL}${path}" ;;
+        *) path="${OK_SH_URL}${path}" ;;
     esac
 
     for arg in "$@"; do
@@ -574,11 +574,11 @@ _request() {
         POST | PUT | PATCH) has_stdin=1;;
     esac
 
-    [[ $OCTOKIT_SH_VERBOSE -eq 3 ]] && trace_curl=1
+    [[ $OK_SH_VERBOSE -eq 3 ]] && trace_curl=1
 
-    [ "$OCTOKIT_SH_VERBOSE" -eq 1 ] && set -x
+    [ "$OK_SH_VERBOSE" -eq 1 ] && set -x
     curl -nsSi \
-        -H "Accept: ${OCTOKIT_SH_ACCEPT}" \
+        -H "Accept: ${OK_SH_ACCEPT}" \
         -H "Content-Type: ${content_type}" \
         ${has_stdin:+--data-binary @-} \
         ${trace_curl:+--trace-ascii /dev/stderr} \
