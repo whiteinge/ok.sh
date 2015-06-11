@@ -851,11 +851,12 @@ org_repos() {
 
     shift 1
 
+    _opts_filter "$@"
+
     for arg in "$@"; do
         case $arg in
             (type=*) type="${arg#*=}";;
             (per_page=*) per_page="${arg#*=}";;
-            (filter=*) filter="${arg#*=}";;
         esac
     done
 
@@ -883,11 +884,7 @@ org_teams() {
 
     shift 1
 
-    for arg in "$@"; do
-        case $arg in
-            (filter=*) filter="${arg#*=}";;
-        esac
-    done
+    _opts_filter "$@"
 
     _get "/orgs/${org}/teams" \
         | _filter_json "${filter}"
@@ -916,11 +913,7 @@ list_repos() {
 
     shift 1
 
-    for arg in "$@"; do
-        case $arg in
-            (filter=*) filter="${arg#*=}";;
-        esac
-    done
+    _opts_filter "$@"
 
     if [ -n "$user" ] ; then
         url="/users/${user}/repos?per_page=100"
@@ -954,12 +947,13 @@ create_repo() {
 
     shift 1
 
+    _opts_filter "$@"
+
     local url organization
 
     for arg in "$@"; do
         case $arg in
             (organization=*) organization="${arg#*=}";;
-            (filter=*) filter="${arg#*=}";;
         esac
     done
 
@@ -1025,11 +1019,7 @@ list_releases() {
 
     shift 2
 
-    for arg in "$@"; do
-        case $arg in
-            (filter=*) filter="${arg#*=}";;
-        esac
-    done
+    _opts_filter "$@"
 
     _get "/repos/${owner}/${repo}/releases" \
         | _filter_json "${filter}"
@@ -1059,11 +1049,7 @@ release() {
 
     shift 3
 
-    for arg in "$@"; do
-        case $arg in
-            (filter=*) filter="${arg#*=}";;
-        esac
-    done
+    _opts_filter "$@"
 
     _get "/repos/${owner}/${repo}/releases/${release_id}" \
         | _filter_json "${filter}"
@@ -1096,11 +1082,7 @@ create_release() {
 
     shift 3
 
-    for arg in "$@"; do
-        case $arg in
-            (filter=*) filter="${arg#*=}";;
-        esac
-    done
+    _opts_filter "$@"
 
     _format_json "tag_name=${tag_name}" "$@" \
         | _post "/repos/${owner}/${repo}/releases" \
@@ -1160,11 +1142,7 @@ release_assets() {
 
     shift 3
 
-    for arg in "$@"; do
-        case $arg in
-            (filter=*) filter="${arg#*=}";;
-        esac
-    done
+    _opts_filter "$@"
 
     _get "/repos/${owner}/${repo}/releases/${release_id}/assets" \
         | _filter_json "$filter"
@@ -1200,11 +1178,7 @@ upload_asset() {
 
     shift 4
 
-    for arg in "$@"; do
-        case $arg in
-            (filter=*) filter="${arg#*=}";;
-        esac
-    done
+    _opts_filter "$@"
 
     local upload_url=$(release "$owner" "$repo" "$release_id" \
         'filter="\(.upload_url)"' | sed -e 's/{?name}/?name='"$name"'/g')
