@@ -64,7 +64,7 @@ Flag | Description
 
 help, show_scopes, org_repos, org_teams, list_repos, create_repo, delete_repo, 
 list_releases, release, create_release, delete_release, release_assets, 
-upload_asset
+upload_asset, list_milestones, list_issues, user_issues, org_issues
 
 ## Table of Contents
 * [help](#help)
@@ -72,9 +72,13 @@ upload_asset
 * [_log](#_log)
 * [_helptext](#_helptext)
 * [_format_json](#_format_json)
+* [_format_urlencode](#_format_urlencode)
 * [_filter_json](#_filter_json)
 * [_get_mime_type](#_get_mime_type)
 * [_get_confirm](#_get_confirm)
+* [_opts_filter](#_opts_filter)
+* [_opts_pagination](#_opts_pagination)
+* [_opts_qs](#_opts_qs)
 * [_request](#_request)
 * [_response](#_response)
 * [_get](#_get)
@@ -92,6 +96,10 @@ upload_asset
 * [delete_release](#delete_release)
 * [release_assets](#release_assets)
 * [upload_asset](#upload_asset)
+* [list_milestones](#list_milestones)
+* [list_issues](#list_issues)
+* [user_issues](#user_issues)
+* [org_issues](#org_issues)
 
 ### help()
 
@@ -178,6 +186,22 @@ Positional arguments
   Each positional arg must be in the format of `name=value` which will be
   added to a single, flat JSON object.
 
+### _format_urlencode()
+
+URL encode and join name=value pairs
+
+Usage:
+```
+_format_urlencode foo='Foo Foo' bar='<Bar>&/Bar/'
+```
+
+Return:
+```
+foo=Foo%20Foo&bar=%3CBar%3E%26%2FBar%2F
+```
+
+Ignores pairs if the value begins with an underscore.
+
 ### _filter_json()
 
 Filter JSON input using jq; outputs raw JSON if jq is not installed
@@ -188,7 +212,7 @@ Usage:
 
 * (stdin)
   JSON input.
-* filter : `$1`
+* _filter : `$1`
   A string of jq filters to apply to the input stream.
 
 ### _get_mime_type()
@@ -227,6 +251,34 @@ Positional arguments
 
 * message : `$1`
   The message to prompt the user with.
+
+### _opts_filter()
+
+Extract common jq filter keyword options and assign to vars
+
+Usage:
+
+      local filter
+      _opts_filter "$@"
+
+### _opts_pagination()
+
+Extract common pagination keyword options and assign to vars
+
+Usage:
+
+      local _follow_next
+      _opts_pagination "$@"
+
+### _opts_qs()
+
+Format a querystring to append to an URL or a blank string
+
+Usage:
+
+  local qs
+  _opts_qs "$@"
+  _get "/some/path"
 
 ### _request()
 
@@ -385,7 +437,7 @@ Usage:
 
     org_repos myorg
     org_repos myorg type=private per_page=10
-    org_repos myorg filter='.[] | "\(.name)\t\(.owner.login)"'
+    org_repos myorg _filter='.[] | "\(.name)\t\(.owner.login)"'
 
 Positional arguments
 
@@ -394,14 +446,11 @@ Positional arguments
 
 Keyword arguments
 
-* type : `all`
-  Filter by repository type. all, public, member, sources, forks, or
-  private.
-* per_page : `100`
-  The number of repositories to return in each single request.
-* filter : `'.[] | "\(.name)\t\(.ssh_url)"'`
-  A jq filter using string-interpolation syntax that is applied to each
-  repository in the return data.
+* _filter : `'.[] | "\(.name)\t\(.ssh_url)"'`
+  A jq filter to apply to the return data.
+
+Querystring arguments may also be passed as keyword arguments:
+per_page, type
 
 ### org_teams()
 
@@ -418,9 +467,8 @@ Positional arguments
 
 Keyword arguments
 
-* filter : `'.[] | "\(.name)\t\(.id)\t\(.permission)"'`
-  A jq filter using string-interpolation syntax that is applied to each
-  team in the return data.
+* _filter : `'.[] | "\(.name)\t\(.id)\t\(.permission)"'`
+  A jq filter to apply to the return data.
 
 ### list_repos()
 
@@ -438,11 +486,11 @@ Positional arguments
 
 Keyword arguments
 
-* filter : `'.[] | "\(.name)\t\(.html_url)"'`
-  A jq filter using string-interpolation syntax that is applied to each
-  repository in the return data.
+* _filter : `'.[] | "\(.name)\t\(.html_url)"'`
+  A jq filter to apply to the return data.
 
-type, sort, direction
+Querystring arguments may also be passed as keyword arguments:
+per_page, type, sort, direction
 
 ### create_repo()
 
@@ -461,8 +509,10 @@ Positional arguments
 
 Keyword arguments
 
-* filter : `'.[] | "\(.name)\t\(.html_url)"'`
+* _filter : `'.[] | "\(.name)\t\(.html_url)"'`
+  A jq filter to apply to the return data.
 
+POST data may also be passed as keyword arguments:
 description, homepage, private, has_issues, has_wiki, has_downloads,
 organization, team_id, auto_init, gitignore_template
 
@@ -501,9 +551,8 @@ Positional arguments
 
 Keyword arguments
 
-* filter : `'.[] | "\(.name)\t\(.id)\t\(.html_url)"'`
-  A jq filter using string-interpolation syntax that is applied to each
-  release in the return data.
+* _filter : `'.[] | "\(.name)\t\(.id)\t\(.html_url)"'`
+  A jq filter to apply to the return data.
 
 ### release()
 
@@ -524,9 +573,8 @@ Positional arguments
 
 Keyword arguments
 
-* filter : `'"\(.author.login)\t\(.published_at)"'`
-  A jq filter using string-interpolation syntax that is applied to each
-  release in the return data.
+* _filter : `'"\(.author.login)\t\(.published_at)"'`
+  A jq filter to apply to the return data.
 
 ### create_release()
 
@@ -548,10 +596,10 @@ Positional arguments
 
 Keyword arguments
 
-* filter : `'"\(.name)\t\(.id)\t\(.html_url)"'`
-  A jq filter using string-interpolation syntax that is applied to the
-  release data.
+* _filter : `'"\(.name)\t\(.id)\t\(.html_url)"'`
+  A jq filter to apply to the return data.
 
+POST data may also be passed as keyword arguments:
 body, draft, name, prerelease, target_commitish
 
 ### delete_release()
@@ -592,9 +640,8 @@ Positional arguments
 
 Keyword arguments
 
-* filter : `'.[] | "\(.id)\t\(.name)\t\(.updated_at)"'`
-  A jq filter using string-interpolation syntax that is applied to each
-  release asset in the return data.
+* _filter : `'.[] | "\(.id)\t\(.name)\t\(.updated_at)"'`
+  A jq filter to apply to the return data.
 
 ### upload_asset()
 
@@ -621,7 +668,110 @@ Positional arguments
 
 Keyword arguments
 
-* filter : `'"\(.state)\t\(.browser_download_url)"'`
-  A jq filter using string-interpolation syntax that is applied to each
-  release asset in the return data.
+* _filter : `'"\(.state)\t\(.browser_download_url)"'`
+  A jq filter to apply to the return data.
+
+### list_milestones()
+
+List milestones for a repository
+
+Usage:
+
+      list_milestones someuser/somerepo
+      list_milestones someuser/somerepo state=closed
+
+Positional arguments
+
+* repository : `$1`
+  A GitHub repository.
+
+Keyword arguments
+
+*  : `_follow_next`
+  Automatically look for a 'Links' header and follow any 'next' URLs.
+*  : `_follow_next_limit`
+  Maximum number of 'next' URLs to follow before stopping.
+* _filter : `'.[] | "\(.id)\t\(.open_issues)/\(.closed_issues)\t\(.title)"'`
+  A jq filter to apply to the return data.
+
+GitHub querystring arguments may also be passed as keyword arguments:
+per_page, state, sort, direction
+
+### list_issues()
+
+List issues for the authenticated user or repository
+
+Usage:
+
+      list_issues
+      list_issues someuser/somerepo
+      list_issues someuser/somerepo state=closed labels=foo,bar
+
+Positional arguments
+
+* repository : `$1`
+  A GitHub repository.
+
+Keyword arguments
+
+*  : `_follow_next`
+  Automatically look for a 'Links' header and follow any 'next' URLs.
+*  : `_follow_next_limit`
+  Maximum number of 'next' URLs to follow before stopping.
+* _filter : `'.[] | "\(.number)\t\(.title)"'`
+  A jq filter to apply to the return data.
+
+GitHub querystring arguments may also be passed as keyword arguments:
+per_page, filter, state, labels, sort, direction, since
+
+### user_issues()
+
+List all issues across owned and member repositories for the authenticated user
+
+Usage:
+
+      user_issues
+      user_issues since=2015-60-11T00:09:00Z
+
+Positional arguments
+
+* repository : `$1`
+  A GitHub repository.
+
+Keyword arguments
+
+*  : `_follow_next`
+  Automatically look for a 'Links' header and follow any 'next' URLs.
+*  : `_follow_next_limit`
+  Maximum number of 'next' URLs to follow before stopping.
+* _filter : `'.[] | "\(.number)\t\(.title)"'`
+  A jq filter to apply to the return data.
+
+GitHub querystring arguments may also be passed as keyword arguments:
+per_page, filter, state, labels, sort, direction, since
+
+### org_issues()
+
+List all issues for a given organization for the authenticated user
+
+Usage:
+
+      org_issues someorg
+
+Positional arguments
+
+* org : `$1`
+  Organization GitHub login or id.
+
+Keyword arguments
+
+*  : `_follow_next`
+  Automatically look for a 'Links' header and follow any 'next' URLs.
+*  : `_follow_next_limit`
+  Maximum number of 'next' URLs to follow before stopping.
+* _filter : `'.[] | "\(.number)\t\(.title)"'`
+  A jq filter to apply to the return data.
+
+GitHub querystring arguments may also be passed as keyword arguments:
+per_page, filter, state, labels, sort, direction, since
 
