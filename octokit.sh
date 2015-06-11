@@ -514,9 +514,9 @@ _opts_qs() {
     #
     # Usage:
     #
-    #   local qs
-    #   _opts_qs "$@"
-    #   _get "/some/path${qs}"
+    #       local qs
+    #       _opts_qs "$@"
+    #       _get "/some/path${qs}"
 
     local querystring=$(_format_urlencode "$@")
     qs="${querystring:+?$querystring}"
