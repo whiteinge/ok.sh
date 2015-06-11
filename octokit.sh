@@ -339,6 +339,49 @@ _format_json() {
     ' | _filter_json
 }
 
+_format_urlencode() {
+    # URL encode and join name=value pairs
+    #
+    # Usage:
+    # ```
+    # _format_urlencode foo='Foo Foo' bar='<Bar>&/Bar/'
+    # ```
+    #
+    # Return:
+    # ```
+    # foo=Foo%20Foo&bar=%3CBar%3E%26%2FBar%2F
+    # ```
+
+    _log debug "Formatting ${#} parameters as urlencoded"
+
+    env -i "$@" awk '
+    function escape(str, c, len, res) {
+        len = length(str)
+        res = ""
+        for (i = 1; i <= len; i += 1) {
+            c = substr(str, i, 1);
+            if (c ~ /[0-9A-Za-z]/)
+                res = res c
+            else
+                res = res "%" sprintf("%02X", ord[c])
+        }
+        return res
+    }
+    
+    BEGIN {
+        for (i = 0; i <= 255; i += 1) ord[sprintf("%c", i)] = i;
+
+        delete ENVIRON["AWKPATH"]       # GNU addition.
+        for (name in ENVIRON) {
+            val = ENVIRON[name]
+
+            printf("%s%s=%s", sep, name, escape(val))
+            sep = "&"
+        }
+    }
+    '
+}
+
 _filter_json() {
     # Filter JSON input using jq; outputs raw JSON if jq is not installed
     #
