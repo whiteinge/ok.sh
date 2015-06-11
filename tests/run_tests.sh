@@ -5,6 +5,7 @@ unit_tests="./unit.sh"
 
 _main() {
     unit_tests
+    exit $FAILED_TESTS
 }
 
 unit_tests() {
@@ -13,6 +14,7 @@ unit_tests() {
 
     for func in $funcs; do
         "$unit_tests" "$func"
+        [ $? -ne 0 ] && FAILED_TESTS=$(( $FAILED_TESTS + 1 ));
     done
 }
 
