@@ -509,6 +509,19 @@ _opts_pagination() {
     done
 }
 
+_opts_qs() {
+    # Format a querystring to append to an URL or a blank string
+    #
+    # Usage:
+    #
+    #   local qs
+    #   _opts_qs "$@"
+    #   _get "/some/path${qs}"
+
+    local querystring=$(_format_urlencode "$@")
+    qs="${querystring:+?$querystring}"
+}
+
 _request() {
     # A wrapper around making HTTP requests with curl
     #
