@@ -898,28 +898,20 @@ org_repos() {
     #
     # Keyword arguments
     #
-    local type=all
-    #   Filter by repository type. all, public, member, sources, forks, or
-    #   private.
-    local per_page=100
-    #   The number of repositories to return in each single request.
     local _filter='.[] | "\(.name)\t\(.ssh_url)"'
     #   A jq filter using string-interpolation syntax that is applied to each
     #   repository in the return data.
+    #
+    # Querystring arguments may also be passed as keyword arguments:
+    # per_page, type
 
     shift 1
+    local qs
 
     _opts_filter "$@"
+    _opts_qs "$@"
 
-    for arg in "$@"; do
-        case $arg in
-            (type=*) type="${arg#*=}";;
-            (_per_page=*) _per_page="${arg#*=}";;
-        esac
-    done
-
-    _get "/orgs/${org}/repos?type=${type}&per_page=${_per_page}" \
-        | _filter_json "${_filter}"
+    _get "/orgs/${org}/repos${qs}" | _filter_json "${_filter}"
 }
 
 org_teams() {
@@ -967,19 +959,22 @@ list_repos() {
     #   A jq filter using string-interpolation syntax that is applied to each
     #   repository in the return data.
     #
-    # type, sort, direction
+    # Querystring arguments may also be passed as keyword arguments:
+    # per_page, type, sort, direction
 
     shift 1
+    local qs
 
     _opts_filter "$@"
+    _opts_qs "$@"
 
     if [ -n "$user" ] ; then
-        url="/users/${user}/repos?per_page=100"
+        url="/users/${user}/repos"
     else
-        url='/user/repos?per_page=100'
+        url='/user/repos'
     fi
 
-    _get "$url" | _filter_json "${_filter}"
+    _get "${url}${qs}" | _filter_json "${_filter}"
 }
 
 create_repo() {
@@ -1000,6 +995,7 @@ create_repo() {
     #
     local _filter='.[] | "\(.name)\t\(.html_url)"'
     #
+    # POST data may also be passed as keyword arguments:
     # description, homepage, private, has_issues, has_wiki, has_downloads,
     # organization, team_id, auto_init, gitignore_template
 
@@ -1136,6 +1132,7 @@ create_release() {
     #   A jq filter using string-interpolation syntax that is applied to the
     #   release data.
     #
+    # POST data may also be passed as keyword arguments:
     # body, draft, name, prerelease, target_commitish
 
     shift 3
