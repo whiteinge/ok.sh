@@ -703,22 +703,26 @@ _get() {
     #
     # Keyword arguments
     #
-    local _follow_next=1
-    #   Whether to automatically look for a 'Links' header and follow any
-    #   'next' URLs found there.
-    local _follow_next_limit=50
-    #   The maximum number of 'next' URLs to follow before stopping.
+    # _follow_next=1
+    #   Automatically look for a 'Links' header and follow any 'next' URLs.
+    # _follow_next_limit=50
+    #   Maximum number of 'next' URLs to follow before stopping.
 
     shift 1
-
     local status_code status_text next_url
 
-    for arg in "$@"; do
-        case $arg in
-            (_follow_next=*) _follow_next="${arg#*=}";;
-            (_follow_next_limit=*) _follow_next_limit="${arg#*=}";;
-        esac
-    done
+    # If the variable is unset or empty set it to a default value. Functions
+    # that call this function can pass these parameters in one of two ways:
+    # explicitly as a keyword arg or implicity by setting variables of the same
+    # names within the local scope.
+    if [ -z ${_follow_next+x} ] || [ -z "${_follow_next}" ]; then
+        local _follow_next=1
+    fi
+    if [ -z ${_follow_next_limit+x} ] || [ -z "${_follow_next_limit}" ]; then
+        local _follow_next_limit=50
+    fi
+
+    _opts_pagination "$@"
 
     _request "$path" | _response status_code status_text Link_next | {
         read -r status_code
