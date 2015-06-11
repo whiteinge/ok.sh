@@ -903,8 +903,7 @@ org_repos() {
     # Keyword arguments
     #
     local _filter='.[] | "\(.name)\t\(.ssh_url)"'
-    #   A jq filter using string-interpolation syntax that is applied to each
-    #   repository in the return data.
+    #   A jq filter to apply to the return data.
     #
     # Querystring arguments may also be passed as keyword arguments:
     # per_page, type
@@ -933,8 +932,7 @@ org_teams() {
     # Keyword arguments
     #
     local _filter='.[] | "\(.name)\t\(.id)\t\(.permission)"'
-    #   A jq filter using string-interpolation syntax that is applied to each
-    #   team in the return data.
+    #   A jq filter to apply to the return data.
 
     shift 1
 
@@ -960,8 +958,7 @@ list_repos() {
     # Keyword arguments
     #
     local _filter='.[] | "\(.name)\t\(.html_url)"'
-    #   A jq filter using string-interpolation syntax that is applied to each
-    #   repository in the return data.
+    #   A jq filter to apply to the return data.
     #
     # Querystring arguments may also be passed as keyword arguments:
     # per_page, type, sort, direction
@@ -998,6 +995,7 @@ create_repo() {
     # Keyword arguments
     #
     local _filter='.[] | "\(.name)\t\(.html_url)"'
+    #   A jq filter to apply to the return data.
     #
     # POST data may also be passed as keyword arguments:
     # description, homepage, private, has_issues, has_wiki, has_downloads,
@@ -1072,8 +1070,7 @@ list_releases() {
     # Keyword arguments
     #
     local _filter='.[] | "\(.name)\t\(.id)\t\(.html_url)"'
-    #   A jq filter using string-interpolation syntax that is applied to each
-    #   release in the return data.
+    #   A jq filter to apply to the return data.
 
     shift 2
 
@@ -1102,8 +1099,7 @@ release() {
     # Keyword arguments
     #
     local _filter='"\(.author.login)\t\(.published_at)"'
-    #   A jq filter using string-interpolation syntax that is applied to each
-    #   release in the return data.
+    #   A jq filter to apply to the return data.
 
     shift 3
 
@@ -1133,8 +1129,7 @@ create_release() {
     # Keyword arguments
     #
     local _filter='"\(.name)\t\(.id)\t\(.html_url)"'
-    #   A jq filter using string-interpolation syntax that is applied to the
-    #   release data.
+    #   A jq filter to apply to the return data.
     #
     # POST data may also be passed as keyword arguments:
     # body, draft, name, prerelease, target_commitish
@@ -1196,8 +1191,7 @@ release_assets() {
     # Keyword arguments
     #
     local _filter='.[] | "\(.id)\t\(.name)\t\(.updated_at)"'
-    #   A jq filter using string-interpolation syntax that is applied to each
-    #   release asset in the return data.
+    #   A jq filter to apply to the return data.
 
     shift 3
 
@@ -1232,8 +1226,7 @@ upload_asset() {
     # Keyword arguments
     #
     local _filter='"\(.state)\t\(.browser_download_url)"'
-    #   A jq filter using string-interpolation syntax that is applied to each
-    #   release asset in the return data.
+    #   A jq filter to apply to the return data.
 
     shift 4
 
@@ -1271,8 +1264,7 @@ list_milestones() {
     local _follow_next_limit
     #   Maximum number of 'next' URLs to follow before stopping.
     local _filter='.[] | "\(.id)\t\(.open_issues)/\(.closed_issues)\t\(.title)"'
-    #   A jq filter using string-interpolation syntax that is applied to each
-    #   issue in the return data.
+    #   A jq filter to apply to the return data.
     #
     # GitHub querystring arguments may also be passed as keyword arguments:
     # per_page, state, sort, direction
@@ -1308,8 +1300,7 @@ list_issues() {
     local _follow_next_limit
     #   Maximum number of 'next' URLs to follow before stopping.
     local _filter='.[] | "\(.number)\t\(.title)"'
-    #   A jq filter using string-interpolation syntax that is applied to each
-    #   issue in the return data.
+    #   A jq filter to apply to the return data.
     #
     # GitHub querystring arguments may also be passed as keyword arguments:
     # per_page, filter, state, labels, sort, direction, since
@@ -1350,8 +1341,7 @@ user_issues() {
     local _follow_next_limit
     #   Maximum number of 'next' URLs to follow before stopping.
     local _filter='.[] | "\(.number)\t\(.title)"'
-    #   A jq filter using string-interpolation syntax that is applied to each
-    #   issue in the return data.
+    #   A jq filter to apply to the return data.
     #
     # GitHub querystring arguments may also be passed as keyword arguments:
     # per_page, filter, state, labels, sort, direction, since
@@ -1385,8 +1375,7 @@ org_issues() {
     local _follow_next_limit
     #   Maximum number of 'next' URLs to follow before stopping.
     local _filter='.[] | "\(.number)\t\(.title)"'
-    #   A jq filter using string-interpolation syntax that is applied to each
-    #   issue in the return data.
+    #   A jq filter to apply to the return data.
     #
     # GitHub querystring arguments may also be passed as keyword arguments:
     # per_page, filter, state, labels, sort, direction, since
