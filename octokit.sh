@@ -1248,4 +1248,157 @@ upload_asset() {
         | _filter_json "$_filter"
 }
 
+### Issues
+# Create, update, edit, delete, list issues and milestones.
+
+list_milestones() {
+    # List milestones for a repository
+    #
+    # Usage:
+    #
+    #       list_milestones someuser/somerepo
+    #       list_milestones someuser/somerepo state=closed
+    #
+    # Positional arguments
+    #
+    local repository="${1:?Repo name required.}"
+    #   A GitHub repository.
+    #
+    # Keyword arguments
+    #
+    local _follow_next
+    #   Automatically look for a 'Links' header and follow any 'next' URLs.
+    local _follow_next_limit
+    #   Maximum number of 'next' URLs to follow before stopping.
+    local _filter='.[] | "\(.id)\t\(.open_issues)/\(.closed_issues)\t\(.title)"'
+    #   A jq filter using string-interpolation syntax that is applied to each
+    #   issue in the return data.
+    #
+    # GitHub querystring arguments may also be passed as keyword arguments:
+    # per_page, state, sort, direction
+
+    shift 1
+    local qs
+
+    _opts_pagination "$@"
+    _opts_filter "$@"
+    _opts_qs "$@"
+
+    _get "/repos/${repository}/milestones${qs}" | _filter_json "$_filter"
+}
+
+list_issues() {
+    # List issues for the authenticated user or repository
+    #
+    # Usage:
+    #
+    #       list_issues
+    #       list_issues someuser/somerepo
+    #       list_issues someuser/somerepo state=closed labels=foo,bar
+    #
+    # Positional arguments
+    #
+    local repository=$1
+    #   A GitHub repository.
+    #
+    # Keyword arguments
+    #
+    local _follow_next
+    #   Automatically look for a 'Links' header and follow any 'next' URLs.
+    local _follow_next_limit
+    #   Maximum number of 'next' URLs to follow before stopping.
+    local _filter='.[] | "\(.number)\t\(.title)"'
+    #   A jq filter using string-interpolation syntax that is applied to each
+    #   issue in the return data.
+    #
+    # GitHub querystring arguments may also be passed as keyword arguments:
+    # per_page, filter, state, labels, sort, direction, since
+
+    shift 1
+    local url qs
+
+    _opts_pagination "$@"
+    _opts_filter "$@"
+    _opts_qs "$@"
+
+    if [ -n "$repository" ] ; then
+        url="/repos/${repository}/issues"
+    else
+        url='/user/issues'
+    fi
+
+    _get "${url}${qs}" | _filter_json "$_filter"
+}
+
+user_issues() {
+    # List all issues across owned and member repositories for the authenticated user
+    #
+    # Usage:
+    #
+    #       user_issues
+    #       user_issues since=2015-60-11T00:09:00Z
+    #
+    # Positional arguments
+    #
+    local repository=$1
+    #   A GitHub repository.
+    #
+    # Keyword arguments
+    #
+    local _follow_next
+    #   Automatically look for a 'Links' header and follow any 'next' URLs.
+    local _follow_next_limit
+    #   Maximum number of 'next' URLs to follow before stopping.
+    local _filter='.[] | "\(.number)\t\(.title)"'
+    #   A jq filter using string-interpolation syntax that is applied to each
+    #   issue in the return data.
+    #
+    # GitHub querystring arguments may also be passed as keyword arguments:
+    # per_page, filter, state, labels, sort, direction, since
+
+    shift 1
+    local qs
+
+    _opts_pagination "$@"
+    _opts_filter "$@"
+    _opts_qs "$@"
+
+    _get "/issues${qs}" | _filter_json "$_filter"
+}
+
+org_issues() {
+    # List all issues for a given organization for the authenticated user
+    #
+    # Usage:
+    #
+    #       org_issues someorg
+    #
+    # Positional arguments
+    #
+    local org="${1:?Organization name required.}"
+    #   Organization GitHub login or id.
+    #
+    # Keyword arguments
+    #
+    local _follow_next
+    #   Automatically look for a 'Links' header and follow any 'next' URLs.
+    local _follow_next_limit
+    #   Maximum number of 'next' URLs to follow before stopping.
+    local _filter='.[] | "\(.number)\t\(.title)"'
+    #   A jq filter using string-interpolation syntax that is applied to each
+    #   issue in the return data.
+    #
+    # GitHub querystring arguments may also be passed as keyword arguments:
+    # per_page, filter, state, labels, sort, direction, since
+
+    shift 1
+    local qs
+
+    _opts_pagination "$@"
+    _opts_filter "$@"
+    _opts_qs "$@"
+
+    _get "/orgs/${org}/issues${qs}" | _filter_json "$_filter"
+}
+
 _main "$@"
