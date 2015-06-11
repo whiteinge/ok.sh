@@ -391,7 +391,7 @@ _filter_json() {
     #
     # * (stdin)
     #   JSON input.
-    local filter=$1
+    local _filter=$1
     #   A string of jq filters to apply to the input stream.
 
     _log debug 'Filtering JSON.'
@@ -401,7 +401,7 @@ _filter_json() {
         return
     fi
 
-    "${OCTOKIT_SH_JQ_BIN}" -c -r "${filter}"
+    "${OCTOKIT_SH_JQ_BIN}" -c -r "${_filter}"
     [ $? -eq 0 ] || printf 'jq parse error; invalid JSON.\n' 1>&2
 }
 
@@ -485,7 +485,7 @@ _opts_filter() {
 
     for arg in "$@"; do
         case $arg in
-            (filter=*) filter="${arg#*=}";;
+            (_filter=*) _filter="${arg#*=}";;
         esac
     done
 }
@@ -495,14 +495,13 @@ _opts_pagination() {
     #
     # Usage:
     #
-    #       local per_page follow_next
+    #       local _follow_next
     #       _opts_pagination "$@"
 
     for arg in "$@"; do
         case $arg in
-            (per_page=*) per_page="${arg#*=}";;
-            (follow_next=*) follow_next="${arg#*=}";;
-            (follow_next_limit=*) follow_next_limit="${arg#*=}";;
+            (_follow_next=*) _follow_next="${arg#*=}";;
+            (_follow_next_limit=*) _follow_next_limit="${arg#*=}";;
         esac
     done
 }
@@ -678,8 +677,8 @@ _get() {
     # Usage:
     #
     #     _get /some/path
-    #     _get /some/path follow_next=0
-    #     _get /some/path follow_next_limit=200 | jq -c .
+    #     _get /some/path _follow_next=0
+    #     _get /some/path _follow_next_limit=200 | jq -c .
     #
     # Positional arguments
     #
@@ -688,10 +687,10 @@ _get() {
     #
     # Keyword arguments
     #
-    local follow_next=1
+    local _follow_next=1
     #   Whether to automatically look for a 'Links' header and follow any
     #   'next' URLs found there.
-    local follow_next_limit=50
+    local _follow_next_limit=50
     #   The maximum number of 'next' URLs to follow before stopping.
 
     shift 1
@@ -700,8 +699,8 @@ _get() {
 
     for arg in "$@"; do
         case $arg in
-            (follow_next=*) follow_next="${arg#*=}";;
-            (follow_next_limit=*) follow_next_limit="${arg#*=}";;
+            (_follow_next=*) _follow_next="${arg#*=}";;
+            (_follow_next_limit=*) _follow_next_limit="${arg#*=}";;
         esac
     done
 
@@ -721,13 +720,13 @@ _get() {
         # Output response body.
         cat
 
-        [ "$follow_next" -eq 1 ] || return
+        [ "$_follow_next" -eq 1 ] || return
 
-        _log info "Remaining next link follows: ${follow_next_limit}"
-        if [ -n "$next_url" ] && [ $follow_next_limit -gt 0 ] ; then
-            follow_next_limit=$(( $follow_next_limit - 1 ))
+        _log info "Remaining next link follows: ${_follow_next_limit}"
+        if [ -n "$next_url" ] && [ $_follow_next_limit -gt 0 ] ; then
+            _follow_next_limit=$(( $_follow_next_limit - 1 ))
 
-            _get "$next_url" "follow_next_limit=${follow_next_limit}"
+            _get "$next_url" "_follow_next_limit=${_follow_next_limit}"
         fi
     }
 }
@@ -874,7 +873,7 @@ org_repos() {
     #
     #     org_repos myorg
     #     org_repos myorg type=private per_page=10
-    #     org_repos myorg filter='.[] | "\(.name)\t\(.owner.login)"'
+    #     org_repos myorg _filter='.[] | "\(.name)\t\(.owner.login)"'
     #
     # Positional arguments
     #
@@ -888,7 +887,7 @@ org_repos() {
     #   private.
     local per_page=100
     #   The number of repositories to return in each single request.
-    local filter='.[] | "\(.name)\t\(.ssh_url)"'
+    local _filter='.[] | "\(.name)\t\(.ssh_url)"'
     #   A jq filter using string-interpolation syntax that is applied to each
     #   repository in the return data.
 
@@ -899,12 +898,12 @@ org_repos() {
     for arg in "$@"; do
         case $arg in
             (type=*) type="${arg#*=}";;
-            (per_page=*) per_page="${arg#*=}";;
+            (_per_page=*) _per_page="${arg#*=}";;
         esac
     done
 
-    _get "/orgs/${org}/repos?type=${type}&per_page=${per_page}" \
-        | _filter_json "${filter}"
+    _get "/orgs/${org}/repos?type=${type}&per_page=${_per_page}" \
+        | _filter_json "${_filter}"
 }
 
 org_teams() {
@@ -921,7 +920,7 @@ org_teams() {
     #
     # Keyword arguments
     #
-    local filter='.[] | "\(.name)\t\(.id)\t\(.permission)"'
+    local _filter='.[] | "\(.name)\t\(.id)\t\(.permission)"'
     #   A jq filter using string-interpolation syntax that is applied to each
     #   team in the return data.
 
@@ -930,7 +929,7 @@ org_teams() {
     _opts_filter "$@"
 
     _get "/orgs/${org}/teams" \
-        | _filter_json "${filter}"
+        | _filter_json "${_filter}"
 }
 
 list_repos() {
@@ -948,7 +947,7 @@ list_repos() {
     #
     # Keyword arguments
     #
-    local filter='.[] | "\(.name)\t\(.html_url)"'
+    local _filter='.[] | "\(.name)\t\(.html_url)"'
     #   A jq filter using string-interpolation syntax that is applied to each
     #   repository in the return data.
     #
@@ -964,7 +963,7 @@ list_repos() {
         url='/user/repos?per_page=100'
     fi
 
-    _get "$url" | _filter_json "${filter}"
+    _get "$url" | _filter_json "${_filter}"
 }
 
 create_repo() {
@@ -983,7 +982,7 @@ create_repo() {
     #
     # Keyword arguments
     #
-    local filter='.[] | "\(.name)\t\(.html_url)"'
+    local _filter='.[] | "\(.name)\t\(.html_url)"'
     #
     # description, homepage, private, has_issues, has_wiki, has_downloads,
     # organization, team_id, auto_init, gitignore_template
@@ -1006,7 +1005,7 @@ create_repo() {
         url='/user/repos'
     fi
 
-    _format_json "name=${name}" "$@" | _post "$url" | _filter_json "${filter}"
+    _format_json "name=${name}" "$@" | _post "$url" | _filter_json "${_filter}"
 }
 
 delete_repo() {
@@ -1056,7 +1055,7 @@ list_releases() {
     #
     # Keyword arguments
     #
-    local filter='.[] | "\(.name)\t\(.id)\t\(.html_url)"'
+    local _filter='.[] | "\(.name)\t\(.id)\t\(.html_url)"'
     #   A jq filter using string-interpolation syntax that is applied to each
     #   release in the return data.
 
@@ -1065,7 +1064,7 @@ list_releases() {
     _opts_filter "$@"
 
     _get "/repos/${owner}/${repo}/releases" \
-        | _filter_json "${filter}"
+        | _filter_json "${_filter}"
 }
 
 release() {
@@ -1086,7 +1085,7 @@ release() {
     #
     # Keyword arguments
     #
-    local filter='"\(.author.login)\t\(.published_at)"'
+    local _filter='"\(.author.login)\t\(.published_at)"'
     #   A jq filter using string-interpolation syntax that is applied to each
     #   release in the return data.
 
@@ -1095,7 +1094,7 @@ release() {
     _opts_filter "$@"
 
     _get "/repos/${owner}/${repo}/releases/${release_id}" \
-        | _filter_json "${filter}"
+        | _filter_json "${_filter}"
 }
 
 create_release() {
@@ -1117,7 +1116,7 @@ create_release() {
     #
     # Keyword arguments
     #
-    local filter='"\(.name)\t\(.id)\t\(.html_url)"'
+    local _filter='"\(.name)\t\(.id)\t\(.html_url)"'
     #   A jq filter using string-interpolation syntax that is applied to the
     #   release data.
     #
@@ -1129,7 +1128,7 @@ create_release() {
 
     _format_json "tag_name=${tag_name}" "$@" \
         | _post "/repos/${owner}/${repo}/releases" \
-        | _filter_json "${filter}"
+        | _filter_json "${_filter}"
 }
 
 delete_release() {
@@ -1179,7 +1178,7 @@ release_assets() {
     #
     # Keyword arguments
     #
-    local filter='.[] | "\(.id)\t\(.name)\t\(.updated_at)"'
+    local _filter='.[] | "\(.id)\t\(.name)\t\(.updated_at)"'
     #   A jq filter using string-interpolation syntax that is applied to each
     #   release asset in the return data.
 
@@ -1188,7 +1187,7 @@ release_assets() {
     _opts_filter "$@"
 
     _get "/repos/${owner}/${repo}/releases/${release_id}/assets" \
-        | _filter_json "$filter"
+        | _filter_json "$_filter"
 }
 
 upload_asset() {
@@ -1215,7 +1214,7 @@ upload_asset() {
     #
     # Keyword arguments
     #
-    local filter='"\(.state)\t\(.browser_download_url)"'
+    local _filter='"\(.state)\t\(.browser_download_url)"'
     #   A jq filter using string-interpolation syntax that is applied to each
     #   release asset in the return data.
 
@@ -1229,7 +1228,7 @@ upload_asset() {
     : ${upload_url:?Upload URL could not be retrieved.}
 
     _post "$upload_url" filename="$name" \
-        | _filter_json "$filter"
+        | _filter_json "$_filter"
 }
 
 _main "$@"
