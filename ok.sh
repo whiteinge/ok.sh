@@ -1303,7 +1303,8 @@ list_issues() {
     #   A jq filter to apply to the return data.
     #
     # GitHub querystring arguments may also be passed as keyword arguments:
-    # per_page, filter, state, labels, sort, direction, since
+    # per_page, milestone, state, assignee, creator, mentioned, labels, sort,
+    # direction, since
 
     shift 1
     local url qs
