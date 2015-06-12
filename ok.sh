@@ -1263,7 +1263,7 @@ list_milestones() {
     #   Automatically look for a 'Links' header and follow any 'next' URLs.
     local _follow_next_limit
     #   Maximum number of 'next' URLs to follow before stopping.
-    local _filter='.[] | "\(.id)\t\(.open_issues)/\(.closed_issues)\t\(.title)"'
+    local _filter='.[] | "\(.number)\t\(.open_issues)/\(.closed_issues)\t\(.title)"'
     #   A jq filter to apply to the return data.
     #
     # GitHub querystring arguments may also be passed as keyword arguments:
