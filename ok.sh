@@ -94,22 +94,26 @@ _all_funcs() {
     # Keyword arguments
     #
     local pretty=1
-    #   0 output one function per line; 1 output a formatted paragraph.
+    #   `0` output one function per line; `1` output a formatted paragraph.
     local public=1
-    #   0 output all functions; 1 output only public functions.
+    #   `0` do not output public functions.
+    local private=1
+    #   `0` do not output private functions.
 
     for arg in "$@"; do
         case $arg in
             (pretty=*) pretty="${arg#*=}";;
             (public=*) public="${arg#*=}";;
+            (private=*) private="${arg#*=}";;
         esac
     done
 
-    awk -v public="$public" '
-        BEGIN { if (public) is_private="^_"; else is_private="*"; }
-
-        $0 !~ is_private && /^[a-zA-Z0-9_]+\s*\(\)/ {
-            sub(/\(\)$/, "", $1); print $1
+    awk -v public="$public" -v private="$private" '
+        /^[a-zA-Z0-9_]+\s*\(\)/ {
+            sub(/\(\)$/, "", $1)
+            if (!public && substr($1, 1, 1) != "_") next
+            if (!private && substr($1, 1, 1) == "_") next
+            print $1
         }
     ' $0 | {
         if [ "$pretty" -eq 1 ] ; then
