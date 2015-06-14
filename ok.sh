@@ -123,10 +123,15 @@ _all_funcs() {
 _main() {
     # ## Usage
     #
-    # Usage: `${NAME} [<options>] (command [<name=value>...])`
+    # Usage: `${NAME} [<flags>] (command [<arg>, <name=value>...])`
     #
     # Full help output: `${NAME} help`
-    # Command-specific help: `${NAME} help command`
+    #
+    # Each `${NAME}` command accepts zero or more positional arguments and zero
+    # or more keyword arguments. View the specific help text for each command:
+    # `${NAME} help command`
+    #
+    # Flags _must_ be the first argument to `${NAME}`, before `command`.
     #
     # Flag | Description
     # ---- | -----------
