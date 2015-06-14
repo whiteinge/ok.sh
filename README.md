@@ -46,11 +46,13 @@ The following environment variables may be set to customize ok.sh.
 
 Usage: `ok.sh [<flags>] (command [<arg>, <name=value>...])`
 
-Full help output: `ok.sh help`
+      ok.sh -h              # Short, usage help text.
+      ok.sh help            # All help text. Warning: long!
+      ok.sh help command    # Command-specific help text.
+      ok.sh command         # Run a command with and without args.
+      ok.sh command foo bar baz=Baz qux='Qux arg here'
 
-Each `ok.sh` command accepts zero or more positional arguments and zero
-or more keyword arguments. View the specific help text for each command:
-`ok.sh help command`
+See the full list of commands below.
 
 Flags _must_ be the first argument to `ok.sh`, before `command`.
 
