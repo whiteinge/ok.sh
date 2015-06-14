@@ -42,6 +42,8 @@ The following environment variables may be set to customize ok.sh.
 * OK_SH_DESTRUCTIVE=0
   Allow destructive operations without prompting for confirmation.
 
+### _main()
+
 ## Usage
 
 Usage: `ok.sh [<flags>] (command [<arg>, <name=value>...])`
