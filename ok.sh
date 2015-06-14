@@ -129,11 +129,13 @@ _main() {
     #
     # Usage: `${NAME} [<flags>] (command [<arg>, <name=value>...])`
     #
-    # Full help output: `${NAME} help`
+    #       ${NAME} -h              # Short, usage help text.
+    #       ${NAME} help            # All help text. Warning: long!
+    #       ${NAME} help command    # Command-specific help text.
+    #       ${NAME} command         # Run a command with and without args.
+    #       ${NAME} command foo bar baz=Baz qux='Qux arg here'
     #
-    # Each `${NAME}` command accepts zero or more positional arguments and zero
-    # or more keyword arguments. View the specific help text for each command:
-    # `${NAME} help command`
+    # See the full list of commands below.
     #
     # Flags _must_ be the first argument to `${NAME}`, before `command`.
     #
