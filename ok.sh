@@ -10,12 +10,12 @@
 #
 # * jq <http://stedolan.github.io/jq/> (tested against 1.3)
 #   If jq is not installed commands will output raw JSON; if jq is installed
-#   commands can be pretty-printed for use with other shell tools.
+#   the output will be formatted and filtered for use with other shell tools.
 #
 # ## Setup
 #
-# Authentication credentials are read from a ~/.netrc file with the following
-# format. Generate the token on GitHub under Account Settings -> Applications.
+# Authentication credentials are read from a `~/.netrc` file.
+# Generate the token on GitHub under "Account Settings -> Applications".
 # Restrict permissions on that file with `chmod 600 ~/.netrc`!
 #
 #     machine api.github.com
@@ -148,9 +148,13 @@ _main() {
     # -x   | Enable xtrace debug logging.
     # -y   | Answer 'yes' to any prompts.
     #
-    # ## Available commands
+    # ## Utility and request/response commands
     #
-    # ${ALL_FUNCS}
+    # ${UTIL_FUNCS}
+    #
+    # ## GitHub commands
+    #
+    # ${GH_FUNCS}
 
     local cmd ret opt OPTARG OPTIND
     local quiet=0
@@ -268,7 +272,9 @@ _helptext() {
     local name=$1
     #   A file name to parse.
 
-    ALL_FUNCS="$(_all_funcs pretty=1)" awk '
+    GH_FUNCS="$(_all_funcs pretty=1 private=0)" \
+    UTIL_FUNCS="$(_all_funcs pretty=1 public=0)" \
+        awk '
     NR == 1 && ! /^#!/ && ! /_main\(\)/ {
         sub(/\s*{\s*$/, "", $0)
         printf("### %s\n\n", $0)
