@@ -1219,6 +1219,8 @@ release_assets() {
 upload_asset() {
     # Upload a release asset
     #
+    # Note, this command requires `jq` to find the release `upload_url`.
+    #
     # Usage:
     #
     #     upload_asset username reponame 1087938 \
