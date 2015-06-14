@@ -874,7 +874,7 @@ show_scopes() {
     #
     # Usage:
     #
-    #     show_authorizations
+    #     show_scopes
 
     local oauth_scopes
 
