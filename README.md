@@ -13,12 +13,12 @@ This README file is generated. Changes will be overwritten.
 
 * jq <http://stedolan.github.io/jq/> (tested against 1.3)
   If jq is not installed commands will output raw JSON; if jq is installed
-  commands can be pretty-printed for use with other shell tools.
+  the output will be formatted and filtered for use with other shell tools.
 
 ## Setup
 
-Authentication credentials are read from a ~/.netrc file with the following
-format. Generate the token on GitHub under Account Settings -> Applications.
+Authentication credentials are read from a `~/.netrc` file.
+Generate the token on GitHub under "Account Settings -> Applications".
 Restrict permissions on that file with `chmod 600 ~/.netrc`!
 
     machine api.github.com
@@ -44,10 +44,15 @@ The following environment variables may be set to customize ok.sh.
 
 ## Usage
 
-Usage: `ok.sh [<options>] (command [<name=value>...])`
+Usage: `ok.sh [<flags>] (command [<arg>, <name=value>...])`
 
 Full help output: `ok.sh help`
-Command-specific help: `ok.sh help command`
+
+Each `ok.sh` command accepts zero or more positional arguments and zero
+or more keyword arguments. View the specific help text for each command:
+`ok.sh help command`
+
+Flags _must_ be the first argument to `ok.sh`, before `command`.
 
 Flag | Description
 ---- | -----------
@@ -60,7 +65,13 @@ Flag | Description
 -x   | Enable xtrace debug logging.
 -y   | Answer 'yes' to any prompts.
 
-## Available commands
+## Utility and request/response commands
+
+_all_funcs, _main, _log, _helptext, _format_json, _format_urlencode, 
+_filter_json, _get_mime_type, _get_confirm, _opts_filter, _opts_pagination, 
+_opts_qs, _request, _response, _get, _post, _delete
+
+## GitHub commands
 
 help, show_scopes, org_repos, org_teams, list_repos, create_repo, delete_repo, 
 list_releases, release, create_release, delete_release, release_assets, 
@@ -121,9 +132,11 @@ List all functions found in the current file in the order they appear
 Keyword arguments
 
 * pretty : `1`
-  0 output one function per line; 1 output a formatted paragraph.
+  `0` output one function per line; `1` output a formatted paragraph.
 * public : `1`
-  0 output all functions; 1 output only public functions.
+  `0` do not output public functions.
+* private : `1`
+  `0` do not output private functions.
 
 ### _log()
 
@@ -427,7 +440,7 @@ Show the permission scopes for the currently authenticated user
 
 Usage:
 
-    show_authorizations
+    show_scopes
 
 ### org_repos()
 
@@ -647,6 +660,8 @@ Keyword arguments
 
 Upload a release asset
 
+Note, this command requires `jq` to find the release `upload_url`.
+
 Usage:
 
     upload_asset username reponame 1087938 \
@@ -691,7 +706,7 @@ Keyword arguments
   Automatically look for a 'Links' header and follow any 'next' URLs.
 *  : `_follow_next_limit`
   Maximum number of 'next' URLs to follow before stopping.
-* _filter : `'.[] | "\(.id)\t\(.open_issues)/\(.closed_issues)\t\(.title)"'`
+* _filter : `'.[] | "\(.number)\t\(.open_issues)/\(.closed_issues)\t\(.title)"'`
   A jq filter to apply to the return data.
 
 GitHub querystring arguments may also be passed as keyword arguments:
@@ -722,7 +737,8 @@ Keyword arguments
   A jq filter to apply to the return data.
 
 GitHub querystring arguments may also be passed as keyword arguments:
-per_page, filter, state, labels, sort, direction, since
+per_page, milestone, state, assignee, creator, mentioned, labels, sort,
+direction, since
 
 ### user_issues()
 
@@ -774,5 +790,4 @@ Keyword arguments
 
 GitHub querystring arguments may also be passed as keyword arguments:
 per_page, filter, state, labels, sort, direction, since
-
 
