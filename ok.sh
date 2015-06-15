@@ -61,10 +61,10 @@ export LINFO=4      # Info-level log messages.
 export LDEBUG=5     # Debug-level log messages.
 export LSUMMARY=6   # Summary output.
 
-## Main
+# ## Main
 # Generic functions not necessarily specific to working with GitHub.
 
-### Help
+# ### Help
 # Functions for fetching and formatting help text.
 
 help() {
@@ -285,7 +285,7 @@ _helptext() {
     !NF { exit }'
 }
 
-### Request-response
+# ### Request-response
 # Functions for making HTTP requests and processing HTTP responses.
 
 _format_json() {
@@ -858,10 +858,10 @@ _delete() {
     }
 }
 
-## GitHub
+# ## GitHub
 # Friendly functions for common GitHub tasks.
 
-### Authorization
+# ### Authorization
 # Perform authentication and authorization.
 
 show_scopes() {
@@ -883,7 +883,7 @@ show_scopes() {
     }
 }
 
-### Repository
+# ### Repository
 # Create, update, delete, list repositories.
 
 org_repos() {
@@ -1050,7 +1050,7 @@ delete_repo() {
     exit $?
 }
 
-### Releases
+# ### Releases
 # Create, update, delete, list releases.
 
 list_releases() {
@@ -1243,7 +1243,7 @@ upload_asset() {
         | _filter_json "$_filter"
 }
 
-### Issues
+# ### Issues
 # Create, update, edit, delete, list issues and milestones.
 
 list_milestones() {
