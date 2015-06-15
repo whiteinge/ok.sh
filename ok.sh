@@ -84,7 +84,7 @@ help() {
     else
         _helptext < $0
         printf '\n'
-        help _main
+        help __main
     fi
 }
 
@@ -109,7 +109,7 @@ _all_funcs() {
     done
 
     awk -v public="$public" -v private="$private" '
-        /^[a-zA-Z0-9_]+\s*\(\)/ {
+        $1 !~ /^__/ && /^[a-zA-Z0-9_]+\s*\(\)/ {
             sub(/\(\)$/, "", $1)
             if (!public && substr($1, 1, 1) != "_") next
             if (!private && substr($1, 1, 1) == "_") next
@@ -124,7 +124,7 @@ _all_funcs() {
     }
 }
 
-_main() {
+__main() {
     # ## Usage
     #
     # Usage: `${NAME} [<flags>] (command [<arg>, <name=value>...])`
@@ -177,7 +177,11 @@ _main() {
         case $opt in
         V)  printf 'Version: %s\n' $VERSION
             exit;;
-        h) help _main
+        h) help __main
+            printf '\nAvailable commands:\n\n'
+            _all_funcs public=0
+            printf '\n'
+            _all_funcs private=0
             printf '\n'
             exit;;
         j)  NO_JQ=1;;
@@ -191,8 +195,9 @@ _main() {
     shift $(( $OPTIND - 1 ))
 
     if [ -z "$1" ] ; then
-        help _main 1>&2; printf '\n'
-        : ${1:?No command given; see available commands above.}
+        printf 'No command given. Available commands:\n\n%s\n' \
+            "$(_all_funcs)" 1>&2
+        exit 1
     fi
 
     [ $OK_SH_VERBOSE -gt 0 ] && exec 4>&2
@@ -1400,4 +1405,4 @@ org_issues() {
     _get "/orgs/${org}/issues${qs}" | _filter_json "$_filter"
 }
 
-_main "$@"
+__main "$@"
