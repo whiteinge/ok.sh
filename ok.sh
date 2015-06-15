@@ -82,7 +82,7 @@ help() {
     if [ $# -gt 0 ]; then
         awk -v fname="^$fname" '$0 ~ fname, /^}/ { print }' $0 | _helptext
     else
-        _helptext $0
+        _helptext < $0
         printf '\n'
         help _main
     fi
@@ -267,11 +267,6 @@ _helptext() {
     #
     # * (stdin)
     #   The text of a function body to parse.
-    #
-    # Positional arguments
-    #
-    local name=$1
-    #   A file name to parse.
 
     GH_FUNCS="$(_all_funcs pretty=1 private=0)" \
     UTIL_FUNCS="$(_all_funcs pretty=1 public=0)" \
@@ -294,7 +289,7 @@ _helptext() {
         sub(/:.*$/, "", val)
         print "* " name " : `" val "`"
     }
-    !NF { exit }' "$name"
+    !NF { exit }'
 }
 
 ### Request-response
