@@ -68,10 +68,11 @@ export LSUMMARY=6   # Summary output.
 # Functions for fetching and formatting help text.
 
 help() {
-    # Output the help text for a command
+    # Output the help text for a command or for the whole file
     #
     # Usage:
     #
+    #     help
     #     help commandname
     #
     # Positional arguments
@@ -79,13 +80,61 @@ help() {
     local fname=$1
     #   Function name to search for; if omitted searches whole file.
 
-    if [ $# -gt 0 ]; then
-        awk -v fname="^$fname" '$0 ~ fname, /^}/ { print }' $0 | _helptext
-    else
-        _helptext < $0
-        printf '\n'
-        help __main
-    fi
+    awk -v fname="$fname" '
+    # Look for env var references in a string and interpolate the values.
+    function format(line) {
+        while(match(line, "[$]{[^}]*}")) {
+            var=substr(line, RSTART+2, RLENGTH -3)
+            gsub("[$]{"var"}", ENVIRON[var], line)
+        }
+        gsub(/^\s*#\s?/, "", line)
+        return line
+    }
+
+    # Init state tracking vars.
+    BEGIN { split($0, funcs, "") }
+    !NF { in_section=0; in_function=0; is_heading=1 }
+
+    # Track when inside a section or function.
+    /^# #+/ { in_section=1 }
+    $1 !~ /^__/ && /^[a-zA-Z0-9_]+\s*\(\)/ { in_function=1 }
+
+    # Remove leading comments.
+    in_section || in_function { sub(/^\s*#\s?/, "", $0) }
+
+    # Extract only function name.
+    in_function && is_heading {
+        sub(/\(\)\s?{\s*$/, "", $0); funcs[length(funcs)] = $0
+    }
+
+    # Finally, output some stuff...
+
+    # Output function help text, if requested, then exit early.
+    print_func && !in_function { exit }
+    is_heading && fname && fname == $0 { print_func = 1 }
+    in_function && /^\s*local/ {
+        # Format variable declarations nicely.
+        sub(/^\s*local /, "")
+        idx = index($0, "=")
+        name = substr($0, 1, idx - 1)
+        val = substr($0, idx + 1)
+        sub(/"{0,1}\${/, "$", val)
+        sub(/:.*$/, "", val)
+        $0 = "* " name " : `" val "`"
+    }
+    print_func { print format($0) }
+
+    # Otherwise output the whole help text.
+    # Make function names into headings.
+    !fname && in_function && is_heading {
+        sub(/^/, "#### ", $0); sub(/$/, "()\n", $0)
+    }
+
+    # Output blank line under heading.
+    (in_section || in_function) && is_heading { print ""; is_heading=0 }
+
+    !fname && (in_section || in_function) { print format($0) }
+    ' $0
 }
 
 _all_funcs() {
@@ -246,43 +295,6 @@ _log() {
     esac
 
     printf '%s %s: %s\n' "$NAME" "$lname" "$message" 1>&$level
-}
-
-_helptext() {
-    # Extract contiguous lines of comments and function params as help text
-    #
-    # Indentation will be ignored. She-bangs will be ignored. Local variable
-    # declarations and their default values can also be pulled in as
-    # documentation. Exits upon encountering the first blank line.
-    #
-    # Exported environment variables can be used for string interpolation in
-    # the extracted commented text.
-    #
-    # Input
-    #
-    # * (stdin)
-    #   The text of a function body to parse.
-
-    awk '
-    NR != 1 && /^\s*#/ {
-        line=$0
-        while(match(line, "[$]{[^}]*}")) {
-            var=substr(line, RSTART+2, RLENGTH -3)
-            gsub("[$]{"var"}", ENVIRON[var], line)
-        }
-        gsub(/^\s*#\s?/, "", line)
-        print line
-    }
-    /^\s*local/ {
-        sub(/^\s*local /, "")
-        idx = index($0, "=")
-        name = substr($0, 1, idx - 1)
-        val = substr($0, idx + 1)
-        sub(/"{0,1}\${/, "$", val)
-        sub(/:.*$/, "", val)
-        print "* " name " : `" val "`"
-    }
-    !NF { exit }'
 }
 
 # ### Request-response
