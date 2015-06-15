@@ -125,8 +125,6 @@ _all_funcs() {
 }
 
 __main() {
-    # ## Usage
-    #
     # Usage: `${NAME} [<flags>] (command [<arg>, <name=value>...])`
     #
     #       ${NAME} -h              # Short, usage help text.
@@ -149,14 +147,6 @@ __main() {
     # -v   | Logging output; specify multiple times: info, debug, trace.
     # -x   | Enable xtrace debug logging.
     # -y   | Answer 'yes' to any prompts.
-    #
-    # ## Utility and request/response commands
-    #
-    # ${UTIL_FUNCS}
-    #
-    # ## GitHub commands
-    #
-    # ${GH_FUNCS}
 
     local cmd ret opt OPTARG OPTIND
     local quiet=0
@@ -273,9 +263,7 @@ _helptext() {
     # * (stdin)
     #   The text of a function body to parse.
 
-    GH_FUNCS="$(_all_funcs pretty=1 private=0)" \
-    UTIL_FUNCS="$(_all_funcs pretty=1 public=0)" \
-        awk '
+    awk '
     NR != 1 && /^\s*#/ {
         line=$0
         while(match(line, "[$]{[^}]*}")) {
