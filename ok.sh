@@ -1281,6 +1281,42 @@ list_milestones() {
     _get "/repos/${repository}/milestones${qs}" | _filter_json "$_filter"
 }
 
+create_milestone() {
+    # Create a milestone for a repository
+    #
+    # Usage:
+    #
+    #       create_milestone someuser/somerepo MyMilestone
+    #
+    #       create_milestone someuser/somerepo MyMilestone \
+    #           due_on=2015-06-16T16:54:00Z \
+    #           description='Long description here
+    #       that spans multiple lines.'
+    #
+    # Positional arguments
+    #
+    local repo="${1:?Repo name required.}"
+    #   A GitHub repository.
+    local title="${2:?Milestone name required.}"
+    #   A unique title.
+    #
+    # Keyword arguments
+    #
+    local _filter='"\(.number)\t\(.html_url)"'
+    #   A jq filter to apply to the return data.
+    #
+    # Milestone options may also be passed as keyword arguments:
+    # state, description, due_on
+
+    shift 2
+
+    _opts_filter "$@"
+
+    _format_json title="$title" "$@" \
+        | _post "/repos/${repo}/milestones" \
+        | _filter_json "$_filter"
+}
+
 list_issues() {
     # List issues for the authenticated user or repository
     #
