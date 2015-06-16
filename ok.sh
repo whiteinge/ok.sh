@@ -1393,4 +1393,58 @@ org_issues() {
     _get "/orgs/${org}/issues${qs}" | _filter_json "$_filter"
 }
 
+labels() {
+    # List available labels for a repository
+    #
+    # Usage:
+    #
+    #       labels someuser/somerepo
+    #
+    # Positional arguments
+    #
+    local repo=$1
+    #   A GitHub repository.
+    #
+    # Keyword arguments
+    #
+    local _follow_next
+    #   Automatically look for a 'Links' header and follow any 'next' URLs.
+    local _follow_next_limit
+    #   Maximum number of 'next' URLs to follow before stopping.
+    local _filter='.[] | "\(.name)\t\(.color)"'
+    #   A jq filter to apply to the return data.
+
+    _opts_pagination "$@"
+    _opts_filter "$@"
+
+    _get "/repos/${repo}/labels" | _filter_json "$_filter"
+}
+
+add_label() {
+    # Add a label to a repository
+    #
+    # Usage:
+    #       add_label someuser/somereapo LabelName color
+    #
+    # Positional arguments
+    #
+    local repo="${1:?Repo name required.}"
+    #   A GitHub repository.
+    local label="${2:?Label name required.}"
+    #   A new label.
+    local color="${3:?Hex color required.}"
+    #   A color, in hex, without the leading `#`.
+    #
+    # Keyword arguments
+    #
+    local _filter='"\(.name)\t\(.color)"'
+    #   A jq filter to apply to the return data.
+
+    _opts_filter "$@"
+
+    _format_json name="$label" color="$color" \
+        | _post "/repos/${repo}/labels" \
+        | _filter_json "$_filter"
+}
+
 __main "$@"
