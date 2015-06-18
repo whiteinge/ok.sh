@@ -1483,4 +1483,36 @@ add_label() {
         | _filter_json "$_filter"
 }
 
+update_label() {
+    # Update a label
+    #
+    # Usage:
+    #       update_label someuser/somereapo OldLabelName \
+    #           label=NewLabel color=newcolor
+    #
+    # Positional arguments
+    #
+    local repo="${1:?Repo name required.}"
+    #   A GitHub repository.
+    local label="${2:?Label name required.}"
+    #   The name of the label which will be updated
+    #
+    # Keyword arguments
+    #
+    local _filter='"\(.name)\t\(.color)"'
+    #   A jq filter to apply to the return data.
+    #
+    # Label options may also be passed as keyword arguments, these will update
+    # the existing values:
+    # name, color
+
+    shift 2
+
+    _opts_filter "$@"
+
+    _format_json "$@" \
+        | _post "/repos/${repo}/labels/${label}" method='PATCH' \
+        | _filter_json "$_filter"
+}
+
 __main "$@"
