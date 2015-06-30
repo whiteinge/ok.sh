@@ -574,7 +574,7 @@ _request() {
         POST | PUT | PATCH) has_stdin=1;;
     esac
 
-    [[ $OK_SH_VERBOSE -eq 3 ]] && trace_curl=1
+    [ $OK_SH_VERBOSE -eq 3 ] && trace_curl=1
 
     [ "$OK_SH_VERBOSE" -eq 1 ] && set -x
     curl -nsSi \
