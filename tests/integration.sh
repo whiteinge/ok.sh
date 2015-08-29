@@ -27,4 +27,16 @@ test_get_404() {
     fi
 }
 
+test_get_500() {
+    $SCRIPT _get /test_error 2>/dev/null
+    local ret=$?
+
+    if [ "$ret" -eq 1 ]; then
+        return 0
+    else
+        printf 'Return code for 500 is "%s"; expected 1.\n' "$ret"
+        return 1
+    fi
+}
+
 _main "$@"
