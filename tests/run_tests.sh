@@ -15,8 +15,7 @@ _main() {
     trap '
         excode=$?; trap - EXIT;
         kill '"$socat_pid"'
-        exit
-        echo $excode
+        exit $excode
     ' INT TERM EXIT
 
 
