@@ -159,8 +159,7 @@ __main() {
         exec 5>&-
         exec 6>&-
         rm -rf '"$temp_dir"'
-        exit
-        echo $excode
+        exit $excode
     ' INT TERM EXIT
 
     while getopts Vhjqrvxy opt; do
