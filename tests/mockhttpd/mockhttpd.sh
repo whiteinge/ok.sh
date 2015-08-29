@@ -71,7 +71,10 @@ main() {
     local method path proto
     read -r method path proto
 
-    find_response "$method" "$path"
+    case $path in
+        /test_error) response 500 'Server-side error';;
+        *) find_response "$method" "$path";;
+    esac
 }
 
 main "$@"
