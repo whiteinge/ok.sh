@@ -39,4 +39,77 @@ test_get_500() {
     fi
 }
 
+test_pagination_follow() {
+    local outx out expected
+
+    outx=$($SCRIPT _get /test_pagination | tr -d "\r"; echo x)
+    out="${outx%x}"
+
+    expected='Current page: 1
+Current page: 2
+Current page: 3
+Current page: 4
+'
+
+    if [ "$out" = "$expected" ]; then
+        return 0
+    else
+        printf 'Bad pagination output. Got "%s"; expected "%s"\n' "$out" "$expected"
+        return 1
+    fi
+}
+
+test_pagination_follow_subset() {
+    local outx out expected
+
+    outx=$($SCRIPT _get '/test_pagination?page=3' | tr -d "\r"; echo x)
+    out="${outx%x}"
+
+    expected='Current page: 3
+Current page: 4
+'
+
+    if [ "$out" = "$expected" ]; then
+        return 0
+    else
+        printf 'Bad pagination output. Got "%s"; expected "%s"\n' "$out" "$expected"
+        return 1
+    fi
+}
+
+test_pagination_nofollow() {
+    local outx out expected
+
+    outx=$($SCRIPT _get /test_pagination _follow_next=0 | tr -d "\r"; echo x)
+    out="${outx%x}"
+
+    expected='Current page: 1
+'
+
+    if [ "$out" = "$expected" ]; then
+        return 0
+    else
+        printf 'Bad pagination output. Got "%s"; expected "%s"\n' "$out" "$expected"
+        return 1
+    fi
+}
+
+test_pagination_follow_limit() {
+    local outx out expected
+
+    outx=$($SCRIPT _get /test_pagination _follow_next_limit=1 | tr -d "\r"; echo x)
+    out="${outx%x}"
+
+    expected='Current page: 1
+Current page: 2
+'
+
+    if [ "$out" = "$expected" ]; then
+        return 0
+    else
+        printf 'Bad pagination output. Got "%s"; expected "%s"\n' "$out" "$expected"
+        return 1
+    fi
+}
+
 _main "$@"
