@@ -1,10 +1,28 @@
 #!/usr/bin/env sh
 
 FAILED_TESTS=0
-unit_tests="./unit.sh"
 
 _main() {
-    unit_tests
+    local socat_pid
+
+    printf 'Running unit tests.\n'
+    run_tests "./unit.sh"
+
+
+    socat tcp-l:8011,crlf,reuseaddr,fork EXEC:./mockhttpd/mockhttpd.sh &
+    socat_pid=$!
+
+    trap '
+        excode=$?; trap - EXIT;
+        kill '"$socat_pid"'
+        exit
+        echo $excode
+    ' INT TERM EXIT
+
+
+    printf 'Running integration tests.\n'
+    run_tests "./integration.sh"
+
     exit $FAILED_TESTS
 }
 
@@ -23,7 +41,4 @@ run_tests() {
     done
 }
 
-unit_tests() {
-    run_tests "./unit.sh"
-}
 _main "$@"
