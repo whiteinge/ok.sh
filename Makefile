@@ -10,6 +10,9 @@ install : $(PROGRAM)
 test:
 	make -C tests all
 
+shellcheck:
+	make -C tests shellcheck
+
 readme:
 	@ printf '<!---\nThis README file is generated. Changes will be overwritten.\n-->\n' > README.md
 	@ printf '[![Build Status](https://travis-ci.org/whiteinge/ok.sh.svg?branch=master)](https://travis-ci.org/whiteinge/ok.sh)\n' >> README.md

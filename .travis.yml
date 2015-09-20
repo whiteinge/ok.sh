@@ -1,7 +1,15 @@
 language: sh
+
 script: |
     PATH=$PATH:$TRAVIS_BUILD_DIR make test
+
 addons:
   apt:
+    sources:
+    - debian-sid    # Grab shellcheck from the Debian repo (o_O)
     packages:
     - socat
+    - shellcheck
+
+notifications:
+  email: false

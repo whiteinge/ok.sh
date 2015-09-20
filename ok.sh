@@ -39,7 +39,7 @@
 # * OK_SH_DESTRUCTIVE=${OK_SH_DESTRUCTIVE}
 #   Allow destructive operations without prompting for confirmation.
 
-export NAME=$(basename $0)
+export NAME=$(basename "$0")
 export VERSION='0.1.0'
 
 export OK_SH_URL=${OK_SH_URL:-'https://api.github.com'}
@@ -50,7 +50,7 @@ export OK_SH_RATE_LIMIT="${OK_SH_RATE_LIMIT:-0}"
 export OK_SH_DESTRUCTIVE="${OK_SH_DESTRUCTIVE:-0}"
 
 # Detect if jq is installed.
-type "$OK_SH_JQ_BIN" 1>/dev/null 2>/dev/null
+command -v "$OK_SH_JQ_BIN" 1>/dev/null 2>/dev/null
 NO_JQ=$?
 
 # Customizable logging output.
@@ -80,9 +80,9 @@ help() {
     #   Function name to search for; if omitted searches whole file.
 
     if [ $# -gt 0 ]; then
-        awk -v fname="^$fname" '$0 ~ fname, /^}/ { print }' $0 | _helptext
+        awk -v fname="^$fname" '$0 ~ fname, /^}/ { print }' "$0" | _helptext
     else
-        _helptext < $0
+        _helptext < "$0"
         printf '\n'
         help __main
     fi
@@ -115,7 +115,7 @@ _all_funcs() {
             if (!private && substr($1, 1, 1) == "_") next
             print $1
         }
-    ' $0 | {
+    ' "$0" | {
         if [ "$pretty" -eq 1 ] ; then
             cat | sed ':a;N;$!ba;s/\n/, /g' | fold -w 79 -s
         else
@@ -150,9 +150,12 @@ __main() {
 
     local cmd ret opt OPTARG OPTIND
     local quiet=0
-    local temp_dir="/tmp/oksh-${RANDOM}-${$}"
+    local temp_dir="/tmp/oksh-${random}-${$}"
     local summary_fifo="${temp_dir}/oksh_summary.fifo"
+    local random
+    random=$(hexdump -n 2 -e '/2 "%u"' /dev/urandom)
 
+    # shellcheck disable=SC2154
     trap '
         excode=$?; trap - EXIT;
         exec 4>&-
@@ -176,12 +179,12 @@ __main() {
         j)  NO_JQ=1;;
         q)  quiet=1;;
         r)  OK_SH_RATE_LIMIT=1;;
-        v)  OK_SH_VERBOSE=$(( $OK_SH_VERBOSE + 1 ));;
+        v)  OK_SH_VERBOSE=$(( OK_SH_VERBOSE + 1 ));;
         x)  set -x;;
         y)  OK_SH_DESTRUCTIVE=1;;
         esac
     done
-    shift $(( $OPTIND - 1 ))
+    shift $(( OPTIND - 1 ))
 
     if [ -z "$1" ] ; then
         printf 'No command given. Available commands:\n\n%s\n' \
@@ -201,7 +204,7 @@ __main() {
         }
         mkfifo "$summary_fifo"
         # Hold the fifo open so it will buffer input until emptied.
-        exec 6<>$summary_fifo
+        exec 6<>"$summary_fifo"
     fi
 
     # Run the command.
@@ -714,9 +717,11 @@ _get() {
     # that call this function can pass these parameters in one of two ways:
     # explicitly as a keyword arg or implicity by setting variables of the same
     # names within the local scope.
+    # shellcheck disable=SC2086
     if [ -z ${_follow_next+x} ] || [ -z "${_follow_next}" ]; then
         local _follow_next=1
     fi
+    # shellcheck disable=SC2086
     if [ -z ${_follow_next_limit+x} ] || [ -z "${_follow_next_limit}" ]; then
         local _follow_next_limit=50
     fi
@@ -743,7 +748,7 @@ _get() {
 
         _log info "Remaining next link follows: ${_follow_next_limit}"
         if [ -n "$next_url" ] && [ $_follow_next_limit -gt 0 ] ; then
-            _follow_next_limit=$(( $_follow_next_limit - 1 ))
+            _follow_next_limit=$(( _follow_next_limit - 1 ))
 
             _get "$next_url" "_follow_next_limit=${_follow_next_limit}"
         fi
@@ -1236,7 +1241,7 @@ upload_asset() {
     local upload_url=$(release "$owner" "$repo" "$release_id" \
         'filter="\(.upload_url)"' | sed -e 's/{?name}/?name='"$name"'/g')
 
-    : ${upload_url:?Upload URL could not be retrieved.}
+    : "${upload_url:?Upload URL could not be retrieved.}"
 
     _post "$upload_url" filename="$name" \
         | _filter_json "$_filter"
