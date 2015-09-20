@@ -906,6 +906,10 @@ org_repos() {
     #
     # Keyword arguments
     #
+    local _follow_next
+    #   Automatically look for a 'Links' header and follow any 'next' URLs.
+    local _follow_next_limit
+    #   Maximum number of 'next' URLs to follow before stopping.
     local _filter='.[] | "\(.name)\t\(.ssh_url)"'
     #   A jq filter to apply to the return data.
     #
@@ -915,6 +919,7 @@ org_repos() {
     shift 1
     local qs
 
+    _opts_pagination "$@"
     _opts_filter "$@"
     _opts_qs "$@"
 
