@@ -114,6 +114,26 @@ test_filter_json_args() {
     }
 }
 
+test_filter_json_pipe() {
+    # Test for issue #16.
+
+    local out
+    local json='[{"name": "Foo"}]'
+    local expected_out='Foo'
+
+    printf '%s\n' "$json" | $SCRIPT _filter_json '.[] | .["name"]' | {
+        read -r out
+
+        if [ "$expected_out" = "$out" ] ; then
+            return 0
+        else
+            printf 'Expected output does not match output: `%s` != `%s`\n' \
+                "$expected_out" "$out"
+            return 1
+        fi
+    }
+}
+
 test_response_headers() {
     # Test that process response outputs headers in deterministic order.
 
