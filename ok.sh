@@ -76,7 +76,7 @@ help() {
     #
     # Positional arguments
     #
-    local fname=$1
+    local fname="$1"
     #   Function name to search for; if omitted searches whole file.
 
     if [ $# -gt 0 ]; then
@@ -148,12 +148,16 @@ __main() {
     # -x   | Enable xtrace debug logging.
     # -y   | Answer 'yes' to any prompts.
 
-    local cmd ret opt OPTARG OPTIND
+    local cmd
+    local ret
+    local opt
+    local OPTARG
+    local OPTIND
     local quiet=0
     local temp_dir="/tmp/oksh-${random}-${$}"
     local summary_fifo="${temp_dir}/oksh_summary.fifo"
     local random
-    random=$(hexdump -n 2 -e '/2 "%u"' /dev/urandom)
+    random="$(hexdump -n 2 -e '/2 "%u"' /dev/urandom)"
 
     # shellcheck disable=SC2154
     trap '
@@ -396,7 +400,7 @@ _filter_json() {
     #
     # * (stdin)
     #   JSON input.
-    local _filter=$1
+    local _filter="$1"
     #   A string of jq filters to apply to the input stream.
 
     _log debug 'Filtering JSON.'
@@ -558,7 +562,10 @@ _request() {
 
     shift 1
 
-    local cmd arg has_stdin trace_curl
+    local cmd
+    local arg
+    local has_stdin
+    local trace_curl
 
     case $path in
         (http*) : ;;
@@ -624,7 +631,12 @@ _response() {
     #   output in the same order as each argument; each on a single line. A
     #   blank line is output for headers that cannot be found.
 
-    local hdr val http_version status_code status_text headers output
+    local hdr
+    local val
+    local http_version
+    local status_code
+    local status_text
+    local headers output
 
     _log debug 'Processing response.'
 
@@ -711,7 +723,9 @@ _get() {
     #   Maximum number of 'next' URLs to follow before stopping.
 
     shift 1
-    local status_code status_text next_url
+    local status_code
+    local status_text
+    local next_url
 
     # If the variable is unset or empty set it to a default value. Functions
     # that call this function can pass these parameters in one of two ways:
@@ -961,7 +975,7 @@ list_repos() {
     #
     # Positional arguments
     #
-    local user=$1
+    local user="$1"
     #   Optional GitHub user login or id for which to list repos.
     #
     # Keyword arguments
@@ -1014,7 +1028,8 @@ create_repo() {
 
     _opts_filter "$@"
 
-    local url organization
+    local url
+    local organization
 
     for arg in "$@"; do
         case $arg in
@@ -1337,7 +1352,7 @@ list_issues() {
     #
     # Positional arguments
     #
-    local repository=$1
+    local repository="$1"
     #   A GitHub repository.
     #
     # Keyword arguments
@@ -1354,7 +1369,8 @@ list_issues() {
     # direction, since
 
     shift 1
-    local url qs
+    local url
+    local qs
 
     _opts_pagination "$@"
     _opts_filter "$@"
@@ -1379,7 +1395,7 @@ user_issues() {
     #
     # Positional arguments
     #
-    local repository=$1
+    local repository="$1"
     #   A GitHub repository.
     #
     # Keyword arguments
@@ -1447,7 +1463,7 @@ labels() {
     #
     # Positional arguments
     #
-    local repo=$1
+    local repo="$1"
     #   A GitHub repository.
     #
     # Keyword arguments
