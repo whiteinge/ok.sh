@@ -1540,4 +1540,29 @@ update_label() {
         | _filter_json "$_filter"
 }
 
+add_team_repo() {
+    # Add a team repository
+    #
+    # Usage:
+    #
+    #     add_team_repo team_id organization repository_name permission
+    #
+    # Positional arguments
+    #
+    local team_id="${1:?Team id required.}"
+    #   Team id to add repository to
+    local organization="${2:?Organization required.}"
+    #   Organization to add repository to
+    local repository_name="${3:?Repository name required.}"
+    #   Repository name to add
+    local permission="${4:?Permission required.}"
+    #   Permission to grant: pull, push, admin
+    #
+    local url="/teams/${team_id}/repos/${organization}/${repository_name}"
+
+    export OK_SH_ACCEPT="application/vnd.github.ironman-preview+json"
+
+    _format_json "name=${name}" "permission=${permission}" | _post "$url" method='PUT' | _filter_json "${_filter}"
+}
+
 __main "$@"
