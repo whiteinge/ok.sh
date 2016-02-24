@@ -1259,7 +1259,7 @@ upload_asset() {
     _opts_filter "$@"
 
     local upload_url=$(release "$owner" "$repo" "$release_id" \
-        'filter="\(.upload_url)"' | sed -e 's/{?name}/?name='"$name"'/g')
+        'filter="\(.upload_url)"' | sed -e 's/{?name,label}/?name='"$name"'/g')
 
     : "${upload_url:?Upload URL could not be retrieved.}"
 

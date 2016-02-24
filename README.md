@@ -25,6 +25,10 @@ Restrict permissions on that file with `chmod 600 ~/.netrc`!
         login <username>
         password <token>
 
+    machine uploads.github.com
+        login <username>
+        password <token>
+
 ## Configuration
 
 The following environment variables may be set to customize ok.sh.
