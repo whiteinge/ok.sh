@@ -437,7 +437,7 @@ _get_mime_type() {
     case "$ext" in
         bz2) mime_type=application/x-bzip2 ;;
         exe) mime_type=application/x-msdownload ;;
-        gz | tgz) mime_type=application/x-gzip ;;
+        tar.gz | gz | tgz) mime_type=application/x-gzip ;;
         jpg | jpeg | jpe | jfif) mime_type=image/jpeg ;;
         json) mime_type=application/json ;;
         pdf) mime_type=application/pdf ;;
@@ -1258,7 +1258,7 @@ upload_asset() {
 
     _opts_filter "$@"
 
-    local upload_url=$(release "$owner" "$repo" "$release_id" _filter="\(.upload_url)" | sed -e 's/{?name,label}/?name='"$name"'/g')
+    local upload_url=$(release "$owner" "$repo" "$release_id" _filter="(.upload_url)" | sed -e 's/{?name,label}/?name='"$name"'/g')
 
     : "${upload_url:?Upload URL could not be retrieved.}"
 
