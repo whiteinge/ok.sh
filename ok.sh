@@ -969,6 +969,31 @@ org_teams() {
         | _filter_json "${_filter}"
 }
 
+org_members() {
+    # List organization members
+    #
+    # Usage:
+    #
+    #     org_members org
+    #
+    # Positional arguments
+    #
+    local org="${1:?Org name required.}"
+    #   Organization GitHub login or id.
+    #
+    # Keyword arguments
+    #
+    local _filter='.[] | "\(.login)\t\(.id)"'
+    #   A jq filter to apply to the return data.
+
+    shift 1
+
+    _opts_filter "$@"
+
+    _get "/orgs/${org}/members" \
+        | _filter_json "${_filter}"
+}
+
 list_repos() {
     # List user repositories
     #
