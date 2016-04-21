@@ -97,8 +97,6 @@ _all_funcs() {
     #
     # Keyword arguments
     #
-    local pretty=1
-    #   `0` output one function per line; `1` output a formatted paragraph.
     local public=1
     #   `0` do not output public functions.
     local private=1
@@ -106,7 +104,6 @@ _all_funcs() {
 
     for arg in "$@"; do
         case $arg in
-            (pretty=*) pretty="${arg#*=}";;
             (public=*) public="${arg#*=}";;
             (private=*) private="${arg#*=}";;
         esac
@@ -119,13 +116,7 @@ _all_funcs() {
             if (!private && substr($1, 1, 1) == "_") next
             print $1
         }
-    ' "$0" | {
-        if [ "$pretty" -eq 1 ] ; then
-            cat | sed ':a;N;$!ba;s/\n/, /g' | fold -w 79 -s
-        else
-            cat
-        fi
-    }
+    ' "$0"
 }
 
 __main() {
