@@ -42,6 +42,8 @@
 #   Output current GitHub rate limit information to stderr.
 # * OK_SH_DESTRUCTIVE=${OK_SH_DESTRUCTIVE}
 #   Allow destructive operations without prompting for confirmation.
+# * OK_SH_MARKDOWN=${OK_SH_MARKDOWN}
+#   Output some text in Markdown format.
 
 export NAME=$(basename "$0")
 export VERSION='0.1.0'
@@ -52,6 +54,7 @@ export OK_SH_JQ_BIN="${OK_SH_JQ_BIN:-jq}"
 export OK_SH_VERBOSE="${OK_SH_VERBOSE:-0}"
 export OK_SH_RATE_LIMIT="${OK_SH_RATE_LIMIT:-0}"
 export OK_SH_DESTRUCTIVE="${OK_SH_DESTRUCTIVE:-0}"
+export OK_SH_MARKDOWN="${OK_SH_MARKDOWN:-0}"
 
 # Detect if jq is installed.
 command -v "$OK_SH_JQ_BIN" 1>/dev/null 2>/dev/null
