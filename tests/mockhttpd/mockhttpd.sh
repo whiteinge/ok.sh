@@ -117,6 +117,7 @@ main() {
     printf 'Processing %s request for %s\n' "$method" "$path" 1>&2
 
     case $path in
+        /ok) response 200 'Ok';;
         /test_error) response 500 'Server-side error';;
         /test_pagination*) pagination "$path";;
         *) find_response "$method" "$path";;
