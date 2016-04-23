@@ -74,6 +74,10 @@ export LSUMMARY=6   # Summary output.
 # ### Help
 # Functions for fetching and formatting help text.
 
+ _cols() { sort | pr -t -3; }
+ _links() { awk '{ print "* [" $0 "](#" $0 ")" }'; }
+ _funcsfmt() { if [ "$OK_SH_MARKDOWN" -eq 0 ]; then _cols; else _links; fi; }
+
 help() {
     # Output the help text for a command
     #
@@ -86,13 +90,35 @@ help() {
     local fname="$1"
     #   Function name to search for; if omitted searches whole file.
 
+    # Short-circuit if only producing help for a single function.
     if [ $# -gt 0 ]; then
         awk -v fname="^$fname" '$0 ~ fname, /^}/ { print }' "$0" | _helptext
-    else
-        _helptext < "$0"
-        printf '\n'
-        help __main
+        return
     fi
+
+    _helptext < "$0"
+    printf '\n'
+    help __main
+    printf '\n'
+
+    printf '## Table of Contents\n'
+    printf '\n### Utility and request/response commands\n\n'
+    _all_funcs public=0 | _funcsfmt
+    printf '\n### GitHub commands\n\n'
+    _all_funcs private=0 | _funcsfmt
+    printf '\n## Commands\n\n'
+
+    for cmd in $(_all_funcs public=0); do
+        printf '### %s\n\n' "$cmd"
+        help "$cmd"
+        printf '\n'
+    done
+
+    for cmd in $(_all_funcs private=0); do
+        printf '### %s\n\n' "$cmd"
+        help "$cmd"
+        printf '\n'
+    done
 }
 
 _all_funcs() {
@@ -173,9 +199,7 @@ __main() {
             exit;;
         h) help __main
             printf '\nAvailable commands:\n\n'
-            _all_funcs public=0
-            printf '\n'
-            _all_funcs private=0
+            _all_funcs private=0 | _cols
             printf '\n'
             exit;;
         j)  NO_JQ=1;;
@@ -190,7 +214,7 @@ __main() {
 
     if [ -z "$1" ] ; then
         printf 'No command given. Available commands:\n\n%s\n' \
-            "$(_all_funcs)" 1>&2
+            "$(_all_funcs private=0 | _cols)" 1>&2
         exit 1
     fi
 
