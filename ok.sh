@@ -157,10 +157,6 @@ __main() {
     #       ${NAME} command         # Run a command with and without args.
     #       ${NAME} command foo bar baz=Baz qux='Qux arg here'
     #
-    # See the full list of commands below.
-    #
-    # Flags _must_ be the first argument to `${NAME}`, before `command`.
-    #
     # Flag | Description
     # ---- | -----------
     # -V   | Show version.
@@ -171,6 +167,8 @@ __main() {
     # -v   | Logging output; specify multiple times: info, debug, trace.
     # -x   | Enable xtrace debug logging.
     # -y   | Answer 'yes' to any prompts.
+    #
+    # Flags _must_ be the first argument to `${NAME}`, before `command`.
 
     local cmd
     local ret
