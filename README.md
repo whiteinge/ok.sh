@@ -2,6 +2,7 @@
 This README file is generated. Changes will be overwritten.
 -->
 [![Build Status](https://travis-ci.org/whiteinge/ok.sh.svg?branch=master)](https://travis-ci.org/whiteinge/ok.sh)
+
 # A GitHub API client library written in POSIX sh
 
 ## Requirements
@@ -45,10 +46,8 @@ The following environment variables may be set to customize ok.sh.
   Output current GitHub rate limit information to stderr.
 * OK_SH_DESTRUCTIVE=0
   Allow destructive operations without prompting for confirmation.
-
-### _main()
-
-## Usage
+* OK_SH_MARKDOWN=1
+  Output some text in Markdown format.
 
 Usage: `ok.sh [<flags>] (command [<arg>, <name=value>...])`
 
@@ -57,10 +56,6 @@ Usage: `ok.sh [<flags>] (command [<arg>, <name=value>...])`
       ok.sh help command    # Command-specific help text.
       ok.sh command         # Run a command with and without args.
       ok.sh command foo bar baz=Baz qux='Qux arg here'
-
-See the full list of commands below.
-
-Flags _must_ be the first argument to `ok.sh`, before `command`.
 
 Flag | Description
 ---- | -----------
@@ -73,20 +68,12 @@ Flag | Description
 -x   | Enable xtrace debug logging.
 -y   | Answer 'yes' to any prompts.
 
-## Utility and request/response commands
-
-_all_funcs, _main, _log, _helptext, _format_json, _format_urlencode, 
-_filter_json, _get_mime_type, _get_confirm, _opts_filter, _opts_pagination, 
-_opts_qs, _request, _response, _get, _post, _delete
-
-## GitHub commands
-
-help, show_scopes, org_repos, org_teams, list_repos, create_repo, delete_repo, 
-list_releases, release, create_release, delete_release, release_assets, 
-upload_asset, list_milestones, list_issues, user_issues, org_issues
+Flags _must_ be the first argument to `ok.sh`, before `command`.
 
 ## Table of Contents
-* [help](#help)
+
+### Utility and request/response commands
+
 * [_all_funcs](#_all_funcs)
 * [_log](#_log)
 * [_helptext](#_helptext)
@@ -103,9 +90,14 @@ upload_asset, list_milestones, list_issues, user_issues, org_issues
 * [_get](#_get)
 * [_post](#_post)
 * [_delete](#_delete)
+
+### GitHub commands
+
+* [help](#help)
 * [show_scopes](#show_scopes)
 * [org_repos](#org_repos)
 * [org_teams](#org_teams)
+* [org_members](#org_members)
 * [list_repos](#list_repos)
 * [create_repo](#create_repo)
 * [delete_repo](#delete_repo)
@@ -116,37 +108,29 @@ upload_asset, list_milestones, list_issues, user_issues, org_issues
 * [release_assets](#release_assets)
 * [upload_asset](#upload_asset)
 * [list_milestones](#list_milestones)
+* [create_milestone](#create_milestone)
 * [list_issues](#list_issues)
 * [user_issues](#user_issues)
 * [org_issues](#org_issues)
+* [labels](#labels)
+* [add_label](#add_label)
+* [update_label](#update_label)
+* [add_team_repo](#add_team_repo)
 
-### help()
+## Commands
 
-Output the help text for a command
-
-Usage:
-
-    help commandname
-
-Positional arguments
-
-* fname : `$1`
-  Function name to search for; if omitted searches whole file.
-
-### _all_funcs()
+### _all_funcs
 
 List all functions found in the current file in the order they appear
 
 Keyword arguments
 
-* pretty : `1`
-  `0` output one function per line; `1` output a formatted paragraph.
 * public : `1`
   `0` do not output public functions.
 * private : `1`
   `0` do not output private functions.
 
-### _log()
+### _log
 
 A lightweight logging system based on file descriptors
 
@@ -161,14 +145,13 @@ Positional arguments
 * message : `$2`
   The log message.
 
-### _helptext()
+### _helptext
 
 Extract contiguous lines of comments and function params as help text
 
-Indentation will be ignored. She-bangs will be ignored. The _main()
-function will be ignored. Local variable declarations and their default
-values can also be pulled in as documentation. Exits upon encountering
-the first blank line.
+Indentation will be ignored. She-bangs will be ignored. Local variable
+declarations and their default values can also be pulled in as
+documentation. Exits upon encountering the first blank line.
 
 Exported environment variables can be used for string interpolation in
 the extracted commented text.
@@ -178,12 +161,7 @@ Input
 * (stdin)
   The text of a function body to parse.
 
-Positional arguments
-
-* name : `$1`
-  A file name to parse.
-
-### _format_json()
+### _format_json
 
 Create formatted JSON from name=value pairs
 
@@ -207,7 +185,7 @@ Positional arguments
   Each positional arg must be in the format of `name=value` which will be
   added to a single, flat JSON object.
 
-### _format_urlencode()
+### _format_urlencode
 
 URL encode and join name=value pairs
 
@@ -223,7 +201,7 @@ foo=Foo%20Foo&bar=%3CBar%3E%26%2FBar%2F
 
 Ignores pairs if the value begins with an underscore.
 
-### _filter_json()
+### _filter_json
 
 Filter JSON input using jq; outputs raw JSON if jq is not installed
 
@@ -233,10 +211,10 @@ Usage:
 
 * (stdin)
   JSON input.
-* _filter : `$1`
+* _filter : `"$1"`
   A string of jq filters to apply to the input stream.
 
-### _get_mime_type()
+### _get_mime_type
 
 Guess the mime type for a file based on the file extension
 
@@ -254,7 +232,7 @@ Positional arguments
 * filename : `$1`
   The full name of the file, with exension.
 
-### _get_confirm()
+### _get_confirm
 
 Prompt the user for confirmation
 
@@ -273,7 +251,7 @@ Positional arguments
 * message : `$1`
   The message to prompt the user with.
 
-### _opts_filter()
+### _opts_filter
 
 Extract common jq filter keyword options and assign to vars
 
@@ -282,7 +260,7 @@ Usage:
       local filter
       _opts_filter "$@"
 
-### _opts_pagination()
+### _opts_pagination
 
 Extract common pagination keyword options and assign to vars
 
@@ -291,7 +269,7 @@ Usage:
       local _follow_next
       _opts_pagination "$@"
 
-### _opts_qs()
+### _opts_qs
 
 Format a querystring to append to an URL or a blank string
 
@@ -301,7 +279,7 @@ Usage:
       _opts_qs "$@"
       _get "/some/path"
 
-### _request()
+### _request
 
 A wrapper around making HTTP requests with curl
 
@@ -334,7 +312,7 @@ Keyword arguments
 * content_type : `'application/json'`
   The value of the Content-Type header to use for the request.
 
-### _response()
+### _response
 
 Process an HTTP response from curl
 
@@ -370,7 +348,7 @@ Positional arguments
   output in the same order as each argument; each on a single line. A
   blank line is output for headers that cannot be found.
 
-### _get_mime_type()
+### _get
 
 Guess the mime type for a file based on the file extension
 
@@ -388,7 +366,7 @@ Positional arguments
 * filename : `$1`
   The full name of the file, with exension.
 
-### _post()
+### _post
 
 A wrapper around _request() for commoon POST / PUT patterns
 
@@ -427,7 +405,7 @@ Keyword arguments
   stdin) this value defaults to `application/json`. Specifying this
   argument overrides all other defaults or guesses.
 
-### _delete()
+### _delete
 
 A wrapper around _request() for common DELETE patterns
 
@@ -442,7 +420,20 @@ Positional arguments
 * url : `$1`
   The URL to send the DELETE request to.
 
-### show_scopes()
+### help
+
+Output the help text for a command
+
+Usage:
+
+    help commandname
+
+Positional arguments
+
+* fname : `"$1"`
+  Function name to search for; if omitted searches whole file.
+
+### show_scopes
 
 Show the permission scopes for the currently authenticated user
 
@@ -450,7 +441,7 @@ Usage:
 
     show_scopes
 
-### org_repos()
+### org_repos
 
 List organization repositories
 
@@ -467,13 +458,17 @@ Positional arguments
 
 Keyword arguments
 
+*  : `_follow_next`
+  Automatically look for a 'Links' header and follow any 'next' URLs.
+*  : `_follow_next_limit`
+  Maximum number of 'next' URLs to follow before stopping.
 * _filter : `'.[] | "\(.name)\t\(.ssh_url)"'`
   A jq filter to apply to the return data.
 
 Querystring arguments may also be passed as keyword arguments:
 per_page, type
 
-### org_teams()
+### org_teams
 
 List teams
 
@@ -491,7 +486,25 @@ Keyword arguments
 * _filter : `'.[] | "\(.name)\t\(.id)\t\(.permission)"'`
   A jq filter to apply to the return data.
 
-### list_repos()
+### org_members
+
+List organization members
+
+Usage:
+
+    org_members org
+
+Positional arguments
+
+* org : `$1`
+  Organization GitHub login or id.
+
+Keyword arguments
+
+* _filter : `'.[] | "\(.login)\t\(.id)"'`
+  A jq filter to apply to the return data.
+
+### list_repos
 
 List user repositories
 
@@ -502,7 +515,7 @@ Usage:
 
 Positional arguments
 
-* user : `$1`
+* user : `"$1"`
   Optional GitHub user login or id for which to list repos.
 
 Keyword arguments
@@ -513,7 +526,7 @@ Keyword arguments
 Querystring arguments may also be passed as keyword arguments:
 per_page, type, sort, direction
 
-### create_repo()
+### create_repo
 
 Create a repository for a user or organization
 
@@ -537,7 +550,7 @@ POST data may also be passed as keyword arguments:
 description, homepage, private, has_issues, has_wiki, has_downloads,
 organization, team_id, auto_init, gitignore_template
 
-### delete_repo()
+### delete_repo
 
 Create a repository for a user or organization
 
@@ -555,7 +568,7 @@ Positional arguments
 * repo : `$2`
   Name of the new repo
 
-### list_releases()
+### list_releases
 
 List releases for a repository
 
@@ -575,7 +588,7 @@ Keyword arguments
 * _filter : `'.[] | "\(.name)\t\(.id)\t\(.html_url)"'`
   A jq filter to apply to the return data.
 
-### release()
+### release
 
 Get a release
 
@@ -597,7 +610,7 @@ Keyword arguments
 * _filter : `'"\(.author.login)\t\(.published_at)"'`
   A jq filter to apply to the return data.
 
-### create_release()
+### create_release
 
 Create a release
 
@@ -623,7 +636,7 @@ Keyword arguments
 POST data may also be passed as keyword arguments:
 body, draft, name, prerelease, target_commitish
 
-### delete_release()
+### delete_release
 
 Delete a release
 
@@ -642,7 +655,7 @@ Positional arguments
 * release_id : `$3`
   The unique ID of the release; see list_releases.
 
-### release_assets()
+### release_assets
 
 List release assets
 
@@ -664,7 +677,7 @@ Keyword arguments
 * _filter : `'.[] | "\(.id)\t\(.name)\t\(.updated_at)"'`
   A jq filter to apply to the return data.
 
-### upload_asset()
+### upload_asset
 
 Upload a release asset
 
@@ -694,7 +707,7 @@ Keyword arguments
 * _filter : `'"\(.state)\t\(.browser_download_url)"'`
   A jq filter to apply to the return data.
 
-### list_milestones()
+### list_milestones
 
 List milestones for a repository
 
@@ -720,7 +733,35 @@ Keyword arguments
 GitHub querystring arguments may also be passed as keyword arguments:
 per_page, state, sort, direction
 
-### list_issues()
+### create_milestone
+
+Create a milestone for a repository
+
+Usage:
+
+      create_milestone someuser/somerepo MyMilestone
+
+      create_milestone someuser/somerepo MyMilestone \
+          due_on=2015-06-16T16:54:00Z \
+          description='Long description here
+      that spans multiple lines.'
+
+Positional arguments
+
+* repo : `$1`
+  A GitHub repository.
+* title : `$2`
+  A unique title.
+
+Keyword arguments
+
+* _filter : `'"\(.number)\t\(.html_url)"'`
+  A jq filter to apply to the return data.
+
+Milestone options may also be passed as keyword arguments:
+state, description, due_on
+
+### list_issues
 
 List issues for the authenticated user or repository
 
@@ -732,7 +773,7 @@ Usage:
 
 Positional arguments
 
-* repository : `$1`
+* repository : `"$1"`
   A GitHub repository.
 
 Keyword arguments
@@ -748,7 +789,7 @@ GitHub querystring arguments may also be passed as keyword arguments:
 per_page, milestone, state, assignee, creator, mentioned, labels, sort,
 direction, since
 
-### user_issues()
+### user_issues
 
 List all issues across owned and member repositories for the authenticated user
 
@@ -759,7 +800,7 @@ Usage:
 
 Positional arguments
 
-* repository : `$1`
+* repository : `"$1"`
   A GitHub repository.
 
 Keyword arguments
@@ -774,7 +815,7 @@ Keyword arguments
 GitHub querystring arguments may also be passed as keyword arguments:
 per_page, filter, state, labels, sort, direction, since
 
-### org_issues()
+### org_issues
 
 List all issues for a given organization for the authenticated user
 
@@ -798,4 +839,92 @@ Keyword arguments
 
 GitHub querystring arguments may also be passed as keyword arguments:
 per_page, filter, state, labels, sort, direction, since
+
+### labels
+
+List available labels for a repository
+
+Usage:
+
+      labels someuser/somerepo
+
+Positional arguments
+
+* repo : `"$1"`
+  A GitHub repository.
+
+Keyword arguments
+
+*  : `_follow_next`
+  Automatically look for a 'Links' header and follow any 'next' URLs.
+*  : `_follow_next_limit`
+  Maximum number of 'next' URLs to follow before stopping.
+* _filter : `'.[] | "\(.name)\t\(.color)"'`
+  A jq filter to apply to the return data.
+
+### add_label
+
+Add a label to a repository
+
+Usage:
+      add_label someuser/somereapo LabelName color
+
+Positional arguments
+
+* repo : `$1`
+  A GitHub repository.
+* label : `$2`
+  A new label.
+* color : `$3`
+  A color, in hex, without the leading `#`.
+
+Keyword arguments
+
+* _filter : `'"\(.name)\t\(.color)"'`
+  A jq filter to apply to the return data.
+
+### update_label
+
+Update a label
+
+Usage:
+      update_label someuser/somereapo OldLabelName \
+          label=NewLabel color=newcolor
+
+Positional arguments
+
+* repo : `$1`
+  A GitHub repository.
+* label : `$2`
+  The name of the label which will be updated
+
+Keyword arguments
+
+* _filter : `'"\(.name)\t\(.color)"'`
+  A jq filter to apply to the return data.
+
+Label options may also be passed as keyword arguments, these will update
+the existing values:
+name, color
+
+### add_team_repo
+
+Add a team repository
+
+Usage:
+
+    add_team_repo team_id organization repository_name permission
+
+Positional arguments
+
+* team_id : `$1`
+  Team id to add repository to
+* organization : `$2`
+  Organization to add repository to
+* repository_name : `$3`
+  Repository name to add
+* permission : `$4`
+  Permission to grant: pull, push, admin
+
+* url : `"/teams/$team_id}/repos/${organization}/${repository_name}"`
 

@@ -42,6 +42,8 @@
 #   Output current GitHub rate limit information to stderr.
 # * OK_SH_DESTRUCTIVE=${OK_SH_DESTRUCTIVE}
 #   Allow destructive operations without prompting for confirmation.
+# * OK_SH_MARKDOWN=${OK_SH_MARKDOWN}
+#   Output some text in Markdown format.
 
 export NAME=$(basename "$0")
 export VERSION='0.1.0'
@@ -52,6 +54,7 @@ export OK_SH_JQ_BIN="${OK_SH_JQ_BIN:-jq}"
 export OK_SH_VERBOSE="${OK_SH_VERBOSE:-0}"
 export OK_SH_RATE_LIMIT="${OK_SH_RATE_LIMIT:-0}"
 export OK_SH_DESTRUCTIVE="${OK_SH_DESTRUCTIVE:-0}"
+export OK_SH_MARKDOWN="${OK_SH_MARKDOWN:-0}"
 
 # Detect if jq is installed.
 command -v "$OK_SH_JQ_BIN" 1>/dev/null 2>/dev/null
@@ -71,6 +74,10 @@ export LSUMMARY=6   # Summary output.
 # ### Help
 # Functions for fetching and formatting help text.
 
+ _cols() { sort | pr -t -3; }
+ _links() { awk '{ print "* [" $0 "](#" $0 ")" }'; }
+ _funcsfmt() { if [ "$OK_SH_MARKDOWN" -eq 0 ]; then _cols; else _links; fi; }
+
 help() {
     # Output the help text for a command
     #
@@ -83,13 +90,35 @@ help() {
     local fname="$1"
     #   Function name to search for; if omitted searches whole file.
 
+    # Short-circuit if only producing help for a single function.
     if [ $# -gt 0 ]; then
         awk -v fname="^$fname" '$0 ~ fname, /^}/ { print }' "$0" | _helptext
-    else
-        _helptext < "$0"
-        printf '\n'
-        help __main
+        return
     fi
+
+    _helptext < "$0"
+    printf '\n'
+    help __main
+    printf '\n'
+
+    printf '## Table of Contents\n'
+    printf '\n### Utility and request/response commands\n\n'
+    _all_funcs public=0 | _funcsfmt
+    printf '\n### GitHub commands\n\n'
+    _all_funcs private=0 | _funcsfmt
+    printf '\n## Commands\n\n'
+
+    for cmd in $(_all_funcs public=0); do
+        printf '### %s\n\n' "$cmd"
+        help "$cmd"
+        printf '\n'
+    done
+
+    for cmd in $(_all_funcs private=0); do
+        printf '### %s\n\n' "$cmd"
+        help "$cmd"
+        printf '\n'
+    done
 }
 
 _all_funcs() {
@@ -97,8 +126,6 @@ _all_funcs() {
     #
     # Keyword arguments
     #
-    local pretty=1
-    #   `0` output one function per line; `1` output a formatted paragraph.
     local public=1
     #   `0` do not output public functions.
     local private=1
@@ -106,7 +133,6 @@ _all_funcs() {
 
     for arg in "$@"; do
         case $arg in
-            (pretty=*) pretty="${arg#*=}";;
             (public=*) public="${arg#*=}";;
             (private=*) private="${arg#*=}";;
         esac
@@ -119,13 +145,7 @@ _all_funcs() {
             if (!private && substr($1, 1, 1) == "_") next
             print $1
         }
-    ' "$0" | {
-        if [ "$pretty" -eq 1 ] ; then
-            cat | sed ':a;N;$!ba;s/\n/, /g' | fold -w 79 -s
-        else
-            cat
-        fi
-    }
+    ' "$0"
 }
 
 __main() {
@@ -137,10 +157,6 @@ __main() {
     #       ${NAME} command         # Run a command with and without args.
     #       ${NAME} command foo bar baz=Baz qux='Qux arg here'
     #
-    # See the full list of commands below.
-    #
-    # Flags _must_ be the first argument to `${NAME}`, before `command`.
-    #
     # Flag | Description
     # ---- | -----------
     # -V   | Show version.
@@ -151,6 +167,8 @@ __main() {
     # -v   | Logging output; specify multiple times: info, debug, trace.
     # -x   | Enable xtrace debug logging.
     # -y   | Answer 'yes' to any prompts.
+    #
+    # Flags _must_ be the first argument to `${NAME}`, before `command`.
 
     local cmd
     local ret
@@ -179,9 +197,7 @@ __main() {
             exit;;
         h) help __main
             printf '\nAvailable commands:\n\n'
-            _all_funcs public=0
-            printf '\n'
-            _all_funcs private=0
+            _all_funcs private=0 | _cols
             printf '\n'
             exit;;
         j)  NO_JQ=1;;
@@ -196,7 +212,7 @@ __main() {
 
     if [ -z "$1" ] ; then
         printf 'No command given. Available commands:\n\n%s\n' \
-            "$(_all_funcs)" 1>&2
+            "$(_all_funcs private=0 | _cols)" 1>&2
         exit 1
     fi
 
