@@ -558,6 +558,7 @@ _request() {
     #   | _request /repos/:owner/:repo/issues | jq -r '.[url]'
     # printf '{"title": "%s", "body": "%s"}\n' "Stuff" "Things" \
     #   | _request /repos/:owner/:repo/issues method=PUT | jq -r '.[url]'
+    # _request /users etag=edd3a0d38d8c329d3ccc6575f17a76bb
     # ```
     #
     # Input
@@ -579,6 +580,8 @@ _request() {
     #   The method to use for the HTTP request.
     local content_type='application/json'
     #   The value of the Content-Type header to use for the request.
+    local etag
+    #   An optional Etag to send as the If-None-Match header.
 
     shift 1
 
@@ -596,6 +599,7 @@ _request() {
         case $arg in
             (method=*) method="${arg#*=}";;
             (content_type=*) content_type="${arg#*=}";;
+            (etag=*) etag="${arg#*=}";;
         esac
     done
 
@@ -606,9 +610,11 @@ _request() {
     [ $OK_SH_VERBOSE -eq 3 ] && trace_curl=1
 
     [ "$OK_SH_VERBOSE" -eq 1 ] && set -x
+    # shellcheck disable=SC2086
     curl -nsSi \
         -H "Accept: ${OK_SH_ACCEPT}" \
         -H "Content-Type: ${content_type}" \
+        ${etag:+-H "If-None-Match: \"${etag}\""} \
         ${has_stdin:+--data-binary @-} \
         ${trace_curl:+--trace-ascii /dev/stderr} \
         -X "${method}" \

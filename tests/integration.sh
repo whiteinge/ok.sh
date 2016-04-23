@@ -112,4 +112,20 @@ Current page: 2
     fi
 }
 
+test_conditional_get() {
+    local has_header
+
+    $SCRIPT -vvv _request /ok etag=edd3a0d38d8c329d3ccc6575f17a76bb 2>&1 \
+        | grep -q 'If-None-Match: "edd3a0d38d8c329d3ccc6575f17a76bb"'
+
+    has_header=$?
+
+    if [ "$has_header" -eq 0 ]; then
+        return 0
+    else
+        printf 'Missing or malformed If-None-Match header.\n'
+        return 1
+    fi
+}
+
 _main "$@"
