@@ -610,6 +610,7 @@ _request() {
     [ $OK_SH_VERBOSE -eq 3 ] && trace_curl=1
 
     [ "$OK_SH_VERBOSE" -eq 1 ] && set -x
+    # shellcheck disable=SC2086
     curl -nsSi \
         -H "Accept: ${OK_SH_ACCEPT}" \
         -H "Content-Type: ${content_type}" \
