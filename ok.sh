@@ -449,7 +449,7 @@ _get_mime_type() {
     # Positional arguments
     #
     local filename="${1:?Filename is required.}"
-    #   The full name of the file, with exension.
+    #   The full name of the file, with extension.
 
     local ext="${filename#*.}"
 
@@ -755,7 +755,7 @@ _get() {
 
     # If the variable is unset or empty set it to a default value. Functions
     # that call this function can pass these parameters in one of two ways:
-    # explicitly as a keyword arg or implicity by setting variables of the same
+    # explicitly as a keyword arg or implicitly by setting variables of the same
     # names within the local scope.
     # shellcheck disable=SC2086
     if [ -z ${_follow_next+x} ] || [ -z "${_follow_next}" ]; then

@@ -230,7 +230,7 @@ that name it will update the local copy and not set a global.)
 Positional arguments
 
 * filename : `$1`
-  The full name of the file, with exension.
+  The full name of the file, with extension.
 
 ### _get_confirm
 
@@ -364,7 +364,7 @@ that name it will update the local copy and not set a global.)
 Positional arguments
 
 * filename : `$1`
-  The full name of the file, with exension.
+  The full name of the file, with extension.
 
 ### _post
 
