@@ -667,7 +667,8 @@ _response() {
     _log debug 'Processing response.'
 
     read -r http_version status_code status_text
-    status_text="${status_text%}"
+    status_text="${status_text%
+}"
     http_version="${http_version#HTTP/}"
 
     _log debug "Response status is: ${status_code} ${status_text}"
@@ -678,8 +679,10 @@ status_text: ${status_text}
 "
     while IFS=": " read -r hdr val; do
         # Headers stop at the first blank line.
-        [ "$hdr" = "" ] && break
-        val="${val%}"
+        [ "$hdr" = "
+" ] && break
+        val="${val%
+}"
 
         # Process each header; reformat some to work better with sh tools.
         case "$hdr" in
@@ -1123,6 +1126,26 @@ delete_repo() {
 
     _delete "/repos/${owner}/${repo}"
     exit $?
+}
+
+fork_repo() {
+    # Fork a repository from a user or organization to own account
+    #
+    # Usage:
+    #
+    #     fork_repo owner repo
+    #
+    # Positional arguments
+    #
+    local owner="${1:?Owner name required.}"
+    #   Name of the new repo
+    local repo="${2:?Repo name required.}"
+    #   Name of the new repo
+
+    shift 2
+
+    _format_json foo=Foo | _post "/repos/${owner}/${repo}/forks"
+    exit $?  # might take a bit time...
 }
 
 # ### Releases
