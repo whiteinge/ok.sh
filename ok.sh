@@ -1135,13 +1135,21 @@ fork_repo() {
     # Positional arguments
     #
     local owner="${1:?Owner name required.}"
-    #   Name of the new repo
+    #   Name of existing user or organization
     local repo="${2:?Repo name required.}"
-    #   Name of the new repo
+    #   Name of the existing repo
+    #
+    # Keyword arguments
+    #
+    local _filter='"\(.clone_url)\t\(.ssh_url)"'
+    #   A jq filter to apply to the return data.
 
     shift 2
 
-    _format_json foo=Foo | _post "/repos/${owner}/${repo}/forks"
+    _opts_filter "$@"
+
+    _format_json foo=Foo | _post "/repos/${owner}/${repo}/forks" \
+        | _filter_json "${_filter}"
     exit $?  # might take a bit time...
 }
 
