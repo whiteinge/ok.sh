@@ -1125,6 +1125,26 @@ delete_repo() {
     exit $?
 }
 
+fork_repo() {
+    # Fork a repository from a user or organization to own account
+    #
+    # Usage:
+    #
+    #     fork_repo owner repo
+    #
+    # Positional arguments
+    #
+    local owner="${1:?Owner name required.}"
+    #   Name of the new repo
+    local repo="${2:?Repo name required.}"
+    #   Name of the new repo
+
+    shift 2
+
+    _format_json foo=Foo | _post "/repos/${owner}/${repo}/forks"
+    exit $?  # might take a bit time...
+}
+
 # ### Releases
 # Create, update, delete, list releases.
 
