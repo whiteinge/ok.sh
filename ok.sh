@@ -416,7 +416,8 @@ _filter_json() {
     #
     # Usage:
     #
-    #     _filter_json '.[] | "\(.foo)"' < something.json
+    #     printf '[{"foo": "One"}, {"foo": "Two"}]' | \
+    #         ok.sh _filter_json '.[] | "\(.foo)"'
     #
     # * (stdin)
     #   JSON input.
