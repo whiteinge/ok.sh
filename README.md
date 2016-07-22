@@ -127,8 +127,10 @@ List all functions found in the current file in the order they appear
 Keyword arguments
 
 * public : `1`
+
   `0` do not output public functions.
 * private : `1`
+
   `0` do not output private functions.
 
 ### _log
@@ -142,8 +144,10 @@ Usage:
 Positional arguments
 
 * level : `$1`
+
   The level for a given log message. (info or debug)
 * message : `$2`
+
   The log message.
 
 ### _helptext
@@ -214,6 +218,7 @@ Usage:
 * (stdin)
   JSON input.
 * _filter : `"$1"`
+
   A string of jq filters to apply to the input stream.
 
 ### _get_mime_type
@@ -232,6 +237,7 @@ that name it will update the local copy and not set a global.)
 Positional arguments
 
 * filename : `$1`
+
   The full name of the file, with extension.
 
 ### _get_confirm
@@ -251,6 +257,7 @@ variable of that name, the local variable will be updated instead.)
 Positional arguments
 
 * message : `$1`
+
   The message to prompt the user with.
 
 ### _opts_filter
@@ -273,7 +280,7 @@ Usage:
 
 ### _opts_qs
 
-Format a querystring to append to an URL or a blank string
+Extract common query string keyword options and assign to vars
 
 Usage:
 
@@ -287,11 +294,18 @@ A wrapper around making HTTP requests with curl
 
 Usage:
 ```
-_request /repos/:owner/:repo/issues
+# Get JSON for all issues:
+_request /repos/saltstack/salt/issues
+
+# Send a POST request; parse response using jq:
 printf '{"title": "%s", "body": "%s"}\n' "Stuff" "Things" \
-  | _request /repos/:owner/:repo/issues | jq -r '.[url]'
+  | _request /some/path | jq -r '.[url]'
+
+# Send a PUT request; parse response using jq:
 printf '{"title": "%s", "body": "%s"}\n' "Stuff" "Things" \
   | _request /repos/:owner/:repo/issues method=PUT | jq -r '.[url]'
+
+# Send a conditional-GET request:
 _request /users etag=edd3a0d38d8c329d3ccc6575f17a76bb
 ```
 
@@ -303,6 +317,7 @@ Input
 Positional arguments
 
 * path : `$1`
+
   The URL path for the HTTP request.
   Must be an absolute path that starts with a `/` or a full URL that
   starts with http(s). Absolute paths will be append to the value in
@@ -311,10 +326,13 @@ Positional arguments
 Keyword arguments
 
 * method : `'GET'`
+
   The method to use for the HTTP request.
 * content_type : `'application/json'`
+
   The value of the Content-Type header to use for the request.
 *  : `etag`
+
   An optional Etag to send as the If-None-Match header.
 
 ### _response
@@ -322,12 +340,16 @@ Keyword arguments
 Process an HTTP response from curl
 
 Output only headers of interest followed by the response body. Additional
-processing is performed on select headers to make them easier to work
-with in sh. See below.
+processing is performed on select headers to make them easier to parse
+using shell tools.
 
 Usage:
 ```
+# Send a request; output the response and only select response headers:
 _request /some/path | _response status_code ETag Link_next
+
+# Make request using curl; output response with select response headers;
+# assign response headers to local variables:
 curl -isS example.com/some/path | _response status_code status_text | {
   local status_code status_text
   read -r status_code
@@ -338,38 +360,51 @@ curl -isS example.com/some/path | _response status_code status_text | {
 Header reformatting
 
 * HTTP Status
-  The HTTP line is split into `http_version`, `status_code`, and
+
+  The HTTP line is split into separate `http_version`, `status_code`, and
   `status_text` variables.
+
 * ETag
+
   The surrounding quotes are removed.
+
 * Link
+
   Each URL in the Link header is expanded with the URL type appended to
   the name. E.g., `Link_first`, `Link_last`, `Link_next`.
 
 Positional arguments
 
 * $1 - $9
+
   Each positional arg is the name of an HTTP header. Each header value is
   output in the same order as each argument; each on a single line. A
   blank line is output for headers that cannot be found.
 
 ### _get
 
-Guess the mime type for a file based on the file extension
+A wrapper around _request() for common GET patterns
+
+Will automatically follow 'next' pagination URLs in the Link header.
 
 Usage:
 
-    local mime_type
-    _get_mime_type "foo.tar"; printf 'mime is: %s' "$mime_type"
-
-Sets the global variable `mime_type` with the result. (If this function
-is called from within a function that has declared a local variable of
-that name it will update the local copy and not set a global.)
+    _get /some/path
+    _get /some/path _follow_next=0
+    _get /some/path _follow_next_limit=200 | jq -c .
 
 Positional arguments
 
-* filename : `$1`
-  The full name of the file, with extension.
+* path : `$1`
+
+  The HTTP path or URL to pass to _request().
+
+Keyword arguments
+
+_follow_next=1
+  Automatically look for a 'Links' header and follow any 'next' URLs.
+_follow_next_limit=50
+  Maximum number of 'next' URLs to follow before stopping.
 
 ### _post
 
@@ -393,17 +428,21 @@ Input
 Positional arguments
 
 * path : `$1`
+
   The HTTP path or URL to pass to _request().
 
 Keyword arguments
 
 * method : `'POST'`
+
   The method to use for the HTTP request.
 *  : `filename`
+
   Optional. See the `stdin` option above also.
   Takes precedence over any data passed as stdin and loads a file off the
   file system to serve as the request body.
 *  : `mime_type`
+
   The value of the Content-Type header to use for the request.
   If the `filename` argument is given this value will be guessed from the
   file extension. If the `filename` argument is not given (i.e., using
@@ -423,6 +462,7 @@ Return: 0 for success; 1 for failure.
 Positional arguments
 
 * url : `$1`
+
   The URL to send the DELETE request to.
 
 ### help
@@ -436,6 +476,7 @@ Usage:
 Positional arguments
 
 * fname : `"$1"`
+
   Function name to search for; if omitted searches whole file.
 
 ### show_scopes
@@ -459,15 +500,19 @@ Usage:
 Positional arguments
 
 * org : `$1`
+
   Organization GitHub login or id for which to list repos.
 
 Keyword arguments
 
 *  : `_follow_next`
+
   Automatically look for a 'Links' header and follow any 'next' URLs.
 *  : `_follow_next_limit`
+
   Maximum number of 'next' URLs to follow before stopping.
 * _filter : `'.[] | "\(.name)\t\(.ssh_url)"'`
+
   A jq filter to apply to the return data.
 
 Querystring arguments may also be passed as keyword arguments:
@@ -484,11 +529,13 @@ Usage:
 Positional arguments
 
 * org : `$1`
+
   Organization GitHub login or id.
 
 Keyword arguments
 
 * _filter : `'.[] | "\(.name)\t\(.id)\t\(.permission)"'`
+
   A jq filter to apply to the return data.
 
 ### org_members
@@ -502,11 +549,13 @@ Usage:
 Positional arguments
 
 * org : `$1`
+
   Organization GitHub login or id.
 
 Keyword arguments
 
 * _filter : `'.[] | "\(.login)\t\(.id)"'`
+
   A jq filter to apply to the return data.
 
 ### list_repos
@@ -521,11 +570,13 @@ Usage:
 Positional arguments
 
 * user : `"$1"`
+
   Optional GitHub user login or id for which to list repos.
 
 Keyword arguments
 
 * _filter : `'.[] | "\(.name)\t\(.html_url)"'`
+
   A jq filter to apply to the return data.
 
 Querystring arguments may also be passed as keyword arguments:
@@ -544,11 +595,13 @@ Usage:
 Positional arguments
 
 * name : `$1`
+
   Name of the new repo
 
 Keyword arguments
 
 * _filter : `'.[] | "\(.name)\t\(.html_url)"'`
+
   A jq filter to apply to the return data.
 
 POST data may also be passed as keyword arguments:
@@ -569,8 +622,10 @@ current scopes with the `show_scopes()` function.
 Positional arguments
 
 * owner : `$1`
+
   Name of the new repo
 * repo : `$2`
+
   Name of the new repo
 
 ### fork_repo
@@ -584,13 +639,16 @@ Usage:
 Positional arguments
 
 * owner : `$1`
+
   Name of existing user or organization
 * repo : `$2`
+
   Name of the existing repo
 
 Keyword arguments
 
 * _filter : `'"\(.clone_url)\t\(.ssh_url)"'`
+
   A jq filter to apply to the return data.
 
 ### list_releases
@@ -604,13 +662,16 @@ Usage:
 Positional arguments
 
 * owner : `$1`
+
   A GitHub user or organization.
 * repo : `$2`
+
   A GitHub repository.
 
 Keyword arguments
 
 * _filter : `'.[] | "\(.name)\t\(.id)\t\(.html_url)"'`
+
   A jq filter to apply to the return data.
 
 ### release
@@ -624,15 +685,19 @@ Usage:
 Positional arguments
 
 * owner : `$1`
+
   A GitHub user or organization.
 * repo : `$2`
+
   A GitHub repository.
 * release_id : `$3`
+
   The unique ID of the release; see list_releases.
 
 Keyword arguments
 
 * _filter : `'"\(.author.login)\t\(.published_at)"'`
+
   A jq filter to apply to the return data.
 
 ### create_release
@@ -647,15 +712,19 @@ Usage:
 Positional arguments
 
 * owner : `$1`
+
   A GitHub user or organization.
 * repo : `$2`
+
   A GitHub repository.
 * tag_name : `$3`
+
   Git tag from which to create release.
 
 Keyword arguments
 
 * _filter : `'"\(.name)\t\(.id)\t\(.html_url)"'`
+
   A jq filter to apply to the return data.
 
 POST data may also be passed as keyword arguments:
@@ -674,10 +743,13 @@ Return: 0 for success; 1 for failure.
 Positional arguments
 
 * owner : `$1`
+
   A GitHub user or organization.
 * repo : `$2`
+
   A GitHub repository.
 * release_id : `$3`
+
   The unique ID of the release; see list_releases.
 
 ### release_assets
@@ -691,15 +763,19 @@ Usage:
 Positional arguments
 
 * owner : `$1`
+
   A GitHub user or organization.
 * repo : `$2`
+
   A GitHub repository.
 * release_id : `$3`
+
   The unique ID of the release; see list_releases.
 
 Keyword arguments
 
 * _filter : `'.[] | "\(.id)\t\(.name)\t\(.updated_at)"'`
+
   A jq filter to apply to the return data.
 
 ### upload_asset
@@ -719,17 +795,22 @@ Usage:
 Positional arguments
 
 * owner : `$1`
+
   A GitHub user or organization.
 * repo : `$2`
+
   A GitHub repository.
 * release_id : `$3`
+
   The unique ID of the release; see list_releases.
 * name : `$4`
+
   The file name of the asset.
 
 Keyword arguments
 
 * _filter : `'"\(.state)\t\(.browser_download_url)"'`
+
   A jq filter to apply to the return data.
 
 ### list_milestones
@@ -744,15 +825,19 @@ Usage:
 Positional arguments
 
 * repository : `$1`
+
   A GitHub repository.
 
 Keyword arguments
 
 *  : `_follow_next`
+
   Automatically look for a 'Links' header and follow any 'next' URLs.
 *  : `_follow_next_limit`
+
   Maximum number of 'next' URLs to follow before stopping.
 * _filter : `'.[] | "\(.number)\t\(.open_issues)/\(.closed_issues)\t\(.title)"'`
+
   A jq filter to apply to the return data.
 
 GitHub querystring arguments may also be passed as keyword arguments:
@@ -774,13 +859,16 @@ Usage:
 Positional arguments
 
 * repo : `$1`
+
   A GitHub repository.
 * title : `$2`
+
   A unique title.
 
 Keyword arguments
 
 * _filter : `'"\(.number)\t\(.html_url)"'`
+
   A jq filter to apply to the return data.
 
 Milestone options may also be passed as keyword arguments:
@@ -799,15 +887,19 @@ Usage:
 Positional arguments
 
 * repository : `"$1"`
+
   A GitHub repository.
 
 Keyword arguments
 
 *  : `_follow_next`
+
   Automatically look for a 'Links' header and follow any 'next' URLs.
 *  : `_follow_next_limit`
+
   Maximum number of 'next' URLs to follow before stopping.
 * _filter : `'.[] | "\(.number)\t\(.title)"'`
+
   A jq filter to apply to the return data.
 
 GitHub querystring arguments may also be passed as keyword arguments:
@@ -826,15 +918,19 @@ Usage:
 Positional arguments
 
 * repository : `"$1"`
+
   A GitHub repository.
 
 Keyword arguments
 
 *  : `_follow_next`
+
   Automatically look for a 'Links' header and follow any 'next' URLs.
 *  : `_follow_next_limit`
+
   Maximum number of 'next' URLs to follow before stopping.
 * _filter : `'.[] | "\(.number)\t\(.title)"'`
+
   A jq filter to apply to the return data.
 
 GitHub querystring arguments may also be passed as keyword arguments:
@@ -851,15 +947,19 @@ Usage:
 Positional arguments
 
 * org : `$1`
+
   Organization GitHub login or id.
 
 Keyword arguments
 
 *  : `_follow_next`
+
   Automatically look for a 'Links' header and follow any 'next' URLs.
 *  : `_follow_next_limit`
+
   Maximum number of 'next' URLs to follow before stopping.
 * _filter : `'.[] | "\(.number)\t\(.title)"'`
+
   A jq filter to apply to the return data.
 
 GitHub querystring arguments may also be passed as keyword arguments:
@@ -876,15 +976,19 @@ Usage:
 Positional arguments
 
 * repo : `"$1"`
+
   A GitHub repository.
 
 Keyword arguments
 
 *  : `_follow_next`
+
   Automatically look for a 'Links' header and follow any 'next' URLs.
 *  : `_follow_next_limit`
+
   Maximum number of 'next' URLs to follow before stopping.
 * _filter : `'.[] | "\(.name)\t\(.color)"'`
+
   A jq filter to apply to the return data.
 
 ### add_label
@@ -897,15 +1001,19 @@ Usage:
 Positional arguments
 
 * repo : `$1`
+
   A GitHub repository.
 * label : `$2`
+
   A new label.
 * color : `$3`
+
   A color, in hex, without the leading `#`.
 
 Keyword arguments
 
 * _filter : `'"\(.name)\t\(.color)"'`
+
   A jq filter to apply to the return data.
 
 ### update_label
@@ -919,13 +1027,16 @@ Usage:
 Positional arguments
 
 * repo : `$1`
+
   A GitHub repository.
 * label : `$2`
+
   The name of the label which will be updated
 
 Keyword arguments
 
 * _filter : `'"\(.name)\t\(.color)"'`
+
   A jq filter to apply to the return data.
 
 Label options may also be passed as keyword arguments, these will update
@@ -943,13 +1054,18 @@ Usage:
 Positional arguments
 
 * team_id : `$1`
+
   Team id to add repository to
 * organization : `$2`
+
   Organization to add repository to
 * repository_name : `$3`
+
   Repository name to add
 * permission : `$4`
+
   Permission to grant: pull, push, admin
 
 * url : `"/teams/$team_id}/repos/${organization}/${repository_name}"`
+
 

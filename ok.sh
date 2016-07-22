@@ -92,7 +92,8 @@ help() {
 
     # Short-circuit if only producing help for a single function.
     if [ $# -gt 0 ]; then
-        awk -v fname="^$fname" '$0 ~ fname, /^}/ { print }' "$0" | _helptext
+        awk -v fname="^$fname\\\(\\\) {$" '$0 ~ fname, /^}/ { print }' "$0" \
+            | _helptext
         return
     fi
 
@@ -306,7 +307,7 @@ _helptext() {
         val = substr($0, idx + 1)
         sub(/"{0,1}\${/, "$", val)
         sub(/:.*$/, "", val)
-        print "* " name " : `" val "`"
+        print "* " name " : `" val "`\n"
     }
     !NF { exit }'
 }
@@ -537,7 +538,7 @@ _opts_pagination() {
 }
 
 _opts_qs() {
-    # Format a querystring to append to an URL or a blank string
+    # Extract common query string keyword options and assign to vars
     #
     # Usage:
     #
@@ -554,11 +555,18 @@ _request() {
     #
     # Usage:
     # ```
-    # _request /repos/:owner/:repo/issues
+    # # Get JSON for all issues:
+    # _request /repos/saltstack/salt/issues
+    #
+    # # Send a POST request; parse response using jq:
     # printf '{"title": "%s", "body": "%s"}\n' "Stuff" "Things" \
-    #   | _request /repos/:owner/:repo/issues | jq -r '.[url]'
+    #   | _request /some/path | jq -r '.[url]'
+    #
+    # # Send a PUT request; parse response using jq:
     # printf '{"title": "%s", "body": "%s"}\n' "Stuff" "Things" \
     #   | _request /repos/:owner/:repo/issues method=PUT | jq -r '.[url]'
+    #
+    # # Send a conditional-GET request:
     # _request /users etag=edd3a0d38d8c329d3ccc6575f17a76bb
     # ```
     #
@@ -627,12 +635,16 @@ _response() {
     # Process an HTTP response from curl
     #
     # Output only headers of interest followed by the response body. Additional
-    # processing is performed on select headers to make them easier to work
-    # with in sh. See below.
+    # processing is performed on select headers to make them easier to parse
+    # using shell tools.
     #
     # Usage:
     # ```
+    # # Send a request; output the response and only select response headers:
     # _request /some/path | _response status_code ETag Link_next
+    #
+    # # Make request using curl; output response with select response headers;
+    # # assign response headers to local variables:
     # curl -isS example.com/some/path | _response status_code status_text | {
     #   local status_code status_text
     #   read -r status_code
@@ -643,17 +655,23 @@ _response() {
     # Header reformatting
     #
     # * HTTP Status
-    #   The HTTP line is split into `http_version`, `status_code`, and
+    #
+    #   The HTTP line is split into separate `http_version`, `status_code`, and
     #   `status_text` variables.
+    #
     # * ETag
+    #
     #   The surrounding quotes are removed.
+    #
     # * Link
+    #
     #   Each URL in the Link header is expanded with the URL type appended to
     #   the name. E.g., `Link_first`, `Link_last`, `Link_next`.
     #
     # Positional arguments
     #
     # * $1 - $9
+    #
     #   Each positional arg is the name of an HTTP header. Each header value is
     #   output in the same order as each argument; each on a single line. A
     #   blank line is output for headers that cannot be found.
