@@ -537,7 +537,7 @@ _opts_pagination() {
 }
 
 _opts_qs() {
-    # Format a querystring to append to an URL or a blank string
+    # Extract common query string keyword options and assign to vars
     #
     # Usage:
     #
@@ -554,11 +554,18 @@ _request() {
     #
     # Usage:
     # ```
-    # _request /repos/:owner/:repo/issues
+    # # Get JSON for all issues:
+    # _request /repos/saltstack/salt/issues
+    #
+    # # Send a POST request; parse response using jq:
     # printf '{"title": "%s", "body": "%s"}\n' "Stuff" "Things" \
-    #   | _request /repos/:owner/:repo/issues | jq -r '.[url]'
+    #   | _request /some/path | jq -r '.[url]'
+    #
+    # # Send a PUT request; parse response using jq:
     # printf '{"title": "%s", "body": "%s"}\n' "Stuff" "Things" \
     #   | _request /repos/:owner/:repo/issues method=PUT | jq -r '.[url]'
+    #
+    # # Send a conditional-GET request:
     # _request /users etag=edd3a0d38d8c329d3ccc6575f17a76bb
     # ```
     #
