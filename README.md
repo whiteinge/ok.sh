@@ -101,6 +101,7 @@ Flags _must_ be the first argument to `ok.sh`, before `command`.
 * [list_repos](#list_repos)
 * [create_repo](#create_repo)
 * [delete_repo](#delete_repo)
+* [fork_repo](#fork_repo)
 * [list_releases](#list_releases)
 * [release](#release)
 * [create_release](#create_release)
@@ -207,7 +208,8 @@ Filter JSON input using jq; outputs raw JSON if jq is not installed
 
 Usage:
 
-    _filter_json '.[] | "\(.foo)"' < something.json
+    printf '[{"foo": "One"}, {"foo": "Two"}]' | \
+        ok.sh _filter_json '.[] | "\(.foo)"'
 
 * (stdin)
   JSON input.
@@ -290,6 +292,7 @@ printf '{"title": "%s", "body": "%s"}\n' "Stuff" "Things" \
   | _request /repos/:owner/:repo/issues | jq -r '.[url]'
 printf '{"title": "%s", "body": "%s"}\n' "Stuff" "Things" \
   | _request /repos/:owner/:repo/issues method=PUT | jq -r '.[url]'
+_request /users etag=edd3a0d38d8c329d3ccc6575f17a76bb
 ```
 
 Input
@@ -311,6 +314,8 @@ Keyword arguments
   The method to use for the HTTP request.
 * content_type : `'application/json'`
   The value of the Content-Type header to use for the request.
+*  : `etag`
+  An optional Etag to send as the If-None-Match header.
 
 ### _response
 
@@ -567,6 +572,26 @@ Positional arguments
   Name of the new repo
 * repo : `$2`
   Name of the new repo
+
+### fork_repo
+
+Fork a repository from a user or organization to own account
+
+Usage:
+
+    fork_repo owner repo
+
+Positional arguments
+
+* owner : `$1`
+  Name of existing user or organization
+* repo : `$2`
+  Name of the existing repo
+
+Keyword arguments
+
+* _filter : `'"\(.clone_url)\t\(.ssh_url)"'`
+  A jq filter to apply to the return data.
 
 ### list_releases
 
