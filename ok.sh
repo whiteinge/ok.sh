@@ -306,7 +306,7 @@ _helptext() {
         val = substr($0, idx + 1)
         sub(/"{0,1}\${/, "$", val)
         sub(/:.*$/, "", val)
-        print "* " name " : `" val "`"
+        print "* " name " : `" val "`\n"
     }
     !NF { exit }'
 }
