@@ -634,12 +634,16 @@ _response() {
     # Process an HTTP response from curl
     #
     # Output only headers of interest followed by the response body. Additional
-    # processing is performed on select headers to make them easier to work
-    # with in sh. See below.
+    # processing is performed on select headers to make them easier to parse
+    # using shell tools.
     #
     # Usage:
     # ```
+    # # Send a request; output the response and only select response headers:
     # _request /some/path | _response status_code ETag Link_next
+    #
+    # # Make request using curl; output response with select response headers;
+    # # assign response headers to local variables:
     # curl -isS example.com/some/path | _response status_code status_text | {
     #   local status_code status_text
     #   read -r status_code
@@ -650,17 +654,23 @@ _response() {
     # Header reformatting
     #
     # * HTTP Status
-    #   The HTTP line is split into `http_version`, `status_code`, and
+    #
+    #   The HTTP line is split into separate `http_version`, `status_code`, and
     #   `status_text` variables.
+    #
     # * ETag
+    #
     #   The surrounding quotes are removed.
+    #
     # * Link
+    #
     #   Each URL in the Link header is expanded with the URL type appended to
     #   the name. E.g., `Link_first`, `Link_last`, `Link_next`.
     #
     # Positional arguments
     #
     # * $1 - $9
+    #
     #   Each positional arg is the name of an HTTP header. Each header value is
     #   output in the same order as each argument; each on a single line. A
     #   blank line is output for headers that cannot be found.
