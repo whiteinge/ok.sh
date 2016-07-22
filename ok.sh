@@ -302,12 +302,13 @@ _helptext() {
     }
     /^\s*local/ {
         sub(/^\s*local /, "")
-        idx = index($0, "=")
-        name = substr($0, 1, idx - 1)
-        val = substr($0, idx + 1)
+        split($0, vars, "=")
+        name = vars[1]; val = vars[2]
         sub(/"{0,1}\${/, "$", val)
         sub(/:.*$/, "", val)
-        print "* " name " : `" val "`\n"
+        # " fix Vim syntax bug.
+        if (name) printf "* %s", name
+        if (val) printf " : `%s`\n\n", val
     }
     !NF { exit }'
 }
