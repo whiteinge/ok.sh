@@ -331,9 +331,7 @@ Keyword arguments
 * content_type : `'application/json'`
 
   The value of the Content-Type header to use for the request.
-*  : `etag`
-
-  An optional Etag to send as the If-None-Match header.
+* etag  An optional Etag to send as the If-None-Match header.
 
 ### _response
 
@@ -436,14 +434,10 @@ Keyword arguments
 * method : `'POST'`
 
   The method to use for the HTTP request.
-*  : `filename`
-
-  Optional. See the `stdin` option above also.
+* filename  Optional. See the `stdin` option above also.
   Takes precedence over any data passed as stdin and loads a file off the
   file system to serve as the request body.
-*  : `mime_type`
-
-  The value of the Content-Type header to use for the request.
+* mime_type  The value of the Content-Type header to use for the request.
   If the `filename` argument is given this value will be guessed from the
   file extension. If the `filename` argument is not given (i.e., using
   stdin) this value defaults to `application/json`. Specifying this
@@ -505,12 +499,8 @@ Positional arguments
 
 Keyword arguments
 
-*  : `_follow_next`
-
-  Automatically look for a 'Links' header and follow any 'next' URLs.
-*  : `_follow_next_limit`
-
-  Maximum number of 'next' URLs to follow before stopping.
+* _follow_next  Automatically look for a 'Links' header and follow any 'next' URLs.
+* _follow_next_limit  Maximum number of 'next' URLs to follow before stopping.
 * _filter : `'.[] | "\(.name)\t\(.ssh_url)"'`
 
   A jq filter to apply to the return data.
@@ -830,12 +820,8 @@ Positional arguments
 
 Keyword arguments
 
-*  : `_follow_next`
-
-  Automatically look for a 'Links' header and follow any 'next' URLs.
-*  : `_follow_next_limit`
-
-  Maximum number of 'next' URLs to follow before stopping.
+* _follow_next  Automatically look for a 'Links' header and follow any 'next' URLs.
+* _follow_next_limit  Maximum number of 'next' URLs to follow before stopping.
 * _filter : `'.[] | "\(.number)\t\(.open_issues)/\(.closed_issues)\t\(.title)"'`
 
   A jq filter to apply to the return data.
@@ -892,12 +878,8 @@ Positional arguments
 
 Keyword arguments
 
-*  : `_follow_next`
-
-  Automatically look for a 'Links' header and follow any 'next' URLs.
-*  : `_follow_next_limit`
-
-  Maximum number of 'next' URLs to follow before stopping.
+* _follow_next  Automatically look for a 'Links' header and follow any 'next' URLs.
+* _follow_next_limit  Maximum number of 'next' URLs to follow before stopping.
 * _filter : `'.[] | "\(.number)\t\(.title)"'`
 
   A jq filter to apply to the return data.
@@ -923,12 +905,8 @@ Positional arguments
 
 Keyword arguments
 
-*  : `_follow_next`
-
-  Automatically look for a 'Links' header and follow any 'next' URLs.
-*  : `_follow_next_limit`
-
-  Maximum number of 'next' URLs to follow before stopping.
+* _follow_next  Automatically look for a 'Links' header and follow any 'next' URLs.
+* _follow_next_limit  Maximum number of 'next' URLs to follow before stopping.
 * _filter : `'.[] | "\(.number)\t\(.title)"'`
 
   A jq filter to apply to the return data.
@@ -952,12 +930,8 @@ Positional arguments
 
 Keyword arguments
 
-*  : `_follow_next`
-
-  Automatically look for a 'Links' header and follow any 'next' URLs.
-*  : `_follow_next_limit`
-
-  Maximum number of 'next' URLs to follow before stopping.
+* _follow_next  Automatically look for a 'Links' header and follow any 'next' URLs.
+* _follow_next_limit  Maximum number of 'next' URLs to follow before stopping.
 * _filter : `'.[] | "\(.number)\t\(.title)"'`
 
   A jq filter to apply to the return data.
@@ -981,12 +955,8 @@ Positional arguments
 
 Keyword arguments
 
-*  : `_follow_next`
-
-  Automatically look for a 'Links' header and follow any 'next' URLs.
-*  : `_follow_next_limit`
-
-  Maximum number of 'next' URLs to follow before stopping.
+* _follow_next  Automatically look for a 'Links' header and follow any 'next' URLs.
+* _follow_next_limit  Maximum number of 'next' URLs to follow before stopping.
 * _filter : `'.[] | "\(.name)\t\(.color)"'`
 
   A jq filter to apply to the return data.
