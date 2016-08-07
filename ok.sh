@@ -150,7 +150,9 @@ _all_funcs() {
 }
 
 __main() {
-    # Usage: `${NAME} [<flags>] (command [<arg>, <name=value>...])`
+    # ## Usage
+    #
+    # `${NAME} [<flags>] (command [<arg>, <name=value>...])`
     #
     #       ${NAME} -h              # Short, usage help text.
     #       ${NAME} help            # All help text. Warning: long!
@@ -686,7 +688,8 @@ _response() {
     _log debug 'Processing response.'
 
     read -r http_version status_code status_text
-    status_text="${status_text%}"
+    status_text="${status_text%
+}"
     http_version="${http_version#HTTP/}"
 
     _log debug "Response status is: ${status_code} ${status_text}"
@@ -697,8 +700,10 @@ status_text: ${status_text}
 "
     while IFS=": " read -r hdr val; do
         # Headers stop at the first blank line.
-        [ "$hdr" = "" ] && break
-        val="${val%}"
+        [ "$hdr" = "
+" ] && break
+        val="${val%
+}"
 
         # Process each header; reformat some to work better with sh tools.
         case "$hdr" in
