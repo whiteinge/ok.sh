@@ -150,7 +150,9 @@ _all_funcs() {
 }
 
 __main() {
-    # Usage: `${NAME} [<flags>] (command [<arg>, <name=value>...])`
+    # ## Usage
+    #
+    # `${NAME} [<flags>] (command [<arg>, <name=value>...])`
     #
     #       ${NAME} -h              # Short, usage help text.
     #       ${NAME} help            # All help text. Warning: long!
