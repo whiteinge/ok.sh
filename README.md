@@ -49,7 +49,9 @@ The following environment variables may be set to customize ok.sh.
 * OK_SH_MARKDOWN=1
   Output some text in Markdown format.
 
-Usage: `ok.sh [<flags>] (command [<arg>, <name=value>...])`
+## Usage
+
+`ok.sh [<flags>] (command [<arg>, <name=value>...])`
 
       ok.sh -h              # Short, usage help text.
       ok.sh help            # All help text. Warning: long!
