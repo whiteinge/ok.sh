@@ -1073,6 +1073,106 @@ list_repos() {
     _get "${url}${qs}" | _filter_json "${_filter}"
 }
 
+list_contributors() {
+    # List contributors to the specified repository, sorted by the number of commits per contributor in descending order.
+    # ( https://developer.github.com/v3/repos/#list-contributors )
+    #
+    # Usage:
+    #
+    #     list_contributors user repo
+    #
+    # Positional arguments
+    #   GitHub user login or id for which to list contributors
+    #   Name of the repo for which to list contributors
+    #
+    local user="${1:?User name required.}"
+    local repo="${2:?Repo name required.}"
+    shift 2
+    #
+    # Keyword arguments
+    #
+    local _filter='.[] | "\(.login)\t\(.type)\tType:\(.type)\tContributions:\(.contributions)"'
+    #   A jq filter to apply to the return data.
+    #
+    # Querystring arguments may also be passed as keyword arguments:
+    # per_page, type, sort, direction
+
+    local qs
+
+    _opts_filter "$@"
+    _opts_qs "$@"
+
+    url="/repos/${user}/${repo}/contributors"
+
+    _get "${url}${qs}" | _filter_json "${_filter}"
+}
+
+list_collaborators() {
+    # List collaborators to the specified repository, sorted by the number of commits per collaborator in descending order.
+    # ( https://developer.github.com/v3/repos/#list-collaborators )
+    #
+    # Usage:
+    #
+    #     list_collaborators someuser/somerepo
+    #
+    # Positional arguments
+    #   GitHub user login or id for which to list collaborators
+    #   Name of the repo for which to list collaborators
+    #
+    local repo="${1:?Repo name required.}"
+    #
+    # Keyword arguments
+    #
+    local _filter='.[] | "\(.login)\t\(.type)\tType:\(.type)\tPermissions:\(.permissions)"'
+    #   A jq filter to apply to the return data.
+    #
+    # Querystring arguments may also be passed as keyword arguments:
+    # per_page, type, sort, direction
+    shift 1
+
+    local qs
+
+    _opts_filter "$@"
+    _opts_qs "$@"
+
+    url="/repos/${repo}/collaborators"
+
+    _get "${url}${qs}" | _filter_json "${_filter}"
+}
+
+add_collaborator() {
+    # Add a collaborator to a repository
+    #
+    # Usage:
+    #       add_collaborator someuser/somerepo collaboratoruser permission
+    #
+    # Positional arguments
+    #
+    local repo="${1:?Repo name required.}"
+    #   A GitHub repository.
+    local collaborator="${2:?Collaborator name required.}"
+    #   A new collaborator.
+    local permission="${3:?Permission required. One of: push pull admin}"
+    #   The permission level for this collaborator.  One of: push pull admin
+    #   The pull and admin permissions are valid for organization repos only.
+    case $permission in
+        push|pull|admin) :;;
+        *) printf 'Permission invalid: %s\nMust be one of: push pull admin\n' \
+                "$permission" 1>&2; exit 1 ;;
+    esac
+    #
+    # Keyword arguments
+    #
+    local _filter='"\(.name)\t\(.color)"'
+    #   A jq filter to apply to the return data.
+
+    _opts_filter "$@"
+
+    _format_json permission="$permission" \
+        | _post "/repos/${repo}/collaborators/${collaborator}" method='PUT' \
+        | _filter_json "$_filter"
+}
+
 create_repo() {
     # Create a repository for a user or organization
     #
@@ -1089,7 +1189,7 @@ create_repo() {
     #
     # Keyword arguments
     #
-    local _filter='.[] | "\(.name)\t\(.html_url)"'
+    local _filter='"\(.name)\t\(.html_url)"'
     #   A jq filter to apply to the return data.
     #
     # POST data may also be passed as keyword arguments:
@@ -1584,7 +1684,7 @@ add_label() {
     # Add a label to a repository
     #
     # Usage:
-    #       add_label someuser/somereapo LabelName color
+    #       add_label someuser/somerepo LabelName color
     #
     # Positional arguments
     #
@@ -1611,7 +1711,7 @@ update_label() {
     # Update a label
     #
     # Usage:
-    #       update_label someuser/somereapo OldLabelName \
+    #       update_label someuser/somerepo OldLabelName \
     #           label=NewLabel color=newcolor
     #
     # Positional arguments
