@@ -1,4 +1,4 @@
-all: test shellcheck
+all: test
 
 test:
 	./run_tests.sh
