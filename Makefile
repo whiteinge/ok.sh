@@ -1,8 +1,8 @@
 # Install ok.sh; build the website/README; run the tests.
 
-PROGRAM = ok.sh
-DESTDIR = $(HOME)
-DESTDIRB = /
+PROGRAM ?= ok.sh
+DESTDIR ?= $(HOME)
+DESTDIRB ?= /
 
 install : $(PROGRAM)
 	cp $(PROGRAM) "$(DESTDIR)/bin/"
