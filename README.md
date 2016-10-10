@@ -101,6 +101,10 @@ Flags _must_ be the first argument to `ok.sh`, before `command`.
 * [org_teams](#org_teams)
 * [org_members](#org_members)
 * [list_repos](#list_repos)
+* [list_contributors](#list_contributors)
+* [list_collaborators](#list_collaborators)
+* [add_collaborator](#add_collaborator)
+* [delete_collaborator](#delete_collaborator)
 * [create_repo](#create_repo)
 * [delete_repo](#delete_repo)
 * [fork_repo](#fork_repo)
@@ -584,6 +588,100 @@ Keyword arguments
 Querystring arguments may also be passed as keyword arguments:
 per_page, type, sort, direction
 
+### list_contributors
+
+List contributors to the specified repository, sorted by the number of commits per contributor in descending order.
+( https://developer.github.com/v3/repos/#list-contributors )
+
+Usage:
+
+    list_contributors user repo
+
+Positional arguments
+  GitHub user login or id for which to list contributors
+  Name of the repo for which to list contributors
+
+* user : `$1`
+
+* repo : `$2`
+
+
+Keyword arguments
+
+* _filter : `'.[] | "\(.login)\t\(.type)\tType`
+
+  A jq filter to apply to the return data.
+
+Querystring arguments may also be passed as keyword arguments:
+per_page, type, sort, direction
+
+### list_collaborators
+
+List collaborators to the specified repository, sorted by the number of commits per collaborator in descending order.
+( https://developer.github.com/v3/repos/#list-collaborators )
+
+Usage:
+
+    list_collaborators someuser/somerepo
+
+Positional arguments
+  GitHub user login or id for which to list collaborators
+  Name of the repo for which to list collaborators
+
+* repo : `$1`
+
+
+Keyword arguments
+
+* _filter : `'.[] | "\(.login)\t\(.type)\tType`
+
+  A jq filter to apply to the return data.
+
+Querystring arguments may also be passed as keyword arguments:
+per_page, type, sort, direction
+
+### add_collaborator
+
+Add a collaborator to a repository
+
+Usage:
+      add_collaborator someuser/somerepo collaboratoruser permission
+
+Positional arguments
+
+* repo : `$1`
+
+  A GitHub repository.
+* collaborator : `$2`
+
+  A new collaborator.
+* permission : `$3`
+
+  The permission level for this collaborator.  One of: push pull admin
+  The pull and admin permissions are valid for organization repos only.
+
+Keyword arguments
+
+* _filter : `'"\(.name)\t\(.color)"'`
+
+  A jq filter to apply to the return data.
+
+### delete_collaborator
+
+Delete a collaborator to a repository
+
+Usage:
+      delete_collaborator someuser/somerepo collaboratoruser permission
+
+Positional arguments
+
+* repo : `$1`
+
+  A GitHub repository.
+* collaborator : `$2`
+
+  A new collaborator.
+
 ### create_repo
 
 Create a repository for a user or organization
@@ -602,7 +700,7 @@ Positional arguments
 
 Keyword arguments
 
-* _filter : `'.[] | "\(.name)\t\(.html_url)"'`
+* _filter : `'"\(.name)\t\(.html_url)"'`
 
   A jq filter to apply to the return data.
 
@@ -998,7 +1096,7 @@ Keyword arguments
 Add a label to a repository
 
 Usage:
-      add_label someuser/somereapo LabelName color
+      add_label someuser/somerepo LabelName color
 
 Positional arguments
 
@@ -1023,7 +1121,7 @@ Keyword arguments
 Update a label
 
 Usage:
-      update_label someuser/somereapo OldLabelName \
+      update_label someuser/somerepo OldLabelName \
           label=NewLabel color=newcolor
 
 Positional arguments

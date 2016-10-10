@@ -1173,6 +1173,30 @@ add_collaborator() {
         | _filter_json "$_filter"
 }
 
+delete_collaborator() {
+    # Delete a collaborator to a repository
+    #
+    # Usage:
+    #       delete_collaborator someuser/somerepo collaboratoruser permission
+    #
+    # Positional arguments
+    #
+    local repo="${1:?Repo name required.}"
+    #   A GitHub repository.
+    local collaborator="${2:?Collaborator name required.}"
+    #   A new collaborator.
+
+    shift 2
+
+    local confirm
+
+    _get_confirm 'This will permanently delete the collaborator from this repo. Continue?'
+    [ "$confirm" -eq 1 ] || exit 0
+
+    _delete "/repos/${repo}/collaborators/${collaborator}"
+    exit $?
+}
+
 create_repo() {
     # Create a repository for a user or organization
     #
