@@ -1,6 +1,9 @@
 #!/usr/bin/env sh
 # # A GitHub API client library written in POSIX sh
 #
+# https://github.com/whiteinge/ok.sh
+# BSD licensed.
+#
 # ## Requirements
 #
 # * A POSIX environment (tested against Busybox v1.19.4)
