@@ -430,6 +430,7 @@ _filter_json() {
     _log debug 'Filtering JSON.'
 
     if [ $NO_JQ -ne 0 ] ; then
+        _log debug 'Bypassing jq processing.'
         cat
         return
     fi
