@@ -692,7 +692,8 @@ _response() {
     _log debug 'Processing response.'
 
     read -r http_version status_code status_text
-    status_text="${status_text%}"
+    status_text="${status_text%
+}"
     http_version="${http_version#HTTP/}"
 
     _log debug "Response status is: ${status_code} ${status_text}"
@@ -703,8 +704,10 @@ status_text: ${status_text}
 "
     while IFS=": " read -r hdr val; do
         # Headers stop at the first blank line.
-        [ "$hdr" = "" ] && break
-        val="${val%}"
+        [ "$hdr" = "
+" ] && break
+        val="${val%
+}"
 
         # Process each header; reformat some to work better with sh tools.
         case "$hdr" in
