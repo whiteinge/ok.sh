@@ -1077,6 +1077,40 @@ list_repos() {
     _get "${url}${qs}" | _filter_json "${_filter}"
 }
 
+list_branches() {
+    # List branches of a specified repository.
+    # ( https://developer.github.com/v3/repos/#list_branches )
+    #
+    # Usage:
+    #
+    #     list_branches user repo
+    #
+    # Positional arguments
+    #   GitHub user login or id for which to list branches
+    #   Name of the repo for which to list branches
+    #
+    local user="${1:?User name required.}"
+    local repo="${2:?Repo name required.}"
+    shift 2
+    #
+    # Keyword arguments
+    #
+    local _filter='.[] | "\(.name)"'
+    #   A jq filter to apply to the return data.
+    #
+    # Querystring arguments may also be passed as keyword arguments:
+    # per_page, type, sort, direction
+
+    local qs
+
+    _opts_filter "$@"
+    _opts_qs "$@"
+
+    url="/repos/${user}/${repo}/branches"
+
+    _get "${url}${qs}" | _filter_json "${_filter}"
+}
+
 list_contributors() {
     # List contributors to the specified repository, sorted by the number of commits per contributor in descending order.
     # ( https://developer.github.com/v3/repos/#list-contributors )
