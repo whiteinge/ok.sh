@@ -182,14 +182,8 @@ __main() {
     local OPTARG
     local OPTIND
     local quiet=0
-    local temp_dir="/tmp/oksh-${random}-${$}"
+    local temp_dir=$(mktemp -d /tmp/foo.XXXXXXXXX)
     local summary_fifo="${temp_dir}/oksh_summary.fifo"
-    local random
-    # TODO: remove unnecessary applications
-    # random="$(hexdump -n 2 -e '/2 "%u"' /dev/urandom)"
-    # windows bash compability random
-    random="$(cat /dev/urandom | tr -cd 'a-f0-9' | head -c 16)"
-    
 
     # shellcheck disable=SC2154
     trap '
@@ -708,10 +702,8 @@ status_text: ${status_text}
 "
     while IFS=": " read -r hdr val; do
         # Headers stop at the first blank line.
-        [ "$hdr" = "
-" ] && break
-        val="${val%
-}"
+        [ "$hdr" = "" ] && break
+        val="${val%}"
 
         # Process each header; reformat some to work better with sh tools.
         case "$hdr" in
