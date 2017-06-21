@@ -183,7 +183,7 @@ __main() {
     local OPTARG
     local OPTIND
     local quiet=0
-    local temp_dir="/tmp/${NAME}.${$}.$(awk \
+    local temp_dir="${TMPDIR-/tmp}/${NAME}.${$}.$(awk \
         'BEGIN {srand(); printf "%d\n", rand() * 10^10}')"
     local summary_fifo="${temp_dir}/oksh_summary.fifo"
 
