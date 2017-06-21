@@ -182,10 +182,8 @@ __main() {
     local OPTARG
     local OPTIND
     local quiet=0
-    local temp_dir="/tmp/oksh-${random}-${$}"
+    local temp_dir=$(mktemp -d /tmp/foo.XXXXXXXXX)
     local summary_fifo="${temp_dir}/oksh_summary.fifo"
-    local random
-    random="$(hexdump -n 2 -e '/2 "%u"' /dev/urandom)"
 
     # shellcheck disable=SC2154
     trap '
@@ -692,7 +690,7 @@ _response() {
     _log debug 'Processing response.'
 
     read -r http_version status_code status_text
-    status_text="${status_text%}"
+    status_text="${status_text%}"
     http_version="${http_version#HTTP/}"
 
     _log debug "Response status is: ${status_code} ${status_text}"
@@ -703,8 +701,8 @@ status_text: ${status_text}
 "
     while IFS=": " read -r hdr val; do
         # Headers stop at the first blank line.
-        [ "$hdr" = "" ] && break
-        val="${val%}"
+        [ "$hdr" = "" ] && break
+        val="${val%}"
 
         # Process each header; reformat some to work better with sh tools.
         case "$hdr" in

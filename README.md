@@ -22,7 +22,7 @@ BSD licensed.
 ## Setup
 
 Authentication credentials are read from a `~/.netrc` file.
-Generate the token on GitHub under "Account Settings -> Applications".
+Generate the [token](https://github.com/settings/tokens) on GitHub under "Account Settings -> Applications".
 Restrict permissions on that file with `chmod 600 ~/.netrc`!
 
     machine api.github.com
