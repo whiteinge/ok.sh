@@ -22,7 +22,8 @@ BSD licensed.
 ## Setup
 
 Authentication credentials are read from a `~/.netrc` file.
-Generate the token on GitHub under "Account Settings -> Applications".
+[Generate the token on GitHub](https://github.com/settings/tokens) under
+"Account Settings -> Applications".
 Restrict permissions on that file with `chmod 600 ~/.netrc`!
 
     machine api.github.com
@@ -104,6 +105,7 @@ Flags _must_ be the first argument to `ok.sh`, before `command`.
 * [org_teams](#org_teams)
 * [org_members](#org_members)
 * [list_repos](#list_repos)
+* [list_branches](#list_branches)
 * [list_contributors](#list_contributors)
 * [list_collaborators](#list_collaborators)
 * [add_collaborator](#add_collaborator)
@@ -585,6 +587,33 @@ Positional arguments
 Keyword arguments
 
 * _filter : `'.[] | "\(.name)\t\(.html_url)"'`
+
+  A jq filter to apply to the return data.
+
+Querystring arguments may also be passed as keyword arguments:
+per_page, type, sort, direction
+
+### list_branches
+
+List branches of a specified repository.
+( https://developer.github.com/v3/repos/#list_branches )
+
+Usage:
+
+    list_branches user repo
+
+Positional arguments
+  GitHub user login or id for which to list branches
+  Name of the repo for which to list branches
+
+* user : `$1`
+
+* repo : `$2`
+
+
+Keyword arguments
+
+* _filter : `'.[] | "\(.name)"'`
 
   A jq filter to apply to the return data.
 
