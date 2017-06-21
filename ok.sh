@@ -182,10 +182,9 @@ __main() {
     local OPTARG
     local OPTIND
     local quiet=0
-    local temp_dir="/tmp/oksh-${random}-${$}"
+    local temp_dir="/tmp/${NAME}.${$}.$(awk \
+        'BEGIN {srand(); printf "%d\n", rand() * 10^10}')"
     local summary_fifo="${temp_dir}/oksh_summary.fifo"
-    local random
-    random="$(hexdump -n 2 -e '/2 "%u"' /dev/urandom)"
 
     # shellcheck disable=SC2154
     trap '
