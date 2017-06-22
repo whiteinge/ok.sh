@@ -327,6 +327,35 @@ _helptext() {
 # ### Request-response
 # Functions for making HTTP requests and processing HTTP responses.
 
+_awk_map() {
+    # Invoke awk with a function that will empty the ENVIRON map
+    #
+    # Positional arguments
+    #
+    local prg="${1:?awk program string required}"
+    # The body of an awk program to run
+
+    shift 1
+
+    local env_bin=$(command -v env)
+    local env_blacklist=$(env -i "$env_bin" | while read -r env_var; do
+        printf '%s\n' "${env_var%=*}"
+    done)
+
+    env -i "$@" "$awk_bin" \
+        -v env_blacklist="${env_blacklist}" \
+        '
+        function clear_envrion() {
+            for (name in ENVIRON) {
+                if (substr(name, 0, 3) == "AWK") delete ENVIRON[name]
+            }
+
+            split(env_blacklist, bl, "\n")
+            for (name in bl) { delete ENVIRON[bl[name]] }
+        }
+        '"$prg"
+}
+
 _format_json() {
     # Create formatted JSON from name=value pairs
     #
