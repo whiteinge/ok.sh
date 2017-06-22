@@ -17,7 +17,8 @@
 #
 # ## Setup
 #
-# Authentication credentials are read from a `~/.netrc` file.
+# Authentication credentials are read from a `$HOME/.netrc` file on UNIX
+# machines or a `_netrc` file in `%HOME%` for UNIX environments under Windows.
 # [Generate the token on GitHub](https://github.com/settings/tokens) under
 # "Account Settings -> Applications".
 # Restrict permissions on that file with `chmod 600 ~/.netrc`!
@@ -327,6 +328,35 @@ _helptext() {
 # ### Request-response
 # Functions for making HTTP requests and processing HTTP responses.
 
+_awk_map() {
+    # Invoke awk with a function that will empty the ENVIRON map
+    #
+    # Positional arguments
+    #
+    local prg="${1:?awk program string required}"
+    # The body of an awk program to run
+
+    shift 1
+
+    local env_bin=$(command -v env)
+    local env_blacklist=$(env -i "$env_bin" | while read -r env_var; do
+        printf '%s\n' "${env_var%=*}"
+    done)
+
+    env -i "$@" "$awk_bin" \
+        -v env_blacklist="${env_blacklist}" \
+        '
+        function clear_envrion() {
+            for (name in ENVIRON) {
+                if (substr(name, 0, 3) == "AWK") delete ENVIRON[name]
+            }
+
+            split(env_blacklist, bl, "\n")
+            for (name in bl) { delete ENVIRON[bl[name]] }
+        }
+        '"$prg"
+}
+
 _format_json() {
     # Create formatted JSON from name=value pairs
     #
@@ -352,12 +382,13 @@ _format_json() {
 
     _log debug "Formatting ${#} parameters as JSON."
 
-    env -i "$@" "$awk_bin" '
+    _awk_map '
     function isnum(x){ return (x == x + 0) }
     function isbool(x){ if (x == "true" || x == "false") return 1 }
+
     BEGIN {
-        delete ENVIRON["AWKPATH"]       # GNU addition.
-        delete ENVIRON["AWKLIBPATH"]
+        clear_envrion()
+
         printf("{")
 
         for (name in ENVIRON) {
@@ -376,7 +407,7 @@ _format_json() {
 
         printf("}\n")
     }
-    ' | _filter_json
+    ' "$@" | _filter_json
 }
 
 _format_urlencode() {
@@ -396,7 +427,7 @@ _format_urlencode() {
 
     _log debug "Formatting ${#} parameters as urlencoded"
 
-    env -i "$@" "$awk_bin" '
+    _awk_map '
     function escape(str, c, len, res) {
         len = length(str)
         res = ""
@@ -411,10 +442,10 @@ _format_urlencode() {
     }
 
     BEGIN {
+        clear_envrion()
+
         for (i = 0; i <= 255; i += 1) ord[sprintf("%c", i)] = i;
 
-        delete ENVIRON["AWKPATH"]       # GNU addition.
-        delete ENVIRON["AWKLIBPATH"]
         for (name in ENVIRON) {
             if (substr(name, 1, 1) == "_") continue
             val = ENVIRON[name]
@@ -423,7 +454,7 @@ _format_urlencode() {
             sep = "&"
         }
     }
-    '
+    ' "$@"
 }
 
 _filter_json() {
