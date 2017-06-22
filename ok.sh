@@ -75,6 +75,10 @@ export LSUMMARY=6   # Summary output.
 # We need this path for when we reset our env.
 awk_bin=$(command -v awk)
 
+# Generate a carriage return so we can match on it.
+# Using a variable because these are tough to specify in a portable way.
+cr=$(printf '\r')
+
 # ## Main
 # Generic functions not necessarily specific to working with GitHub.
 
@@ -697,7 +701,7 @@ _response() {
     _log debug 'Processing response.'
 
     read -r http_version status_code status_text
-    status_text="${status_text%}"
+    status_text="${status_text%${cr}}"
     http_version="${http_version#HTTP/}"
 
     _log debug "Response status is: ${status_code} ${status_text}"
@@ -708,8 +712,8 @@ status_text: ${status_text}
 "
     while IFS=": " read -r hdr val; do
         # Headers stop at the first blank line.
-        [ "$hdr" = "" ] && break
-        val="${val%}"
+        [ "$hdr" = "$cr" ] && break
+        val="${val%${cr}}"
 
         # Process each header; reformat some to work better with sh tools.
         case "$hdr" in
