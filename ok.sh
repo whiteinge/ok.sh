@@ -17,7 +17,8 @@
 #
 # ## Setup
 #
-# Authentication credentials are read from a `~/.netrc` file.
+# Authentication credentials are read from a `$HOME/.netrc` file on UNIX
+# machines or a `_netrc` file in `%HOME%` for UNIX environments under Windows.
 # [Generate the token on GitHub](https://github.com/settings/tokens) under
 # "Account Settings -> Applications".
 # Restrict permissions on that file with `chmod 600 ~/.netrc`!
