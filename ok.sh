@@ -381,12 +381,13 @@ _format_json() {
 
     _log debug "Formatting ${#} parameters as JSON."
 
-    env -i "$@" "$awk_bin" '
+    _awk_map '
     function isnum(x){ return (x == x + 0) }
     function isbool(x){ if (x == "true" || x == "false") return 1 }
+
     BEGIN {
-        delete ENVIRON["AWKPATH"]       # GNU addition.
-        delete ENVIRON["AWKLIBPATH"]
+        clear_envrion()
+
         printf("{")
 
         for (name in ENVIRON) {
@@ -405,7 +406,7 @@ _format_json() {
 
         printf("}\n")
     }
-    ' | _filter_json
+    ' "$@" | _filter_json
 }
 
 _format_urlencode() {
@@ -425,7 +426,7 @@ _format_urlencode() {
 
     _log debug "Formatting ${#} parameters as urlencoded"
 
-    env -i "$@" "$awk_bin" '
+    _awk_map '
     function escape(str, c, len, res) {
         len = length(str)
         res = ""
@@ -440,10 +441,10 @@ _format_urlencode() {
     }
 
     BEGIN {
+        clear_envrion()
+
         for (i = 0; i <= 255; i += 1) ord[sprintf("%c", i)] = i;
 
-        delete ENVIRON["AWKPATH"]       # GNU addition.
-        delete ENVIRON["AWKLIBPATH"]
         for (name in ENVIRON) {
             if (substr(name, 1, 1) == "_") continue
             val = ENVIRON[name]
@@ -452,7 +453,7 @@ _format_urlencode() {
             sep = "&"
         }
     }
-    '
+    ' "$@"
 }
 
 _filter_json() {
