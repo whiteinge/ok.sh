@@ -21,7 +21,8 @@ BSD licensed.
 
 ## Setup
 
-Authentication credentials are read from a `~/.netrc` file.
+Authentication credentials are read from a `$HOME/.netrc` file on UNIX
+machines or a `_netrc` file in `%HOME%` for UNIX environments under Windows.
 [Generate the token on GitHub](https://github.com/settings/tokens) under
 "Account Settings -> Applications".
 Restrict permissions on that file with `chmod 600 ~/.netrc`!
@@ -83,6 +84,7 @@ Flags _must_ be the first argument to `ok.sh`, before `command`.
 * [_all_funcs](#_all_funcs)
 * [_log](#_log)
 * [_helptext](#_helptext)
+* [_awk_map](#_awk_map)
 * [_format_json](#_format_json)
 * [_format_urlencode](#_format_urlencode)
 * [_filter_json](#_filter_json)
@@ -176,6 +178,16 @@ Input
 
 * (stdin)
   The text of a function body to parse.
+
+### _awk_map
+
+Invoke awk with a function that will empty the ENVIRON map
+
+Positional arguments
+
+* prg : `$1`
+
+The body of an awk program to run
 
 ### _format_json
 
