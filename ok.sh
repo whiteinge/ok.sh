@@ -72,6 +72,9 @@ export LINFO=4      # Info-level log messages.
 export LDEBUG=5     # Debug-level log messages.
 export LSUMMARY=6   # Summary output.
 
+# We need this path for when we reset our env.
+awk_bin=$(command -v awk)
+
 # ## Main
 # Generic functions not necessarily specific to working with GitHub.
 
@@ -345,11 +348,12 @@ _format_json() {
 
     _log debug "Formatting ${#} parameters as JSON."
 
-    env -i "$@" awk '
+    env -i "$@" "$awk_bin" '
     function isnum(x){ return (x == x + 0) }
     function isbool(x){ if (x == "true" || x == "false") return 1 }
     BEGIN {
         delete ENVIRON["AWKPATH"]       # GNU addition.
+        delete ENVIRON["AWKLIBPATH"]
         printf("{")
 
         for (name in ENVIRON) {
@@ -388,7 +392,7 @@ _format_urlencode() {
 
     _log debug "Formatting ${#} parameters as urlencoded"
 
-    env -i "$@" awk '
+    env -i "$@" "$awk_bin" '
     function escape(str, c, len, res) {
         len = length(str)
         res = ""
@@ -406,6 +410,7 @@ _format_urlencode() {
         for (i = 0; i <= 255; i += 1) ord[sprintf("%c", i)] = i;
 
         delete ENVIRON["AWKPATH"]       # GNU addition.
+        delete ENVIRON["AWKLIBPATH"]
         for (name in ENVIRON) {
             if (substr(name, 1, 1) == "_") continue
             val = ENVIRON[name]
