@@ -499,22 +499,20 @@ _get_mime_type() {
     local filename="${1:?Filename is required.}"
     #   The full name of the file, with extension.
 
-    local ext="${filename#*.}"
-
     # Taken from Apache's mime.types file (public domain).
-    case "$ext" in
-        bz2) mime_type=application/x-bzip2 ;;
-        exe) mime_type=application/x-msdownload ;;
-        tar.gz | gz | tgz) mime_type=application/x-gzip ;;
-        jpg | jpeg | jpe | jfif) mime_type=image/jpeg ;;
-        json) mime_type=application/json ;;
-        pdf) mime_type=application/pdf ;;
-        png) mime_type=image/png ;;
-        rpm) mime_type=application/x-rpm ;;
-        svg | svgz) mime_type=image/svg+xml ;;
-        tar) mime_type=application/x-tar ;;
-        yaml) mime_type=application/x-yaml ;;
-        zip) mime_type=application/zip ;;
+    case "$filename" in
+        *.bz2) mime_type=application/x-bzip2 ;;
+        *.exe) mime_type=application/x-msdownload ;;
+        *.tar.gz | *.gz | *.tgz) mime_type=application/x-gzip ;;
+        *.jpg | *.jpeg | *.jpe | *.jfif) mime_type=image/jpeg ;;
+        *.json) mime_type=application/json ;;
+        *.pdf) mime_type=application/pdf ;;
+        *.png) mime_type=image/png ;;
+        *.rpm) mime_type=application/x-rpm ;;
+        *.svg | svgz) mime_type=image/svg+xml ;;
+        *.tar) mime_type=application/x-tar ;;
+        *.yaml) mime_type=application/x-yaml ;;
+        *.zip) mime_type=application/zip ;;
     esac
 
     _log debug "Guessed mime type of '${mime_type}' for '${filename}'."
