@@ -509,7 +509,7 @@ _get_mime_type() {
         *.pdf) mime_type=application/pdf ;;
         *.png) mime_type=image/png ;;
         *.rpm) mime_type=application/x-rpm ;;
-        *.svg | svgz) mime_type=image/svg+xml ;;
+        *.svg | *.svgz) mime_type=image/svg+xml ;;
         *.tar) mime_type=application/x-tar ;;
         *.yaml) mime_type=application/x-yaml ;;
         *.zip) mime_type=application/zip ;;
