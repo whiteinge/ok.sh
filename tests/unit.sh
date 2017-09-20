@@ -23,7 +23,7 @@ test_format_json() {
     local is_fail=0
 
     $SCRIPT -j _format_json foo=Foo bar=123 baz=true qux=Qux=Qux quux='Multi-line
-string' | {
+string' quuz=\'5.20170918\' | {
         read -r output
 
         printf '%s\n' "$output" | grep -q -E '^{' || {
@@ -34,6 +34,8 @@ string' | {
             printf 'JSON does not contain "foo": "Foo" text.\n'; is_fail=1 ;}
         printf '%s\n' "$output" | grep -q -E '"Multi-line\\nstring"' || {
             printf 'JSON does not have properly formatted multiline string.\n'; is_fail=1 ;}
+        printf '%s\n' "$output" | grep -q -E '"5\.20170918"' || {
+            printf 'JSON does not have properly quoted numbers.\n'; is_fail=1 ;}
 
         if [ "$is_fail" -ne 1 ] ; then
             return 0
