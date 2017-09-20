@@ -363,12 +363,12 @@ _format_json() {
     # Usage:
     # ```
     # _format_json foo=Foo bar=123 baz=true qux=Qux=Qux quux='Multi-line
-    # string'
+    # string' quuz=\'5.20170918\'
     # ```
     #
     # Return:
     # ```
-    # {"bar":123,"qux":"Qux=Qux","foo":"Foo","quux":"Multi-line\nstring","baz":true}
+    # {"foo":"Foo","baz":true,"qux":"Qux=Qux","quux":"Multi-line\nstring","bar":123,"quuz":"5.20170918"}
     # ```
     #
     # Tries not to quote numbers and booleans. If jq is installed it will also
@@ -396,6 +396,9 @@ _format_json() {
 
             # If not bool or number, quote it.
             if (!isbool(val) && !isnum(val)) {
+                sub(/^('\''|")/, "", val) # Remove surrounding quotes
+                sub(/('\''|")$/, "", val)
+
                 gsub(/"/, "\\\"", val)  # Escape double-quotes.
                 gsub(/\n/, "\\n", val)  # Replace newlines with \n text.
                 val = "\"" val "\""
