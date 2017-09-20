@@ -664,7 +664,7 @@ _request() {
 
     [ "$OK_SH_VERBOSE" -eq 1 ] && set -x
     # shellcheck disable=SC2086
-    curl -nsSi \
+    curl -nsSig \
         -H "Accept: ${OK_SH_ACCEPT}" \
         -H "Content-Type: ${content_type}" \
         ${etag:+-H "If-None-Match: \"${etag}\""} \
@@ -1556,9 +1556,15 @@ upload_asset() {
 
     shift 4
 
+    if [ $NO_JQ -ne 0 ] ; then
+        printf 'upload_asset requires jq\n' 1>&2
+        exit 1
+    fi
+
     _opts_filter "$@"
 
-    local upload_url=$(release "$owner" "$repo" "$release_id" _filter="(.upload_url)" | sed -e 's/{?name,label}/?name='"$name"'/g')
+    local upload_url=$(release "$owner" "$repo" "$release_id" _filter="(.upload_url)" \
+        | sed -e 's/{?name,label}/?name='"$name"'/g')
 
     : "${upload_url:?Upload URL could not be retrieved.}"
 
