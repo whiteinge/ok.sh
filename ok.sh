@@ -664,7 +664,7 @@ _request() {
 
     [ "$OK_SH_VERBOSE" -eq 1 ] && set -x
     # shellcheck disable=SC2086
-    curl -nsSi \
+    curl -nsSig \
         -H "Accept: ${OK_SH_ACCEPT}" \
         -H "Content-Type: ${content_type}" \
         ${etag:+-H "If-None-Match: \"${etag}\""} \
