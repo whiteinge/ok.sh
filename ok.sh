@@ -1873,4 +1873,30 @@ add_team_repo() {
     _format_json "name=${name}" "permission=${permission}" | _post "$url" method='PUT' | _filter_json "${_filter}"
 }
 
+list_pulls() {
+    # List available pulls for a repository
+    #
+    # Usage:
+    #
+    #       list_pulls user repo
+    #
+    # Positional arguments
+    #
+    local owner="$1"
+    local repo="$2"
+    #   A GitHub repository.
+    #
+    # Keyword arguments
+    #
+    local _follow_next
+    #   Automatically look for a 'Links' header and follow any 'next' URLs.
+    local _follow_next_limit
+    #   Maximum number of 'next' URLs to follow before stopping.
+    local _filter='.[] | "\(.name)\t\(.color)"'
+    #   A jq filter to apply to the return data.
+    _opts_pagination "$@"
+    _opts_filter "$@"
+    _get "/repos/${owner}/${repo}/pulls" | _filter_json "$_filter"
+}
+
 __main "$@"
