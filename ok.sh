@@ -1649,6 +1649,63 @@ create_milestone() {
         | _filter_json "$_filter"
 }
 
+add_comment() {
+    # Add a comment to an issue
+    #
+    # Usage:
+    #   add_comment someuser/somerepo 123 'This is a comment'
+    #
+    # Positional arguments
+    #
+    local repository="${1:?Repo name required}"
+    #   A GitHub repository
+    local number="${2:?Issue number required}"
+    #   Issue Number
+    local comment="${3:?Comment required}"
+    #   Comment to be added
+    #
+    # Keyword arguments
+    #
+    local _filter='"\(.id)\t\(.html_url)"'
+    #   A jq filter to apply to the return data.
+
+    shift 3
+    _opts_filter "$@"
+
+    _format_json body="$comment" \
+        | _post "/repos/${repository}/issues/${number}/comments" \
+        | _filter_json "${_filter}"
+}
+
+close_issue() {
+    # Close an issue
+    #
+    # Usage:
+    #   close_issue someuser/somerepo 123
+    #
+    # Positional arguments
+    #
+    local repository="${1:?Repo name required}"
+    #   A GitHub repository
+    local number="${2:?Issue number required}"
+    #   Issue Number
+    #
+    # Keyword arguments
+    #
+    local _filter='"\(.id)\t\(.state)\t\(.html_url)"'
+    #   A jq filter to apply to the return data.
+    #
+    # A customizable set of options can also be keyword values such as
+    # `assignee`, `milestone`, `labels`.
+
+    shift 2
+    _opts_filter "$@"
+
+    _format_json state="closed" "$@" \
+        | _post "/repos/${repository}/issues/${number}" method='PATCH' \
+        | _filter_json "${_filter}"
+}
+
 list_issues() {
     # List issues for the authenticated user or repository
     #
