@@ -1756,24 +1756,18 @@ user_issues() {
     #       user_issues
     #       user_issues since=2015-60-11T00:09:00Z
     #
-    # Positional arguments
-    #
-    local repository="$1"
-    #   A GitHub repository.
-    #
     # Keyword arguments
     #
     local _follow_next
     #   Automatically look for a 'Links' header and follow any 'next' URLs.
     local _follow_next_limit
     #   Maximum number of 'next' URLs to follow before stopping.
-    local _filter='.[] | "\(.number)\t\(.title)"'
+    local _filter='.[] | "\(.repository.full_name)\t\(.number)\t\(.title)"'
     #   A jq filter to apply to the return data.
     #
     # GitHub querystring arguments may also be passed as keyword arguments:
     # per_page, filter, state, labels, sort, direction, since
 
-    shift 1
     local qs
 
     _opts_pagination "$@"
