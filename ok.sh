@@ -1713,12 +1713,11 @@ list_issues() {
     #
     #       list_issues
     #       list_issues someuser/somerepo
-    #       list_issues someuser/somerepo state=closed labels=foo,bar
+    #       list_issues <any of the above> state=closed labels=foo,bar
     #
     # Positional arguments
     #
-    local repository="$1"
-    #   A GitHub repository.
+    # user or user/repository
     #
     # Keyword arguments
     #
@@ -1733,19 +1732,18 @@ list_issues() {
     # per_page, milestone, state, assignee, creator, mentioned, labels, sort,
     # direction, since
 
-    shift 1
     local url
     local qs
+
+    case $1 in
+        ('') url='/user/issues' ;;
+        (*=*) url='/user/issues' ;;
+        (*/*) url="/repos/${1}/issues"; shift 1 ;;
+    esac
 
     _opts_pagination "$@"
     _opts_filter "$@"
     _opts_qs "$@"
-
-    if [ -n "$repository" ] ; then
-        url="/repos/${repository}/issues"
-    else
-        url='/user/issues'
-    fi
 
     _get "${url}${qs}" | _filter_json "$_filter"
 }
