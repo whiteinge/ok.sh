@@ -1713,12 +1713,11 @@ list_issues() {
     #
     #       list_issues
     #       list_issues someuser/somerepo
-    #       list_issues someuser/somerepo state=closed labels=foo,bar
+    #       list_issues <any of the above> state=closed labels=foo,bar
     #
     # Positional arguments
     #
-    local repository="$1"
-    #   A GitHub repository.
+    # user or user/repository
     #
     # Keyword arguments
     #
@@ -1733,19 +1732,18 @@ list_issues() {
     # per_page, milestone, state, assignee, creator, mentioned, labels, sort,
     # direction, since
 
-    shift 1
     local url
     local qs
+
+    case $1 in
+        ('') url='/user/issues' ;;
+        (*=*) url='/user/issues' ;;
+        (*/*) url="/repos/${1}/issues"; shift 1 ;;
+    esac
 
     _opts_pagination "$@"
     _opts_filter "$@"
     _opts_qs "$@"
-
-    if [ -n "$repository" ] ; then
-        url="/repos/${repository}/issues"
-    else
-        url='/user/issues'
-    fi
 
     _get "${url}${qs}" | _filter_json "$_filter"
 }
@@ -1758,24 +1756,18 @@ user_issues() {
     #       user_issues
     #       user_issues since=2015-60-11T00:09:00Z
     #
-    # Positional arguments
-    #
-    local repository="$1"
-    #   A GitHub repository.
-    #
     # Keyword arguments
     #
     local _follow_next
     #   Automatically look for a 'Links' header and follow any 'next' URLs.
     local _follow_next_limit
     #   Maximum number of 'next' URLs to follow before stopping.
-    local _filter='.[] | "\(.number)\t\(.title)"'
+    local _filter='.[] | "\(.repository.full_name)\t\(.number)\t\(.title)"'
     #   A jq filter to apply to the return data.
     #
     # GitHub querystring arguments may also be passed as keyword arguments:
     # per_page, filter, state, labels, sort, direction, since
 
-    shift 1
     local qs
 
     _opts_pagination "$@"
