@@ -363,16 +363,26 @@ _format_json() {
     # Usage:
     # ```
     # _format_json foo=Foo bar=123 baz=true qux=Qux=Qux quux='Multi-line
-    # string' quuz=\'5.20170918\'
+    # string' quuz=\'5.20170918\' corge=$(ok.sh _format_json grault=Grault)
     # ```
     #
     # Return:
     # ```
-    # {"foo":"Foo","baz":true,"qux":"Qux=Qux","quux":"Multi-line\nstring","bar":123,"quuz":"5.20170918"}
+    # {
+    #   "foo": "Foo",
+    #   "corge": {
+    #     "grault": "Grault"
+    #   },
+    #   "baz": true,
+    #   "qux": "Qux=Qux",
+    #   "quux": "Multi-line\nstring",
+    #   "bar": 123,
+    #   "quuz": "5.20170918"
+    # }
     # ```
     #
-    # Tries not to quote numbers and booleans. If jq is installed it will also
-    # validate the output.
+    # Tries not to quote numbers, booleans, nulls, or nested structures.
+    # If jq is installed it will also validate the output.
     #
     # Positional arguments
     #
@@ -384,9 +394,13 @@ _format_json() {
 
     _awk_map '
     function isnum(x){ return (x == x + 0) }
+    function isnull(x){ return (x == "null" ) }
     function isbool(x){ if (x == "true" || x == "false") return 1 }
+    function isnested(x) { if (substr(x, 0, 1) == "[" \
+        || substr(x, 0, 1) == "{") return 1 }
 
     BEGIN {
+
         clear_envrion()
 
         printf("{")
@@ -394,8 +408,8 @@ _format_json() {
         for (name in ENVIRON) {
             val = ENVIRON[name]
 
-            # If not bool or number, quote it.
-            if (!isbool(val) && !isnum(val)) {
+            # If not castable, then quote it.
+            if (!isbool(val) && !isnum(val) && !isnull(val) && !isnested(val)) {
                 sub(/^('\''|")/, "", val) # Remove surrounding quotes
                 sub(/('\''|")$/, "", val)
 
