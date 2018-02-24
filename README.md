@@ -1231,7 +1231,6 @@ Positional arguments
 * repo : `$2`
 
   A GitHub repository.
-* title : `$2`
 
 ### create_pull_request
 
