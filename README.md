@@ -130,6 +130,9 @@ Flags _must_ be the first argument to `ok.sh`, before `command`.
 * [add_label](#add_label)
 * [update_label](#update_label)
 * [add_team_repo](#add_team_repo)
+* [list_pulls](#list_pulls)
+* [create_pull_request](#create_pull_request)
+* [update_pull_request](#update_pull_request)
 
 ## Commands
 
@@ -1212,4 +1215,77 @@ Positional arguments
 
 * url : `"/teams/$team_id}/repos/${organization}/${repository_name}"`
 
+### create_pull_request
 
+Create a pull request for a repository
+
+Usage:
+
+      create_pull_request someuser/somerepo title head base
+
+      create_pull_request someuser/somerepo title head base body='Description here.'
+
+Positional arguments
+
+* repo : `$1`
+
+  A GitHub repository.
+* title : `$2`
+
+  A title.
+* head : `$3`
+
+  A head.
+* base : `$4`
+
+  A base.
+
+Keyword arguments
+
+* body
+
+  A body.
+* _filter : `'"\(.number)\t\(.html_url)"'`
+
+  A jq filter to apply to the return data.
+
+Pull request options may also be passed as keyword arguments:
+body, maintainer_can_modify
+
+### update_pull_request
+
+Update a pull request for a repository
+
+Usage:
+
+      update_pull_request someuser/somerepo number title='New title' body='New body'
+
+Positional arguments
+
+* repo : `$1`
+
+  A GitHub repository.
+* number : `$2`
+
+  A pull request number.
+
+Keyword arguments
+
+* title
+
+  A title.
+* body
+
+  A body.
+* state
+
+  A state, either open or closed.
+* base
+
+  A base.
+* _filter : `'"\(.number)\t\(.html_url)"'`
+
+  A jq filter to apply to the return data.
+
+Pull request options may also be passed as keyword arguments:
+title, body, state, base, maintainer_can_modify
