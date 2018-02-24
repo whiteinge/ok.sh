@@ -1215,6 +1215,24 @@ Positional arguments
 
 * url : `"/teams/$team_id}/repos/${organization}/${repository_name}"`
 
+### list_pulls
+
+Lists the pull requests for a repository
+
+Usage:
+
+      list_pulls user repo
+
+Positional arguments
+
+* owner : `$1`
+
+  A GitHub owner.
+* repo : `$2`
+
+  A GitHub repository.
+* title : `$2`
+
 ### create_pull_request
 
 Create a pull request for a repository
