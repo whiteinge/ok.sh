@@ -1948,4 +1948,82 @@ list_pulls() {
     _get "/repos/${owner}/${repo}/pulls" | _filter_json "$_filter"
 }
 
+create_pull_request() {
+    # Create a pull request for a repository
+    #
+    # Usage:
+    #
+    #       create_pull_request someuser/somerepo title head base
+    #
+    #       create_pull_request someuser/somerepo title head base body='Description here.'
+    #
+    # Positional arguments
+    #
+    local repo="${1:?Repo name required.}"
+    #   A GitHub repository.
+    local title="${2:?Pull request title required.}"
+    #   A title.
+    local head="${3:?Pull request head required.}"
+    #   A head.
+    local base="${4:?Pull request base required.}"
+    #   A base.
+    #
+    # Keyword arguments
+    #
+    local _body
+    #   A body.
+    local _filter='"\(.number)\t\(.html_url)"'
+    #   A jq filter to apply to the return data.
+    #
+    # Pull request options may also be passed as keyword arguments:
+    # body, maintainer_can_modify
+
+    shift 4
+
+    _opts_filter "$@"
+
+    _format_json title="$title" head="$head" base="$base" "$@" \
+        | _post "/repos/${repo}/pulls" \
+        | _filter_json "$_filter"
+}
+
+update_pull_request() {
+    # Update a pull request for a repository
+    #
+    # Usage:
+    #
+    #       update_pull_request someuser/somerepo number title='New title' body='New body'
+    #
+    # Positional arguments
+    #
+    local repo="${1:?Repo name required.}"
+    #   A GitHub repository.
+    local number="${2:?Pull request number required.}"
+    #   A pull reuqest number.
+    #
+    # Keyword arguments
+    #
+    local _title
+    #   A title.
+    local _body
+    #   A body.
+    local _state
+    #   A state, either open or closed.
+    local _base
+    #   A base.
+    local _filter='"\(.number)\t\(.html_url)"'
+    #   A jq filter to apply to the return data.
+    #
+    # Pull request options may also be passed as keyword arguments:
+    # title, body, state, base, maintainer_can_modify
+
+    shift 2
+
+    _opts_filter "$@"
+
+    _format_json "$@" \
+        | _post "/repos/${repo}/pulls/${number}" method='PATCH' \
+        | _filter_json "$_filter"
+}
+
 __main "$@"
