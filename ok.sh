@@ -1937,7 +1937,7 @@ add_team_repo() {
 }
 
 list_pulls() {
-    # List available pulls for a repository
+    # Lists the pull requests for a repository
     #
     # Usage:
     #
@@ -1945,8 +1945,9 @@ list_pulls() {
     #
     # Positional arguments
     #
-    local owner="$1"
-    local repo="$2"
+    local owner="${1:?Owner required.}"
+    #   A GitHub owner.
+    local repo="${2:?Repo name required.}"
     #   A GitHub repository.
     #
     # Keyword arguments
@@ -1957,8 +1958,10 @@ list_pulls() {
     #   Maximum number of 'next' URLs to follow before stopping.
     local _filter='.[] | "\(.number)\t\(.user.login)\t\(.head.repo.clone_url)\t\(.head.ref)"'
     #   A jq filter to apply to the return data.
+
     _opts_pagination "$@"
     _opts_filter "$@"
+
     _get "/repos/${owner}/${repo}/pulls" | _filter_json "$_filter"
 }
 
@@ -1984,8 +1987,6 @@ create_pull_request() {
     #
     # Keyword arguments
     #
-    local _body
-    #   A body.
     local _filter='"\(.number)\t\(.html_url)"'
     #   A jq filter to apply to the return data.
     #
@@ -2013,23 +2014,20 @@ update_pull_request() {
     local repo="${1:?Repo name required.}"
     #   A GitHub repository.
     local number="${2:?Pull request number required.}"
-    #   A pull reuqest number.
+    #   A pull request number.
     #
     # Keyword arguments
     #
-    local _title
-    #   A title.
-    local _body
-    #   A body.
-    local _state
-    #   A state, either open or closed.
-    local _base
-    #   A base.
     local _filter='"\(.number)\t\(.html_url)"'
     #   A jq filter to apply to the return data.
     #
     # Pull request options may also be passed as keyword arguments:
-    # title, body, state, base, maintainer_can_modify
+    #
+    # * title
+    # * body
+    # * state (either open or closed)
+    # * base
+    # * maintainer_can_modify
 
     shift 2
 
