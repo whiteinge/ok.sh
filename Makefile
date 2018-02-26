@@ -22,4 +22,4 @@ readme:
 	@ OK_SH_MARKDOWN=1 $(PROGRAM) help >> README.md
 
 preview:
-	@ pandoc -f markdown_github < README.md > README.html
+	@ pandoc -f gfm < README.md > README.html
