@@ -123,6 +123,8 @@ Flags _must_ be the first argument to `ok.sh`, before `command`.
 * [upload_asset](#upload_asset)
 * [list_milestones](#list_milestones)
 * [create_milestone](#create_milestone)
+* [add_comment](#add_comment)
+* [close_issue](#close_issue)
 * [list_issues](#list_issues)
 * [user_issues](#user_issues)
 * [org_issues](#org_issues)
@@ -199,16 +201,26 @@ Create formatted JSON from name=value pairs
 Usage:
 ```
 _format_json foo=Foo bar=123 baz=true qux=Qux=Qux quux='Multi-line
-string'
+string' quuz=\'5.20170918\' corge=$(ok.sh _format_json grault=Grault)
 ```
 
 Return:
 ```
-{"bar":123,"qux":"Qux=Qux","foo":"Foo","quux":"Multi-line\nstring","baz":true}
+{
+  "foo": "Foo",
+  "corge": {
+    "grault": "Grault"
+  },
+  "baz": true,
+  "qux": "Qux=Qux",
+  "quux": "Multi-line\nstring",
+  "bar": 123,
+  "quuz": "5.20170918"
+}
 ```
 
-Tries not to quote numbers and booleans. If jq is installed it will also
-validate the output.
+Tries not to quote numbers, booleans, nulls, or nested structures.
+If jq is installed it will also validate the output.
 
 Positional arguments
 
@@ -1021,6 +1033,56 @@ Keyword arguments
 Milestone options may also be passed as keyword arguments:
 state, description, due_on
 
+### add_comment
+
+Add a comment to an issue
+
+Usage:
+  add_comment someuser/somerepo 123 'This is a comment'
+
+Positional arguments
+
+* repository : `$1`
+
+  A GitHub repository
+* number : `$2`
+
+  Issue Number
+* comment : `$3`
+
+  Comment to be added
+
+Keyword arguments
+
+* _filter : `'"\(.id)\t\(.html_url)"'`
+
+  A jq filter to apply to the return data.
+
+### close_issue
+
+Close an issue
+
+Usage:
+  close_issue someuser/somerepo 123
+
+Positional arguments
+
+* repository : `$1`
+
+  A GitHub repository
+* number : `$2`
+
+  Issue Number
+
+Keyword arguments
+
+* _filter : `'"\(.id)\t\(.state)\t\(.html_url)"'`
+
+  A jq filter to apply to the return data.
+
+A customizable set of options can also be keyword values such as
+`assignee`, `milestone`, `labels`.
+
 ### list_issues
 
 List issues for the authenticated user or repository
@@ -1029,13 +1091,11 @@ Usage:
 
       list_issues
       list_issues someuser/somerepo
-      list_issues someuser/somerepo state=closed labels=foo,bar
+      list_issues <any of the above> state=closed labels=foo,bar
 
 Positional arguments
 
-* repository : `"$1"`
-
-  A GitHub repository.
+user or user/repository
 
 Keyword arguments
 
@@ -1062,12 +1122,6 @@ Usage:
       user_issues
       user_issues since=2015-60-11T00:09:00Z
 
-Positional arguments
-
-* repository : `"$1"`
-
-  A GitHub repository.
-
 Keyword arguments
 
 *  : `_follow_next`
@@ -1076,7 +1130,7 @@ Keyword arguments
 *  : `_follow_next_limit`
 
   Maximum number of 'next' URLs to follow before stopping.
-* _filter : `'.[] | "\(.number)\t\(.title)"'`
+* _filter : `'.[] | "\(.repository.full_name)\t\(.number)\t\(.title)"'`
 
   A jq filter to apply to the return data.
 
@@ -1215,6 +1269,7 @@ Positional arguments
 
 * url : `"/teams/$team_id}/repos/${organization}/${repository_name}"`
 
+
 ### list_pulls
 
 Lists the pull requests for a repository
@@ -1231,6 +1286,18 @@ Positional arguments
 * repo : `$2`
 
   A GitHub repository.
+
+Keyword arguments
+
+*  : `_follow_next`
+
+  Automatically look for a 'Links' header and follow any 'next' URLs.
+*  : `_follow_next_limit`
+
+  Maximum number of 'next' URLs to follow before stopping.
+* _filter : `'.[] | "\(.number)\t\(.user.login)\t\(.head.repo.clone_url)\t\(.head.ref)"'`
+
+  A jq filter to apply to the return data.
 
 ### create_pull_request
 
@@ -1259,9 +1326,6 @@ Positional arguments
 
 Keyword arguments
 
-* body
-
-  A body.
 * _filter : `'"\(.number)\t\(.html_url)"'`
 
   A jq filter to apply to the return data.
@@ -1288,21 +1352,15 @@ Positional arguments
 
 Keyword arguments
 
-* title
-
-  A title.
-* body
-
-  A body.
-* state
-
-  A state, either open or closed.
-* base
-
-  A base.
 * _filter : `'"\(.number)\t\(.html_url)"'`
 
   A jq filter to apply to the return data.
 
 Pull request options may also be passed as keyword arguments:
-title, body, state, base, maintainer_can_modify
+
+* title
+* body
+* state (either open or closed)
+* base
+* maintainer_can_modify
+
