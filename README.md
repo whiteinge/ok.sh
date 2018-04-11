@@ -144,10 +144,10 @@ List all functions found in the current file in the order they appear
 
 Keyword arguments
 
-* public : `1`
+* `public=1`
 
   `0` do not output public functions.
-* private : `1`
+* `private=1`
 
   `0` do not output private functions.
 
@@ -161,10 +161,10 @@ Usage:
 
 Positional arguments
 
-* level : `$1`
+* `level="$1"`
 
   The level for a given log message. (info or debug)
-* message : `$2`
+* `message="$2"`
 
   The log message.
 
@@ -190,7 +190,7 @@ Invoke awk with a function that will empty the ENVIRON map
 
 Positional arguments
 
-* prg : `$1`
+* `prg="$1"`
 
 The body of an awk program to run
 
@@ -225,6 +225,7 @@ If jq is installed it will also validate the output.
 Positional arguments
 
 * $1 - $9
+
   Each positional arg must be in the format of `name=value` which will be
   added to a single, flat JSON object.
 
@@ -255,7 +256,7 @@ Usage:
 
 * (stdin)
   JSON input.
-* _filter : `"$1"`
+* `_filter="$1"`
 
   A string of jq filters to apply to the input stream.
 
@@ -274,7 +275,7 @@ that name it will update the local copy and not set a global.)
 
 Positional arguments
 
-* filename : `$1`
+* `filename="$1"`
 
   The full name of the file, with extension.
 
@@ -294,7 +295,7 @@ variable of that name, the local variable will be updated instead.)
 
 Positional arguments
 
-* message : `$1`
+* `message="$1"`
 
   The message to prompt the user with.
 
@@ -354,7 +355,7 @@ Input
 
 Positional arguments
 
-* path : `$1`
+* `path="$1"`
 
   The URL path for the HTTP request.
   Must be an absolute path that starts with a `/` or a full URL that
@@ -363,13 +364,13 @@ Positional arguments
 
 Keyword arguments
 
-* method : `'GET'`
+* `method='GET'`
 
   The method to use for the HTTP request.
-* content_type : `'application/json'`
+* `content_type='application/json'`
 
   The value of the Content-Type header to use for the request.
-*  : `etag`
+* `etag`
 
   An optional Etag to send as the If-None-Match header.
 
@@ -433,15 +434,18 @@ Usage:
 
 Positional arguments
 
-* path : `$1`
+* `path="$1"`
 
   The HTTP path or URL to pass to _request().
 
 Keyword arguments
 
-_follow_next=1
+* _follow_next=1
+
   Automatically look for a 'Links' header and follow any 'next' URLs.
-_follow_next_limit=50
+
+* _follow_next_limit=50
+
   Maximum number of 'next' URLs to follow before stopping.
 
 ### _post
@@ -465,21 +469,21 @@ Input
 
 Positional arguments
 
-* path : `$1`
+* `path="$1"`
 
   The HTTP path or URL to pass to _request().
 
 Keyword arguments
 
-* method : `'POST'`
+* `method='POST'`
 
   The method to use for the HTTP request.
-*  : `filename`
+* `filename`
 
   Optional. See the `stdin` option above also.
   Takes precedence over any data passed as stdin and loads a file off the
   file system to serve as the request body.
-*  : `mime_type`
+* `mime_type`
 
   The value of the Content-Type header to use for the request.
   If the `filename` argument is given this value will be guessed from the
@@ -499,7 +503,7 @@ Return: 0 for success; 1 for failure.
 
 Positional arguments
 
-* url : `$1`
+* `url="$1"`
 
   The URL to send the DELETE request to.
 
@@ -513,7 +517,7 @@ Usage:
 
 Positional arguments
 
-* fname : `"$1"`
+* `fname="$1"`
 
   Function name to search for; if omitted searches whole file.
 
@@ -537,24 +541,26 @@ Usage:
 
 Positional arguments
 
-* org : `$1`
+* `org="$1"`
 
   Organization GitHub login or id for which to list repos.
 
 Keyword arguments
 
-*  : `_follow_next`
+* `_follow_next`
 
   Automatically look for a 'Links' header and follow any 'next' URLs.
-*  : `_follow_next_limit`
+* `_follow_next_limit`
 
   Maximum number of 'next' URLs to follow before stopping.
-* _filter : `'.[] | "\(.name)\t\(.ssh_url)"'`
+* `_filter='.[] | "\(.name)\t\(.ssh_url)"'`
 
   A jq filter to apply to the return data.
 
 Querystring arguments may also be passed as keyword arguments:
-per_page, type
+
+* `per_page`
+* `type`
 
 ### org_teams
 
@@ -566,13 +572,13 @@ Usage:
 
 Positional arguments
 
-* org : `$1`
+* `org="$1"`
 
   Organization GitHub login or id.
 
 Keyword arguments
 
-* _filter : `'.[] | "\(.name)\t\(.id)\t\(.permission)"'`
+* `_filter='.[] | "\(.name)\t\(.id)\t\(.permission)"'`
 
   A jq filter to apply to the return data.
 
@@ -586,13 +592,13 @@ Usage:
 
 Positional arguments
 
-* org : `$1`
+* `org="$1"`
 
   Organization GitHub login or id.
 
 Keyword arguments
 
-* _filter : `'.[] | "\(.login)\t\(.id)"'`
+* `_filter='.[] | "\(.login)\t\(.id)"'`
 
   A jq filter to apply to the return data.
 
@@ -607,18 +613,22 @@ Usage:
 
 Positional arguments
 
-* user : `"$1"`
+* `user="$1"`
 
   Optional GitHub user login or id for which to list repos.
 
 Keyword arguments
 
-* _filter : `'.[] | "\(.name)\t\(.html_url)"'`
+* `_filter='.[] | "\(.name)\t\(.html_url)"'`
 
   A jq filter to apply to the return data.
 
 Querystring arguments may also be passed as keyword arguments:
-per_page, type, sort, direction
+
+* `direction`
+* `per_page`
+* `sort`
+* `type`
 
 ### list_branches
 
@@ -630,22 +640,27 @@ Usage:
     list_branches user repo
 
 Positional arguments
+
   GitHub user login or id for which to list branches
   Name of the repo for which to list branches
 
-* user : `$1`
+* `user="$1"`
 
-* repo : `$2`
+* `repo="$2"`
 
 
 Keyword arguments
 
-* _filter : `'.[] | "\(.name)"'`
+* `_filter='.[] | "\(.name)"'`
 
   A jq filter to apply to the return data.
 
 Querystring arguments may also be passed as keyword arguments:
-per_page, type, sort, direction
+
+* `direction`
+* `per_page`
+* `sort`
+* `type`
 
 ### list_contributors
 
@@ -657,22 +672,26 @@ Usage:
     list_contributors user repo
 
 Positional arguments
+  
+* `user="$1"`
+
   GitHub user login or id for which to list contributors
+* `repo="$2"`
+
   Name of the repo for which to list contributors
-
-* user : `$1`
-
-* repo : `$2`
-
 
 Keyword arguments
 
-* _filter : `'.[] | "\(.login)\t\(.type)\tType`
+* `_filter='.[] | "\(.login)\t\(.type)\tType:\(.type)\tContributions:\(.contributions)"'`
 
   A jq filter to apply to the return data.
 
 Querystring arguments may also be passed as keyword arguments:
-per_page, type, sort, direction
+
+* `direction`
+* `per_page`
+* `sort`
+* `type`
 
 ### list_collaborators
 
@@ -687,17 +706,21 @@ Positional arguments
   GitHub user login or id for which to list collaborators
   Name of the repo for which to list collaborators
 
-* repo : `$1`
+* `repo="$1"`
 
 
 Keyword arguments
 
-* _filter : `'.[] | "\(.login)\t\(.type)\tType`
+* `_filter='.[] | "\(.login)\t\(.type)\tType:\(.type)\tPermissions:\(.permissions)"'`
 
   A jq filter to apply to the return data.
 
 Querystring arguments may also be passed as keyword arguments:
-per_page, type, sort, direction
+
+* `direction`
+* `per_page`
+* `sort`
+* `type`
 
 ### add_collaborator
 
@@ -708,20 +731,21 @@ Usage:
 
 Positional arguments
 
-* repo : `$1`
+* `repo="$1"`
 
   A GitHub repository.
-* collaborator : `$2`
+* `collaborator="$2"`
 
   A new collaborator.
-* permission : `$3`
+* `permission="$3"`
 
-  The permission level for this collaborator.  One of: push pull admin
-  The pull and admin permissions are valid for organization repos only.
+  The permission level for this collaborator. One of `push`, `pull`,
+  `admin`. The `pull` and `admin` permissions are valid for organization
+  repos only.
 
 Keyword arguments
 
-* _filter : `'"\(.name)\t\(.color)"'`
+* `_filter='"\(.name)\t\(.color)"'`
 
   A jq filter to apply to the return data.
 
@@ -734,10 +758,10 @@ Usage:
 
 Positional arguments
 
-* repo : `$1`
+* `repo="$1"`
 
   A GitHub repository.
-* collaborator : `$2`
+* `collaborator="$2"`
 
   A new collaborator.
 
@@ -753,19 +777,28 @@ Usage:
 
 Positional arguments
 
-* name : `$1`
+* `name="$1"`
 
   Name of the new repo
 
 Keyword arguments
 
-* _filter : `'"\(.name)\t\(.html_url)"'`
+* `_filter='"\(.name)\t\(.html_url)"'`
 
   A jq filter to apply to the return data.
 
 POST data may also be passed as keyword arguments:
-description, homepage, private, has_issues, has_wiki, has_downloads,
-organization, team_id, auto_init, gitignore_template
+
+* `auto_init`,
+* `description`
+* `gitignore_template`
+* `has_downloads`
+* `has_issues`
+* `has_wiki`,
+* `homepage`
+* `organization`
+* `private`
+* `team_id`
 
 ### delete_repo
 
@@ -780,10 +813,10 @@ current scopes with the `show_scopes()` function.
 
 Positional arguments
 
-* owner : `$1`
+* `owner="$1"`
 
   Name of the new repo
-* repo : `$2`
+* `repo="$2"`
 
   Name of the new repo
 
@@ -797,16 +830,16 @@ Usage:
 
 Positional arguments
 
-* owner : `$1`
+* `owner="$1"`
 
   Name of existing user or organization
-* repo : `$2`
+* `repo="$2"`
 
   Name of the existing repo
 
 Keyword arguments
 
-* _filter : `'"\(.clone_url)\t\(.ssh_url)"'`
+* `_filter='"\(.clone_url)\t\(.ssh_url)"'`
 
   A jq filter to apply to the return data.
 
@@ -820,16 +853,16 @@ Usage:
 
 Positional arguments
 
-* owner : `$1`
+* `owner="$1"`
 
   A GitHub user or organization.
-* repo : `$2`
+* `repo="$2"`
 
   A GitHub repository.
 
 Keyword arguments
 
-* _filter : `'.[] | "\(.name)\t\(.id)\t\(.html_url)"'`
+* `_filter='.[] | "\(.name)\t\(.id)\t\(.html_url)"'`
 
   A jq filter to apply to the return data.
 
@@ -843,19 +876,19 @@ Usage:
 
 Positional arguments
 
-* owner : `$1`
+* `owner="$1"`
 
   A GitHub user or organization.
-* repo : `$2`
+* `repo="$2"`
 
   A GitHub repository.
-* release_id : `$3`
+* `release_id="$3"`
 
   The unique ID of the release; see list_releases.
 
 Keyword arguments
 
-* _filter : `'"\(.author.login)\t\(.published_at)"'`
+* `_filter='"\(.author.login)\t\(.published_at)"'`
 
   A jq filter to apply to the return data.
 
@@ -870,24 +903,29 @@ Usage:
 
 Positional arguments
 
-* owner : `$1`
+* `owner="$1"`
 
   A GitHub user or organization.
-* repo : `$2`
+* `repo="$2"`
 
   A GitHub repository.
-* tag_name : `$3`
+* `tag_name="$3"`
 
   Git tag from which to create release.
 
 Keyword arguments
 
-* _filter : `'"\(.name)\t\(.id)\t\(.html_url)"'`
+* `_filter='"\(.name)\t\(.id)\t\(.html_url)"'`
 
   A jq filter to apply to the return data.
 
 POST data may also be passed as keyword arguments:
-body, draft, name, prerelease, target_commitish
+
+* `body`
+* `draft`
+* `name`
+* `prerelease`
+* `target_commitish`
 
 ### delete_release
 
@@ -901,13 +939,13 @@ Return: 0 for success; 1 for failure.
 
 Positional arguments
 
-* owner : `$1`
+* `owner="$1"`
 
   A GitHub user or organization.
-* repo : `$2`
+* `repo="$2"`
 
   A GitHub repository.
-* release_id : `$3`
+* `release_id="$3"`
 
   The unique ID of the release; see list_releases.
 
@@ -921,19 +959,19 @@ Usage:
 
 Positional arguments
 
-* owner : `$1`
+* `owner="$1"`
 
   A GitHub user or organization.
-* repo : `$2`
+* `repo="$2"`
 
   A GitHub repository.
-* release_id : `$3`
+* `release_id="$3"`
 
   The unique ID of the release; see list_releases.
 
 Keyword arguments
 
-* _filter : `'.[] | "\(.id)\t\(.name)\t\(.updated_at)"'`
+* `_filter='.[] | "\(.id)\t\(.name)\t\(.updated_at)"'`
 
   A jq filter to apply to the return data.
 
@@ -953,22 +991,22 @@ Usage:
 
 Positional arguments
 
-* owner : `$1`
+* `owner="$1"`
 
   A GitHub user or organization.
-* repo : `$2`
+* `repo="$2"`
 
   A GitHub repository.
-* release_id : `$3`
+* `release_id="$3"`
 
   The unique ID of the release; see list_releases.
-* name : `$4`
+* `name="$4"`
 
   The file name of the asset.
 
 Keyword arguments
 
-* _filter : `'"\(.state)\t\(.browser_download_url)"'`
+* `_filter='"\(.state)\t\(.browser_download_url)"'`
 
   A jq filter to apply to the return data.
 
@@ -983,24 +1021,28 @@ Usage:
 
 Positional arguments
 
-* repository : `$1`
+* `repository="$1"`
 
   A GitHub repository.
 
 Keyword arguments
 
-*  : `_follow_next`
+* `_follow_next`
 
   Automatically look for a 'Links' header and follow any 'next' URLs.
-*  : `_follow_next_limit`
+* `_follow_next_limit`
 
   Maximum number of 'next' URLs to follow before stopping.
-* _filter : `'.[] | "\(.number)\t\(.open_issues)/\(.closed_issues)\t\(.title)"'`
+* `_filter='.[] | "\(.number)\t\(.open_issues)/\(.closed_issues)\t\(.title)"'`
 
   A jq filter to apply to the return data.
 
 GitHub querystring arguments may also be passed as keyword arguments:
-per_page, state, sort, direction
+
+* `direction`
+* `per_page`
+* `sort`
+* `state`
 
 ### create_milestone
 
@@ -1017,21 +1059,24 @@ Usage:
 
 Positional arguments
 
-* repo : `$1`
+* `repo="$1"`
 
   A GitHub repository.
-* title : `$2`
+* `title="$2"`
 
   A unique title.
 
 Keyword arguments
 
-* _filter : `'"\(.number)\t\(.html_url)"'`
+* `_filter='"\(.number)\t\(.html_url)"'`
 
   A jq filter to apply to the return data.
 
 Milestone options may also be passed as keyword arguments:
-state, description, due_on
+
+* `description`
+* `due_on`
+* `state`
 
 ### add_comment
 
@@ -1042,19 +1087,19 @@ Usage:
 
 Positional arguments
 
-* repository : `$1`
+* `repository="$1"`
 
   A GitHub repository
-* number : `$2`
+* `number="$2"`
 
   Issue Number
-* comment : `$3`
+* `comment="$3"`
 
   Comment to be added
 
 Keyword arguments
 
-* _filter : `'"\(.id)\t\(.html_url)"'`
+* `_filter='"\(.id)\t\(.html_url)"'`
 
   A jq filter to apply to the return data.
 
@@ -1067,21 +1112,24 @@ Usage:
 
 Positional arguments
 
-* repository : `$1`
+* `repository="$1"`
 
   A GitHub repository
-* number : `$2`
+* `number="$2"`
 
   Issue Number
 
 Keyword arguments
 
-* _filter : `'"\(.id)\t\(.state)\t\(.html_url)"'`
+* `_filter='"\(.id)\t\(.state)\t\(.html_url)"'`
 
   A jq filter to apply to the return data.
 
-A customizable set of options can also be keyword values such as
-`assignee`, `milestone`, `labels`.
+POST data may also be passed as keyword arguments:
+
+* `assignee`
+* `labels`
+* `milestone`
 
 ### list_issues
 
@@ -1099,19 +1147,28 @@ user or user/repository
 
 Keyword arguments
 
-*  : `_follow_next`
+* `_follow_next`
 
   Automatically look for a 'Links' header and follow any 'next' URLs.
-*  : `_follow_next_limit`
+* `_follow_next_limit`
 
   Maximum number of 'next' URLs to follow before stopping.
-* _filter : `'.[] | "\(.number)\t\(.title)"'`
+* `_filter='.[] | "\(.number)\t\(.title)"'`
 
   A jq filter to apply to the return data.
 
 GitHub querystring arguments may also be passed as keyword arguments:
-per_page, milestone, state, assignee, creator, mentioned, labels, sort,
-direction, since
+
+* `assignee`
+* `creator`
+* `direction`
+* `labels`
+* `mentioned`
+* `milestone`
+* `per_page`
+* `since`
+* `sort`
+* `state`
 
 ### user_issues
 
@@ -1124,18 +1181,25 @@ Usage:
 
 Keyword arguments
 
-*  : `_follow_next`
+* `_follow_next`
 
   Automatically look for a 'Links' header and follow any 'next' URLs.
-*  : `_follow_next_limit`
+* `_follow_next_limit`
 
   Maximum number of 'next' URLs to follow before stopping.
-* _filter : `'.[] | "\(.repository.full_name)\t\(.number)\t\(.title)"'`
+* `_filter='.[] | "\(.repository.full_name)\t\(.number)\t\(.title)"'`
 
   A jq filter to apply to the return data.
 
 GitHub querystring arguments may also be passed as keyword arguments:
-per_page, filter, state, labels, sort, direction, since
+
+* `direction`
+* `filter`
+* `labels`
+* `per_page`
+* `since`
+* `sort`
+* `state`
 
 ### org_issues
 
@@ -1147,24 +1211,31 @@ Usage:
 
 Positional arguments
 
-* org : `$1`
+* `org="$1"`
 
   Organization GitHub login or id.
 
 Keyword arguments
 
-*  : `_follow_next`
+* `_follow_next`
 
   Automatically look for a 'Links' header and follow any 'next' URLs.
-*  : `_follow_next_limit`
+* `_follow_next_limit`
 
   Maximum number of 'next' URLs to follow before stopping.
-* _filter : `'.[] | "\(.number)\t\(.title)"'`
+* `_filter='.[] | "\(.number)\t\(.title)"'`
 
   A jq filter to apply to the return data.
 
 GitHub querystring arguments may also be passed as keyword arguments:
-per_page, filter, state, labels, sort, direction, since
+
+* `direction`
+* `filter`
+* `labels`
+* `per_page`
+* `since`
+* `sort`
+* `state`
 
 ### labels
 
@@ -1176,19 +1247,19 @@ Usage:
 
 Positional arguments
 
-* repo : `"$1"`
+* `repo="$1"`
 
   A GitHub repository.
 
 Keyword arguments
 
-*  : `_follow_next`
+* `_follow_next`
 
   Automatically look for a 'Links' header and follow any 'next' URLs.
-*  : `_follow_next_limit`
+* `_follow_next_limit`
 
   Maximum number of 'next' URLs to follow before stopping.
-* _filter : `'.[] | "\(.name)\t\(.color)"'`
+* `_filter='.[] | "\(.name)\t\(.color)"'`
 
   A jq filter to apply to the return data.
 
@@ -1201,19 +1272,19 @@ Usage:
 
 Positional arguments
 
-* repo : `$1`
+* `repo="$1"`
 
   A GitHub repository.
-* label : `$2`
+* `label="$2"`
 
   A new label.
-* color : `$3`
+* `color="$3"`
 
   A color, in hex, without the leading `#`.
 
 Keyword arguments
 
-* _filter : `'"\(.name)\t\(.color)"'`
+* `_filter='"\(.name)\t\(.color)"'`
 
   A jq filter to apply to the return data.
 
@@ -1227,22 +1298,24 @@ Usage:
 
 Positional arguments
 
-* repo : `$1`
+* `repo="$1"`
 
   A GitHub repository.
-* label : `$2`
+* `label="$2"`
 
   The name of the label which will be updated
 
 Keyword arguments
 
-* _filter : `'"\(.name)\t\(.color)"'`
+* `_filter='"\(.name)\t\(.color)"'`
 
   A jq filter to apply to the return data.
 
 Label options may also be passed as keyword arguments, these will update
 the existing values:
-name, color
+
+* `color`
+* `name`
 
 ### add_team_repo
 
@@ -1254,20 +1327,20 @@ Usage:
 
 Positional arguments
 
-* team_id : `$1`
+* `team_id="$1"`
 
   Team id to add repository to
-* organization : `$2`
+* `organization="$2"`
 
   Organization to add repository to
-* repository_name : `$3`
+* `repository_name="$3"`
 
   Repository name to add
-* permission : `$4`
+* `permission="$4"`
 
   Permission to grant: pull, push, admin
 
-* url : `"/teams/$team_id}/repos/${organization}/${repository_name}"`
+* `url="/teams/$team_id}/repos/${organization}/${repository_name}"`
 
 
 ### list_pulls
@@ -1280,22 +1353,22 @@ Usage:
 
 Positional arguments
 
-* owner : `$1`
+* `owner="$1"`
 
   A GitHub owner.
-* repo : `$2`
+* `repo="$2"`
 
   A GitHub repository.
 
 Keyword arguments
 
-*  : `_follow_next`
+* `_follow_next`
 
   Automatically look for a 'Links' header and follow any 'next' URLs.
-*  : `_follow_next_limit`
+* `_follow_next_limit`
 
   Maximum number of 'next' URLs to follow before stopping.
-* _filter : `'.[] | "\(.number)\t\(.user.login)\t\(.head.repo.clone_url)\t\(.head.ref)"'`
+* `_filter='.[] | "\(.number)\t\(.user.login)\t\(.head.repo.clone_url)\t\(.head.ref)"'`
 
   A jq filter to apply to the return data.
 
@@ -1311,27 +1384,29 @@ Usage:
 
 Positional arguments
 
-* repo : `$1`
+* `repo="$1"`
 
   A GitHub repository.
-* title : `$2`
+* `title="$2"`
 
   A title.
-* head : `$3`
+* `head="$3"`
 
   A head.
-* base : `$4`
+* `base="$4"`
 
   A base.
 
 Keyword arguments
 
-* _filter : `'"\(.number)\t\(.html_url)"'`
+* `_filter='"\(.number)\t\(.html_url)"'`
 
   A jq filter to apply to the return data.
 
 Pull request options may also be passed as keyword arguments:
-body, maintainer_can_modify
+
+* `body`
+* `maintainer_can_modify`
 
 ### update_pull_request
 
@@ -1343,24 +1418,24 @@ Usage:
 
 Positional arguments
 
-* repo : `$1`
+* `repo="$1"`
 
   A GitHub repository.
-* number : `$2`
+* `number="$2"`
 
   A pull request number.
 
 Keyword arguments
 
-* _filter : `'"\(.number)\t\(.html_url)"'`
+* `_filter='"\(.number)\t\(.html_url)"'`
 
   A jq filter to apply to the return data.
 
 Pull request options may also be passed as keyword arguments:
 
-* title
-* body
-* state (either open or closed)
-* base
-* maintainer_can_modify
+* `base`
+* `body`
+* `maintainer_can_modify`
+* `state` (either open or closed)
+* `title`
 

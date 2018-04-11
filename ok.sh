@@ -315,12 +315,10 @@ _helptext() {
     }
     /^\s*local/ {
         sub(/^\s*local /, "")
-        idx = index($0, "=")
-        name = substr($0, 1, idx - 1)
-        val = substr($0, idx + 1)
-        sub(/"{0,1}\${/, "$", val)
-        sub(/:.*$/, "", val)
-        print "* " name " : `" val "`\n"
+        # sub(/"{0,1}\${/, "$", $0)
+        sub(/\${/, "$", $0)
+        sub(/:.*}/, "", $0)
+        print "* `" $0 "`\n"
     }
     !NF { exit }'
 }
@@ -387,6 +385,7 @@ _format_json() {
     # Positional arguments
     #
     # * $1 - $9
+    #
     #   Each positional arg must be in the format of `name=value` which will be
     #   added to a single, flat JSON object.
 
@@ -823,9 +822,12 @@ _get() {
     #
     # Keyword arguments
     #
-    # _follow_next=1
+    # * _follow_next=1
+    #
     #   Automatically look for a 'Links' header and follow any 'next' URLs.
-    # _follow_next_limit=50
+    #
+    # * _follow_next_limit=50
+    #
     #   Maximum number of 'next' URLs to follow before stopping.
 
     shift 1
@@ -1034,7 +1036,9 @@ org_repos() {
     #   A jq filter to apply to the return data.
     #
     # Querystring arguments may also be passed as keyword arguments:
-    # per_page, type
+    #
+    # * `per_page`
+    # * `type`
 
     shift 1
     local qs
@@ -1115,7 +1119,12 @@ list_repos() {
     #   A jq filter to apply to the return data.
     #
     # Querystring arguments may also be passed as keyword arguments:
-    # per_page, type, sort, direction
+    #
+    # * `direction`
+    # * `per_page`
+    # * `sort`
+    # * `type`
+
 
     shift 1
     local qs
@@ -1141,6 +1150,7 @@ list_branches() {
     #     list_branches user repo
     #
     # Positional arguments
+    #
     #   GitHub user login or id for which to list branches
     #   Name of the repo for which to list branches
     #
@@ -1154,7 +1164,11 @@ list_branches() {
     #   A jq filter to apply to the return data.
     #
     # Querystring arguments may also be passed as keyword arguments:
-    # per_page, type, sort, direction
+    #
+    # * `direction`
+    # * `per_page`
+    # * `sort`
+    # * `type`
 
     local qs
 
@@ -1175,12 +1189,11 @@ list_contributors() {
     #     list_contributors user repo
     #
     # Positional arguments
-    #   GitHub user login or id for which to list contributors
-    #   Name of the repo for which to list contributors
-    #
+    #   
     local user="${1:?User name required.}"
+    #   GitHub user login or id for which to list contributors
     local repo="${2:?Repo name required.}"
-    shift 2
+    #   Name of the repo for which to list contributors
     #
     # Keyword arguments
     #
@@ -1188,7 +1201,13 @@ list_contributors() {
     #   A jq filter to apply to the return data.
     #
     # Querystring arguments may also be passed as keyword arguments:
-    # per_page, type, sort, direction
+    #
+    # * `direction`
+    # * `per_page`
+    # * `sort`
+    # * `type`
+
+    shift 2
 
     local qs
 
@@ -1220,7 +1239,12 @@ list_collaborators() {
     #   A jq filter to apply to the return data.
     #
     # Querystring arguments may also be passed as keyword arguments:
-    # per_page, type, sort, direction
+    #
+    # * `direction`
+    # * `per_page`
+    # * `sort`
+    # * `type`
+ 
     shift 1
 
     local qs
@@ -1246,8 +1270,9 @@ add_collaborator() {
     local collaborator="${2:?Collaborator name required.}"
     #   A new collaborator.
     local permission="${3:?Permission required. One of: push pull admin}"
-    #   The permission level for this collaborator.  One of: push pull admin
-    #   The pull and admin permissions are valid for organization repos only.
+    #   The permission level for this collaborator. One of `push`, `pull`,
+    #   `admin`. The `pull` and `admin` permissions are valid for organization
+    #   repos only.
     case $permission in
         push|pull|admin) :;;
         *) printf 'Permission invalid: %s\nMust be one of: push pull admin\n' \
@@ -1310,8 +1335,17 @@ create_repo() {
     #   A jq filter to apply to the return data.
     #
     # POST data may also be passed as keyword arguments:
-    # description, homepage, private, has_issues, has_wiki, has_downloads,
-    # organization, team_id, auto_init, gitignore_template
+    #
+    # * `auto_init`,
+    # * `description`
+    # * `gitignore_template`
+    # * `has_downloads`
+    # * `has_issues`
+    # * `has_wiki`,
+    # * `homepage`
+    # * `organization`
+    # * `private`
+    # * `team_id`
 
     shift 1
 
@@ -1473,7 +1507,12 @@ create_release() {
     #   A jq filter to apply to the return data.
     #
     # POST data may also be passed as keyword arguments:
-    # body, draft, name, prerelease, target_commitish
+    #
+    # * `body`
+    # * `draft`
+    # * `name`
+    # * `prerelease`
+    # * `target_commitish`
 
     shift 3
 
@@ -1615,7 +1654,11 @@ list_milestones() {
     #   A jq filter to apply to the return data.
     #
     # GitHub querystring arguments may also be passed as keyword arguments:
-    # per_page, state, sort, direction
+    #
+    # * `direction`
+    # * `per_page`
+    # * `sort`
+    # * `state`
 
     shift 1
     local qs
@@ -1652,7 +1695,10 @@ create_milestone() {
     #   A jq filter to apply to the return data.
     #
     # Milestone options may also be passed as keyword arguments:
-    # state, description, due_on
+    #
+    # * `description`
+    # * `due_on`
+    # * `state`
 
     shift 2
 
@@ -1709,8 +1755,11 @@ close_issue() {
     local _filter='"\(.id)\t\(.state)\t\(.html_url)"'
     #   A jq filter to apply to the return data.
     #
-    # A customizable set of options can also be keyword values such as
-    # `assignee`, `milestone`, `labels`.
+    # POST data may also be passed as keyword arguments:
+    #
+    # * `assignee`
+    # * `labels`
+    # * `milestone`
 
     shift 2
     _opts_filter "$@"
@@ -1743,8 +1792,17 @@ list_issues() {
     #   A jq filter to apply to the return data.
     #
     # GitHub querystring arguments may also be passed as keyword arguments:
-    # per_page, milestone, state, assignee, creator, mentioned, labels, sort,
-    # direction, since
+    #
+    # * `assignee`
+    # * `creator`
+    # * `direction`
+    # * `labels`
+    # * `mentioned`
+    # * `milestone`
+    # * `per_page`
+    # * `since`
+    # * `sort`
+    # * `state`
 
     local url
     local qs
@@ -1780,7 +1838,14 @@ user_issues() {
     #   A jq filter to apply to the return data.
     #
     # GitHub querystring arguments may also be passed as keyword arguments:
-    # per_page, filter, state, labels, sort, direction, since
+    #
+    # * `direction`
+    # * `filter`
+    # * `labels`
+    # * `per_page`
+    # * `since`
+    # * `sort`
+    # * `state`
 
     local qs
 
@@ -1813,7 +1878,14 @@ org_issues() {
     #   A jq filter to apply to the return data.
     #
     # GitHub querystring arguments may also be passed as keyword arguments:
-    # per_page, filter, state, labels, sort, direction, since
+    #
+    # * `direction`
+    # * `filter`
+    # * `labels`
+    # * `per_page`
+    # * `since`
+    # * `sort`
+    # * `state`
 
     shift 1
     local qs
@@ -1900,7 +1972,9 @@ update_label() {
     #
     # Label options may also be passed as keyword arguments, these will update
     # the existing values:
-    # name, color
+    #
+    # * `color`
+    # * `name`
 
     shift 2
 
@@ -1991,7 +2065,9 @@ create_pull_request() {
     #   A jq filter to apply to the return data.
     #
     # Pull request options may also be passed as keyword arguments:
-    # body, maintainer_can_modify
+    #
+    # * `body`
+    # * `maintainer_can_modify`
 
     shift 4
 
@@ -2023,11 +2099,11 @@ update_pull_request() {
     #
     # Pull request options may also be passed as keyword arguments:
     #
-    # * title
-    # * body
-    # * state (either open or closed)
-    # * base
-    # * maintainer_can_modify
+    # * `base`
+    # * `body`
+    # * `maintainer_can_modify`
+    # * `state` (either open or closed)
+    # * `title`
 
     shift 2
 
