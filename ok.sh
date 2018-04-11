@@ -315,12 +315,10 @@ _helptext() {
     }
     /^\s*local/ {
         sub(/^\s*local /, "")
-        idx = index($0, "=")
-        name = substr($0, 1, idx - 1)
-        val = substr($0, idx + 1)
-        sub(/"{0,1}\${/, "$", val)
-        sub(/:.*$/, "", val)
-        print "* " name " : `" val "`\n"
+        # sub(/"{0,1}\${/, "$", $0)
+        sub(/\${/, "$", $0)
+        sub(/:.*}/, "", $0)
+        print "* `" $0 "`\n"
     }
     !NF { exit }'
 }
@@ -387,6 +385,7 @@ _format_json() {
     # Positional arguments
     #
     # * $1 - $9
+    #
     #   Each positional arg must be in the format of `name=value` which will be
     #   added to a single, flat JSON object.
 
@@ -823,9 +822,12 @@ _get() {
     #
     # Keyword arguments
     #
-    # _follow_next=1
+    # * _follow_next=1
+    #
     #   Automatically look for a 'Links' header and follow any 'next' URLs.
-    # _follow_next_limit=50
+    #
+    # * _follow_next_limit=50
+    #
     #   Maximum number of 'next' URLs to follow before stopping.
 
     shift 1
@@ -1148,6 +1150,7 @@ list_branches() {
     #     list_branches user repo
     #
     # Positional arguments
+    #
     #   GitHub user login or id for which to list branches
     #   Name of the repo for which to list branches
     #
@@ -1267,8 +1270,9 @@ add_collaborator() {
     local collaborator="${2:?Collaborator name required.}"
     #   A new collaborator.
     local permission="${3:?Permission required. One of: push pull admin}"
-    #   The permission level for this collaborator.  One of: push pull admin
-    #   The pull and admin permissions are valid for organization repos only.
+    #   The permission level for this collaborator. One of `push`, `pull`,
+    #   `admin`. The `pull` and `admin` permissions are valid for organization
+    #   repos only.
     case $permission in
         push|pull|admin) :;;
         *) printf 'Permission invalid: %s\nMust be one of: push pull admin\n' \
