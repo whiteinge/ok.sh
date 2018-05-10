@@ -779,7 +779,7 @@ status_text: ${status_text}
                 BEGIN { RS=", "; FS="; "; OFS=": " }
                 {
                     sub(/^rel="/, "", $2); sub(/"$/, "", $2)
-                    sub(/^</, "", $1); sub(/>$/, "", $1)
+                    sub(/^[[:space:]]*</, "", $1); sub(/>$/, "", $1)
                     print "Link_" $2, $1
                 }')
 "  # need trailing newline
