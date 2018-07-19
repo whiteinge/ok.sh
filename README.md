@@ -106,6 +106,7 @@ Flags _must_ be the first argument to `ok.sh`, before `command`.
 * [org_repos](#org_repos)
 * [org_teams](#org_teams)
 * [org_members](#org_members)
+* [team_members](#team_members)
 * [list_repos](#list_repos)
 * [list_branches](#list_branches)
 * [list_contributors](#list_contributors)
