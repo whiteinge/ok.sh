@@ -1100,6 +1100,32 @@ org_members() {
         | _filter_json "${_filter}"
 }
 
+team_members() {
+    # List team members
+    #
+    # Usage:
+    #
+    #     team_members team_id
+    #
+    # Positional arguments
+    #
+    local team_id="${1:?Team id required.}"
+    #   Team id.
+    #
+    # Keyword arguments
+    #
+    local _filter='.[] | "\(.login)\t\(.id)"'
+    #   A jq filter to apply to the return data.
+
+    shift 1
+
+    _opts_filter "$@"
+
+    _get "/teams/${team_id}/members" \
+        | _filter_json "${_filter}"
+
+}
+
 list_repos() {
     # List user repositories
     #
