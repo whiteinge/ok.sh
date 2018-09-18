@@ -1215,7 +1215,7 @@ list_contributors() {
     #     list_contributors user repo
     #
     # Positional arguments
-    #   
+    #
     local user="${1:?User name required.}"
     #   GitHub user login or id for which to list contributors
     local repo="${2:?Repo name required.}"
@@ -1270,7 +1270,7 @@ list_collaborators() {
     # * `per_page`
     # * `sort`
     # * `type`
- 
+
     shift 1
 
     local qs
@@ -1760,6 +1760,34 @@ add_comment() {
 
     _format_json body="$comment" \
         | _post "/repos/${repository}/issues/${number}/comments" \
+        | _filter_json "${_filter}"
+}
+
+add_commit_comment() {
+    # Add a comment to a commit
+    #
+    # Usage:
+    #   add_commit_comment someuser/somerepo 123 'This is a comment'
+    #
+    # Positional arguments
+    #
+    local repository="${1:?Repo name required}"
+    #   A GitHub repository
+    local hash="${2:?Commit hash required}"
+    #   Commit hash
+    local comment="${3:?Comment required}"
+    #   Comment to be added
+    #
+    # Keyword arguments
+    #
+    local _filter='"\(.id)\t\(.html_url)"'
+    #   A jq filter to apply to the return data.
+
+    shift 3
+    _opts_filter "$@"
+
+    _format_json body="$comment" \
+        | _post "/repos/${repository}/commits/${hash}/comments" \
         | _filter_json "${_filter}"
 }
 
