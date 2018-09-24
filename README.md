@@ -125,10 +125,12 @@ Flags _must_ be the first argument to `ok.sh`, before `command`.
 * [list_milestones](#list_milestones)
 * [create_milestone](#create_milestone)
 * [add_comment](#add_comment)
+* [add_commit_comment](#add_commit_comment)
 * [close_issue](#close_issue)
 * [list_issues](#list_issues)
 * [user_issues](#user_issues)
 * [org_issues](#org_issues)
+* [list_orgs](#list_orgs)
 * [labels](#labels)
 * [add_label](#add_label)
 * [update_label](#update_label)
@@ -603,6 +605,26 @@ Keyword arguments
 
   A jq filter to apply to the return data.
 
+### team_members
+
+List team members
+
+Usage:
+
+    team_members team_id
+
+Positional arguments
+
+* `team_id="$1"`
+
+  Team id.
+
+Keyword arguments
+
+* `_filter='.[] | "\(.login)\t\(.id)"'`
+
+  A jq filter to apply to the return data.
+
 ### list_repos
 
 List user repositories
@@ -673,7 +695,7 @@ Usage:
     list_contributors user repo
 
 Positional arguments
-  
+
 * `user="$1"`
 
   GitHub user login or id for which to list contributors
@@ -1104,6 +1126,31 @@ Keyword arguments
 
   A jq filter to apply to the return data.
 
+### add_commit_comment
+
+Add a comment to a commit
+
+Usage:
+  add_commit_comment someuser/somerepo 123 'This is a comment'
+
+Positional arguments
+
+* `repository="$1"`
+
+  A GitHub repository
+* `hash="$2"`
+
+  Commit hash
+* `comment="$3"`
+
+  Comment to be added
+
+Keyword arguments
+
+* `_filter='"\(.id)\t\(.html_url)"'`
+
+  A jq filter to apply to the return data.
+
 ### close_issue
 
 Close an issue
@@ -1237,6 +1284,26 @@ GitHub querystring arguments may also be passed as keyword arguments:
 * `since`
 * `sort`
 * `state`
+
+### list_orgs
+
+List all organizations
+
+Usage:
+
+      list_orgs
+
+Keyword arguments
+
+* `_follow_next`
+
+  Automatically look for a 'Links' header and follow any 'next' URLs.
+* `_follow_next_limit`
+
+  Maximum number of 'next' URLs to follow before stopping.
+* `_filter='.[] | "\(.login)\t\(.id)"'`
+
+  A jq filter to apply to the return data.
 
 ### labels
 
