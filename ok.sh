@@ -527,6 +527,7 @@ _get_mime_type() {
         *.rpm) mime_type=application/x-rpm ;;
         *.svg | *.svgz) mime_type=image/svg+xml ;;
         *.tar) mime_type=application/x-tar ;;
+        *.txt) mime_type=text/plain ;;
         *.yaml) mime_type=application/x-yaml ;;
         *.zip) mime_type=application/zip ;;
     esac
