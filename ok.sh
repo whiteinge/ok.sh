@@ -1957,7 +1957,7 @@ list_orgs() {
     #
     # Usage:
     #
-    #       orgs
+    #       list_orgs
     #
     # Keyword arguments
     #
@@ -1968,7 +1968,6 @@ list_orgs() {
     local _filter='.[] | "\(.login)\t\(.id)"'
     #   A jq filter to apply to the return data.
 
-    shift 1
     local qs
 
     _opts_pagination "$@"
