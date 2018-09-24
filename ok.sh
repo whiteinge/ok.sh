@@ -527,6 +527,7 @@ _get_mime_type() {
         *.rpm) mime_type=application/x-rpm ;;
         *.svg | *.svgz) mime_type=image/svg+xml ;;
         *.tar) mime_type=application/x-tar ;;
+        *.txt) mime_type=text/plain ;;
         *.yaml) mime_type=application/x-yaml ;;
         *.zip) mime_type=application/zip ;;
     esac
@@ -1956,7 +1957,7 @@ list_orgs() {
     #
     # Usage:
     #
-    #       orgs
+    #       list_orgs
     #
     # Keyword arguments
     #
@@ -1967,7 +1968,6 @@ list_orgs() {
     local _filter='.[] | "\(.login)\t\(.id)"'
     #   A jq filter to apply to the return data.
 
-    shift 1
     local qs
 
     _opts_pagination "$@"
