@@ -1615,8 +1615,7 @@ upload_asset() {
     #
     # Usage:
     #
-    #     upload_asset username reponame 1087938 \
-    #         foo.tar application/x-tar < foo.tar
+    #     upload_asset username reponame 1087938 foo.tar < /path/to/foo.tar
     #
     # * (stdin)
     #   The contents of the file to upload.
@@ -1636,6 +1635,8 @@ upload_asset() {
     #
     local _filter='"\(.state)\t\(.browser_download_url)"'
     #   A jq filter to apply to the return data.
+    #
+    # Also any other keyword arguments accepted by _post().
 
     shift 4
 
@@ -1647,11 +1648,11 @@ upload_asset() {
     _opts_filter "$@"
 
     local upload_url=$(release "$owner" "$repo" "$release_id" _filter="(.upload_url)" \
-        | sed -e 's/{?name,label}/?name='"$name"'/g')
+        | sed -e 's/{.*$/?name='"$name"'/g')
 
     : "${upload_url:?Upload URL could not be retrieved.}"
 
-    _post "$upload_url" filename="$name" \
+    _post "$upload_url" "$@" \
         | _filter_json "$_filter"
 }
 
