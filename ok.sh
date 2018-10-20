@@ -1471,7 +1471,7 @@ list_releases() {
     #
     # Keyword arguments
     #
-    local _filter='.[] | "\(.name)\t\(.id)\t\(.html_url)"'
+    local _filter='.[] | "\(.name)\t\(.tag_name)\t\(.id)\t\(.html_url)"'
     #   A jq filter to apply to the return data.
 
     shift 2
