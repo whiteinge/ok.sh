@@ -1471,7 +1471,7 @@ list_releases() {
     #
     # Keyword arguments
     #
-    local _filter='.[] | "\(.name)\t\(.id)\t\(.html_url)"'
+    local _filter='.[] | "\(.name)\t\(.tag_name)\t\(.id)\t\(.html_url)"'
     #   A jq filter to apply to the return data.
 
     shift 2
@@ -1611,47 +1611,54 @@ release_assets() {
 upload_asset() {
     # Upload a release asset
     #
-    # Note, this command requires `jq` to find the release `upload_url`.
-    #
     # Usage:
     #
-    #     upload_asset username reponame 1087938 \
-    #         foo.tar application/x-tar < foo.tar
+    #       upload_asset https://<upload-url> /path/to/file.zip
     #
-    # * (stdin)
-    #   The contents of the file to upload.
+    # The upload URL can be gotten from `release()`. There are multiple steps
+    # required to upload a file: get the release ID, get the upload URL, parse
+    # the upload URL, then finally upload the file. For example:
+    #
+    # ```sh
+    # USER="someuser"
+    # REPO="somerepo"
+    # TAG="1.2.3"
+    # FILE_NAME="foo.zip"
+    # FILE_PATH="/path/to/foo.zip"
+    #
+    # # Create a release then upload a file:
+    # ok.sh create_release "$USER" "$REPO" "$TAG" _filter='.upload_url' \
+    #     | sed 's/{.*$/?name='"$FILE_NAME"'/' \
+    #     | xargs -I@ ok.sh upload_asset @ "$FILE_PATH"
+    #
+    # # Find a release by tag then upload a file:
+    # ok.sh list_releases "$USER" "$REPO" \
+    #     | awk -v "tag=$TAG" -F'\t' '$2 == tag { print $3 }' \
+    #     | xargs -I@ ok.sh release "$USER" "$REPO" @ _filter='.upload_url' \
+    #     | sed 's/{.*$/?name='"$FILE_NAME"'/' \
+    #     | xargs -I@ ok.sh upload_asset @ "$FILE_PATH"
+    # ```
     #
     # Positional arguments
     #
-    local owner="${1:?Owner name required.}"
-    #   A GitHub user or organization.
-    local repo="${2:?Repo name required.}"
-    #   A GitHub repository.
-    local release_id="${3:?Release ID required.}"
-    #   The unique ID of the release; see list_releases.
-    local name="${4:?File name is required.}"
-    #   The file name of the asset.
+    local upload_url="${1:?upload_url is required.}"
+    # The _parsed_ upload_url returned from GitHub.
+    #
+    local file_path="${2:?file_path is required.}"
+    #   A path to the file that should be uploaded.
     #
     # Keyword arguments
     #
     local _filter='"\(.state)\t\(.browser_download_url)"'
     #   A jq filter to apply to the return data.
+    #
+    # Also any other keyword arguments accepted by `_post()`.
 
-    shift 4
-
-    if [ $NO_JQ -ne 0 ] ; then
-        printf 'upload_asset requires jq\n' 1>&2
-        exit 1
-    fi
+    shift 2
 
     _opts_filter "$@"
 
-    local upload_url=$(release "$owner" "$repo" "$release_id" _filter="(.upload_url)" \
-        | sed -e 's/{?name,label}/?name='"$name"'/g')
-
-    : "${upload_url:?Upload URL could not be retrieved.}"
-
-    _post "$upload_url" filename="$name" \
+    _post "$upload_url" filename="$file_path" "$@" \
         | _filter_json "$_filter"
 }
 
