@@ -78,7 +78,7 @@ awk_bin=$(command -v awk)
 
 # Generate a carriage return so we can match on it.
 # Using a variable because these are tough to specify in a portable way.
-cr=$(printf '\r')
+crlf=$(printf '\r\n')
 
 # ## Main
 # Generic functions not necessarily specific to working with GitHub.
@@ -747,7 +747,7 @@ _response() {
     _log debug 'Processing response.'
 
     read -r http_version status_code status_text
-    status_text="${status_text%${cr}}"
+    status_text="${status_text%${crlf}}"
     http_version="${http_version#HTTP/}"
 
     _log debug "Response status is: ${status_code} ${status_text}"
@@ -758,8 +758,8 @@ status_text: ${status_text}
 "
     while IFS=": " read -r hdr val; do
         # Headers stop at the first blank line.
-        [ "$hdr" = "$cr" ] && break
-        val="${val%${cr}}"
+        [ "$hdr" = "$crlf" ] && break
+        val="${val%${crlf}}"
 
         # Process each header; reformat some to work better with sh tools.
         case "$hdr" in
