@@ -3,6 +3,7 @@
 PROGRAM ?= ok.sh
 DESTDIR ?= $(HOME)
 DESTDIRB ?= /
+VERSION	:=
 
 .PHONY: dev
 dev : .image
@@ -21,6 +22,13 @@ install : $(PROGRAM)
 .PHONY: test
 test :
 	make -C tests all
+
+.PHONY: version
+version :
+	sed -i -e "s/VERSION=.*/VERSION='$(VERSION)'/g" $(PROGRAM)
+	git add $(PROGRAM)
+	git commit -m 'Update version to $(VERSION)'
+	git tag -a $(VERSION) -s
 
 .PHONY: shellcheck
 shellcheck :
