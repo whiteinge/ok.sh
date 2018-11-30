@@ -4,6 +4,14 @@ PROGRAM ?= ok.sh
 DESTDIR ?= $(HOME)
 DESTDIRB ?= /
 
+.PHONY: dev
+dev : .image
+	docker run -it --rm -v $$PWD:/oksh oksh
+
+.image :
+	docker build -t oksh .
+	touch $@
+
 install : $(PROGRAM)
 	cp $(PROGRAM) "$(DESTDIR)/bin/"
 	chmod 755 "$(DESTDIR)/bin/$(PROGRAM)"

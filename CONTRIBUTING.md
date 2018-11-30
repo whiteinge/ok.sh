@@ -11,6 +11,12 @@ fairly modern systems (ten to fifteen years old), although concessions can be
 made for legacy or unusual systems if that does not burden the overall
 maintainability of the script.
 
+### Development Environment
+
+A development environment can be quickly created if you have Docker installed
+by running `make dev` from the main repo directory. This will drop you into
+a shell with the local directory mounted as a volume.
+
 ## Generate README
 
 The README file is a generated file from extracting comments in the main
