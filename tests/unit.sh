@@ -26,7 +26,7 @@ test_format_json() {
 string' quuz=\'5.20170918\' corge="$(${SCRIPT} _format_json grault=Grault)" | {
         read -r output
 
-        printf '%s\n' "$output" | grep -q -E '^{' || {
+        printf '%s\n' "$output" | grep -q -E '^\{' || {
             printf 'JSON does not start with a { char.\n'; is_fail=1 ;}
         printf '%s\n' "$output" | grep -q -E '}$' || {
             printf 'JSON does not end with a } char.\n'; is_fail=1 ;}
