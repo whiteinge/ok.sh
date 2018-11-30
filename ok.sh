@@ -73,9 +73,6 @@ export LINFO=4      # Info-level log messages.
 export LDEBUG=5     # Debug-level log messages.
 export LSUMMARY=6   # Summary output.
 
-# We need this path for when we reset our env.
-awk_bin=$(command -v awk)
-
 # Generate a carriage return so we can match on it.
 # Using a variable because these are tough to specify in a portable way.
 crlf=$(printf '\r\n')
@@ -340,33 +337,10 @@ _helptext() {
 # ### Request-response
 # Functions for making HTTP requests and processing HTTP responses.
 
-_awk_map() {
-    # Invoke awk with a function that will empty the ENVIRON map
-    #
-    # Positional arguments
-    #
-    local prg="${1:?awk program string required}"
-    # The body of an awk program to run
+_awk_blacklist() {
+    # Some awks will populate ENVIRON with defaults; print those defaults
 
-    shift 1
-
-    local env_bin=$(command -v env)
-    local env_blacklist=$(env -i "$env_bin" | while read -r env_var; do
-        printf '%s\n' "${env_var%=*}"
-    done)
-
-    env -i "$@" "$awk_bin" \
-        -v env_blacklist="${env_blacklist}" \
-        '
-        function clear_envrion() {
-            for (name in ENVIRON) {
-                if (substr(name, 0, 3) == "AWK") delete ENVIRON[name]
-            }
-
-            split(env_blacklist, bl, "\n")
-            for (name in bl) { delete ENVIRON[bl[name]] }
-        }
-        '"$prg"
+    env -i -- awk 'BEGIN { for (name in ENVIRON) print name }'
 }
 
 _format_json() {
@@ -375,7 +349,7 @@ _format_json() {
     # Usage:
     # ```
     # _format_json foo=Foo bar=123 baz=true qux=Qux=Qux quux='Multi-line
-    # string' quuz=\'5.20170918\' corge=$(ok.sh _format_json grault=Grault)
+    # string' quuz=\'5.20170918\' corge="$(ok.sh _format_json grault=Grault)"
     # ```
     #
     # Return:
@@ -394,6 +368,7 @@ _format_json() {
     # ```
     #
     # Tries not to quote numbers, booleans, nulls, or nested structures.
+    # Note, nested structures must be quoted since the output contains spaces.
     # If jq is installed it will also validate the output.
     #
     # Positional arguments
@@ -405,7 +380,9 @@ _format_json() {
 
     _log debug "Formatting ${#} parameters as JSON."
 
-    _awk_map '
+    local env_blacklist="$(_awk_blacklist)"
+
+    env -i -- "$@" awk -v env_blacklist="$env_blacklist" '
     function isnum(x){ return (x == x + 0) }
     function isnull(x){ return (x == "null" ) }
     function isbool(x){ if (x == "true" || x == "false") return 1 }
@@ -413,8 +390,8 @@ _format_json() {
         || substr(x, 0, 1) == "{") return 1 }
 
     BEGIN {
-
-        clear_envrion()
+        split(env_blacklist, _ebl, "\n")
+        for (v in _ebl) delete ENVIRON[_ebl[v]]
 
         printf("{")
 
@@ -437,7 +414,7 @@ _format_json() {
 
         printf("}\n")
     }
-    ' "$@" | _filter_json
+    ' | _filter_json
 }
 
 _format_urlencode() {
@@ -457,7 +434,9 @@ _format_urlencode() {
 
     _log debug "Formatting ${#} parameters as urlencoded"
 
-    _awk_map '
+    local env_blacklist="$(_awk_blacklist)"
+
+    env -i -- "$@" awk -v env_blacklist="$env_blacklist" '
     function escape(str, c, len, res) {
         len = length(str)
         res = ""
@@ -472,7 +451,8 @@ _format_urlencode() {
     }
 
     BEGIN {
-        clear_envrion()
+        split(env_blacklist, _ebl, "\n")
+        for (v in _ebl) delete ENVIRON[_ebl[v]]
 
         for (i = 0; i <= 255; i += 1) ord[sprintf("%c", i)] = i;
 
@@ -484,7 +464,7 @@ _format_urlencode() {
             sep = "&"
         }
     }
-    ' "$@"
+    '
 }
 
 _filter_json() {
