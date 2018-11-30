@@ -1,12 +1,13 @@
 language: sh
 
-script: |
-    PATH=$PATH:$TRAVIS_BUILD_DIR make test
+services:
+  - docker
 
-addons:
-  apt:
-    packages:
-    - socat
+before_install:
+  - docker build -t oksh .
+
+script:
+    - docker run -it --rm oksh make test
 
 notifications:
   email: false
