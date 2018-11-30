@@ -86,7 +86,22 @@ crlf=$(printf '\r\n')
 # ### Help
 # Functions for fetching and formatting help text.
 
- _cols() { sort | pr -t -3; }
+ _cols() {
+    sort | awk '
+        { w[NR] = $0 }
+        END {
+            cols = 3
+            per_col = sprintf("%.f", NR / cols + 0.5)  # Round up if decimal.
+
+            for (i = 1; i < per_col + 1; i += 1) {
+                for (j = 0; j < cols; j += 1) {
+                    printf("%-24s", w[i + per_col * j])
+                }
+                printf("\n")
+            }
+        }
+    '
+ }
  _links() { awk '{ print "* [" $0 "](#" $0 ")" }'; }
  _funcsfmt() { if [ "$OK_SH_MARKDOWN" -eq 0 ]; then _cols; else _links; fi; }
 
