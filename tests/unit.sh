@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Unit tests for the ok.sh script.
 
-SCRIPT="ok.sh"
+SCRIPT="../ok.sh"
 JQ="${OK_SH_JQ_BIN:-jq}"
 JQ_V="$(jq --version 2>&1 | awk '{ print $3 }')"
 
@@ -23,10 +23,10 @@ test_format_json() {
     local is_fail=0
 
     $SCRIPT -j _format_json foo=Foo bar=123 baz=true qux=Qux=Qux quux='Multi-line
-string' quuz=\'5.20170918\' corge=$(ok.sh _format_json grault=Grault) | {
+string' quuz=\'5.20170918\' corge="$(${SCRIPT} _format_json grault=Grault)" | {
         read -r output
 
-        printf '%s\n' "$output" | grep -q -E '^{' || {
+        printf '%s\n' "$output" | grep -q -E '^\{' || {
             printf 'JSON does not start with a { char.\n'; is_fail=1 ;}
         printf '%s\n' "$output" | grep -q -E '}$' || {
             printf 'JSON does not end with a } char.\n'; is_fail=1 ;}
