@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Integration tests for the ok.sh script.
 
-SCRIPT='ok.sh'
+SCRIPT='../ok.sh'
 export OK_SH_URL='localhost:8011'
 
 _main() {

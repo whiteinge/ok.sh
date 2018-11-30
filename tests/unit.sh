@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Unit tests for the ok.sh script.
 
-SCRIPT="ok.sh"
+SCRIPT="../ok.sh"
 JQ="${OK_SH_JQ_BIN:-jq}"
 JQ_V="$(jq --version 2>&1 | awk '{ print $3 }')"
 
