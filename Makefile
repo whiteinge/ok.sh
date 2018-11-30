@@ -24,9 +24,9 @@ test :
 	make -C tests all
 
 .PHONY: version
-version :
+version : readme
 	sed -i -e "s/VERSION=.*/VERSION='$(VERSION)'/g" $(PROGRAM)
-	git add $(PROGRAM)
+	git add $(PROGRAM) README.md
 	git commit -m 'Update version to $(VERSION)'
 	git tag -a $(VERSION) -s
 
