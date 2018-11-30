@@ -119,7 +119,7 @@ help() {
 
     # Short-circuit if only producing help for a single function.
     if [ $# -gt 0 ]; then
-        awk -v fname="^$fname\\\(\\\) {$" '$0 ~ fname, /^}/ { print }' "$0" \
+        awk -v fname="^$fname\\\(\\\) \\\{$" '$0 ~ fname, /^}/ { print }' "$0" \
             | _helptext
         return
     fi
