@@ -84,7 +84,7 @@ Flags _must_ be the first argument to `ok.sh`, before `command`.
 * [_all_funcs](#_all_funcs)
 * [_log](#_log)
 * [_helptext](#_helptext)
-* [_awk_map](#_awk_map)
+* [_awk_blacklist](#_awk_blacklist)
 * [_format_json](#_format_json)
 * [_format_urlencode](#_format_urlencode)
 * [_filter_json](#_filter_json)
@@ -187,15 +187,9 @@ Input
 * (stdin)
   The text of a function body to parse.
 
-### _awk_map
+### _awk_blacklist
 
-Invoke awk with a function that will empty the ENVIRON map
-
-Positional arguments
-
-* `prg="$1"`
-
-The body of an awk program to run
+Some awks will populate ENVIRON with defaults; print those defaults
 
 ### _format_json
 
@@ -204,7 +198,7 @@ Create formatted JSON from name=value pairs
 Usage:
 ```
 _format_json foo=Foo bar=123 baz=true qux=Qux=Qux quux='Multi-line
-string' quuz=\'5.20170918\' corge=$(ok.sh _format_json grault=Grault)
+string' quuz=\'5.20170918\' corge="$(ok.sh _format_json grault=Grault)"
 ```
 
 Return:
@@ -223,6 +217,7 @@ Return:
 ```
 
 Tries not to quote numbers, booleans, nulls, or nested structures.
+Note, nested structures must be quoted since the output contains spaces.
 If jq is installed it will also validate the output.
 
 Positional arguments
