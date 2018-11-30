@@ -26,12 +26,7 @@ download a local copy for offline viewing by running `make posixdocs`.
 ## Generate README
 
 The README file is a generated file from extracting comments in the main
-script. It should not be modified directly. See the Makefile for details but
-tl;dr execute:
-
-```
-make readme
-```
+script. It should not be modified directly. Run `make readme` to generate it.
 
 ## Code Structure
 
