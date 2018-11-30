@@ -31,3 +31,7 @@ readme:
 
 preview:
 	@ pandoc -f gfm < README.md > README.html
+
+.PHONY: posixdocs
+posixdocs:
+	wget -np --mirror https://pubs.opengroup.org/onlinepubs/9699919799/

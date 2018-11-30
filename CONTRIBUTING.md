@@ -17,6 +17,12 @@ A development environment can be quickly created if you have Docker installed
 by running `make dev` from the main repo directory. This will drop you into
 a shell with the local directory mounted as a volume.
 
+### POSIX Documentation
+
+The [POSIX documentation is available
+online](https://pubs.opengroup.org/onlinepubs/9699919799/). In addition you can
+download a local copy for offline viewing by running `make posixdocs`.
+
 ## Generate README
 
 The README file is a generated file from extracting comments in the main
