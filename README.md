@@ -58,11 +58,11 @@ The following environment variables may be set to customize ok.sh.
 
 `ok.sh [<flags>] (command [<arg>, <name=value>...])`
 
-      ok.sh -h              # Short, usage help text.
-      ok.sh help            # All help text. Warning: long!
-      ok.sh help command    # Command-specific help text.
-      ok.sh command         # Run a command with and without args.
-      ok.sh command foo bar baz=Baz qux='Qux arg here'
+    ok.sh -h              # Short, usage help text.
+    ok.sh help            # All help text. Warning: long!
+    ok.sh help command    # Command-specific help text.
+    ok.sh command         # Run a command with and without args.
+    ok.sh command foo bar baz=Baz qux='Qux arg here'
 
 Flag | Description
 ---- | -----------
@@ -303,8 +303,8 @@ Extract common jq filter keyword options and assign to vars
 
 Usage:
 
-      local filter
-      _opts_filter "$@"
+    local filter
+    _opts_filter "$@"
 
 ### _opts_pagination
 
@@ -312,8 +312,8 @@ Extract common pagination keyword options and assign to vars
 
 Usage:
 
-      local _follow_next
-      _opts_pagination "$@"
+    local _follow_next
+    _opts_pagination "$@"
 
 ### _opts_qs
 
@@ -321,9 +321,9 @@ Extract common query string keyword options and assign to vars
 
 Usage:
 
-      local qs
-      _opts_qs "$@"
-      _get "/some/path"
+    local qs
+    _opts_qs "$@"
+    _get "/some/path"
 
 ### _request
 
@@ -745,7 +745,8 @@ Querystring arguments may also be passed as keyword arguments:
 Add a collaborator to a repository
 
 Usage:
-      add_collaborator someuser/somerepo collaboratoruser permission
+
+    add_collaborator someuser/somerepo collaboratoruser permission
 
 Positional arguments
 
@@ -772,7 +773,8 @@ Keyword arguments
 Delete a collaborator to a repository
 
 Usage:
-      delete_collaborator someuser/somerepo collaboratoruser permission
+
+    delete_collaborator someuser/somerepo collaboratoruser permission
 
 Positional arguments
 
@@ -999,7 +1001,7 @@ Upload a release asset
 
 Usage:
 
-      upload_asset https://<upload-url> /path/to/file.zip
+    upload_asset https://<upload-url> /path/to/file.zip
 
 The upload URL can be gotten from `release()`. There are multiple steps
 required to upload a file: get the release ID, get the upload URL, parse
@@ -1049,8 +1051,8 @@ List milestones for a repository
 
 Usage:
 
-      list_milestones someuser/somerepo
-      list_milestones someuser/somerepo state=closed
+    list_milestones someuser/somerepo
+    list_milestones someuser/somerepo state=closed
 
 Positional arguments
 
@@ -1083,12 +1085,12 @@ Create a milestone for a repository
 
 Usage:
 
-      create_milestone someuser/somerepo MyMilestone
+    create_milestone someuser/somerepo MyMilestone
 
-      create_milestone someuser/somerepo MyMilestone \
-          due_on=2015-06-16T16:54:00Z \
-          description='Long description here
-      that spans multiple lines.'
+    create_milestone someuser/somerepo MyMilestone \
+        due_on=2015-06-16T16:54:00Z \
+        description='Long description here
+    that spans multiple lines.'
 
 Positional arguments
 
@@ -1116,7 +1118,8 @@ Milestone options may also be passed as keyword arguments:
 Add a comment to an issue
 
 Usage:
-  add_comment someuser/somerepo 123 'This is a comment'
+
+    add_comment someuser/somerepo 123 'This is a comment'
 
 Positional arguments
 
@@ -1141,7 +1144,8 @@ Keyword arguments
 Add a comment to a commit
 
 Usage:
-  add_commit_comment someuser/somerepo 123 'This is a comment'
+
+    add_commit_comment someuser/somerepo 123 'This is a comment'
 
 Positional arguments
 
@@ -1166,7 +1170,8 @@ Keyword arguments
 Close an issue
 
 Usage:
-  close_issue someuser/somerepo 123
+
+    close_issue someuser/somerepo 123
 
 Positional arguments
 
@@ -1195,9 +1200,9 @@ List issues for the authenticated user or repository
 
 Usage:
 
-      list_issues
-      list_issues someuser/somerepo
-      list_issues <any of the above> state=closed labels=foo,bar
+    list_issues
+    list_issues someuser/somerepo
+    list_issues <any of the above> state=closed labels=foo,bar
 
 Positional arguments
 
@@ -1234,8 +1239,8 @@ List all issues across owned and member repositories for the authenticated user
 
 Usage:
 
-      user_issues
-      user_issues since=2015-60-11T00:09:00Z
+    user_issues
+    user_issues since=2015-60-11T00:09:00Z
 
 Keyword arguments
 
@@ -1265,7 +1270,7 @@ List all issues for a given organization for the authenticated user
 
 Usage:
 
-      org_issues someorg
+    org_issues someorg
 
 Positional arguments
 
@@ -1301,7 +1306,7 @@ List all organizations
 
 Usage:
 
-      list_orgs
+    list_orgs
 
 Keyword arguments
 
@@ -1321,7 +1326,7 @@ List available labels for a repository
 
 Usage:
 
-      labels someuser/somerepo
+    labels someuser/somerepo
 
 Positional arguments
 
@@ -1346,7 +1351,8 @@ Keyword arguments
 Add a label to a repository
 
 Usage:
-      add_label someuser/somerepo LabelName color
+
+    add_label someuser/somerepo LabelName color
 
 Positional arguments
 
@@ -1371,8 +1377,9 @@ Keyword arguments
 Update a label
 
 Usage:
-      update_label someuser/somerepo OldLabelName \
-          label=NewLabel color=newcolor
+
+    update_label someuser/somerepo OldLabelName \
+        label=NewLabel color=newcolor
 
 Positional arguments
 
@@ -1427,7 +1434,7 @@ Lists the pull requests for a repository
 
 Usage:
 
-      list_pulls user repo
+    list_pulls user repo
 
 Positional arguments
 
@@ -1456,9 +1463,9 @@ Create a pull request for a repository
 
 Usage:
 
-      create_pull_request someuser/somerepo title head base
+    create_pull_request someuser/somerepo title head base
 
-      create_pull_request someuser/somerepo title head base body='Description here.'
+    create_pull_request someuser/somerepo title head base body='Description here.'
 
 Positional arguments
 
@@ -1492,7 +1499,7 @@ Update a pull request for a repository
 
 Usage:
 
-      update_pull_request someuser/somerepo number title='New title' body='New body'
+    update_pull_request someuser/somerepo number title='New title' body='New body'
 
 Positional arguments
 
