@@ -178,11 +178,11 @@ __main() {
     #
     # `${NAME} [<flags>] (command [<arg>, <name=value>...])`
     #
-    #       ${NAME} -h              # Short, usage help text.
-    #       ${NAME} help            # All help text. Warning: long!
-    #       ${NAME} help command    # Command-specific help text.
-    #       ${NAME} command         # Run a command with and without args.
-    #       ${NAME} command foo bar baz=Baz qux='Qux arg here'
+    #     ${NAME} -h              # Short, usage help text.
+    #     ${NAME} help            # All help text. Warning: long!
+    #     ${NAME} help command    # Command-specific help text.
+    #     ${NAME} command         # Run a command with and without args.
+    #     ${NAME} command foo bar baz=Baz qux='Qux arg here'
     #
     # Flag | Description
     # ---- | -----------
@@ -566,8 +566,8 @@ _opts_filter() {
     #
     # Usage:
     #
-    #       local filter
-    #       _opts_filter "$@"
+    #     local filter
+    #     _opts_filter "$@"
 
     for arg in "$@"; do
         case $arg in
@@ -581,8 +581,8 @@ _opts_pagination() {
     #
     # Usage:
     #
-    #       local _follow_next
-    #       _opts_pagination "$@"
+    #     local _follow_next
+    #     _opts_pagination "$@"
 
     for arg in "$@"; do
         case $arg in
@@ -597,9 +597,9 @@ _opts_qs() {
     #
     # Usage:
     #
-    #       local qs
-    #       _opts_qs "$@"
-    #       _get "/some/path${qs}"
+    #     local qs
+    #     _opts_qs "$@"
+    #     _get "/some/path${qs}"
 
     local querystring=$(_format_urlencode "$@")
     qs="${querystring:+?$querystring}"
@@ -1282,7 +1282,8 @@ add_collaborator() {
     # Add a collaborator to a repository
     #
     # Usage:
-    #       add_collaborator someuser/somerepo collaboratoruser permission
+    #
+    #     add_collaborator someuser/somerepo collaboratoruser permission
     #
     # Positional arguments
     #
@@ -1316,7 +1317,8 @@ delete_collaborator() {
     # Delete a collaborator to a repository
     #
     # Usage:
-    #       delete_collaborator someuser/somerepo collaboratoruser permission
+    #
+    #     delete_collaborator someuser/somerepo collaboratoruser permission
     #
     # Positional arguments
     #
@@ -1607,7 +1609,7 @@ upload_asset() {
     #
     # Usage:
     #
-    #       upload_asset https://<upload-url> /path/to/file.zip
+    #     upload_asset https://<upload-url> /path/to/file.zip
     #
     # The upload URL can be gotten from `release()`. There are multiple steps
     # required to upload a file: get the release ID, get the upload URL, parse
@@ -1664,8 +1666,8 @@ list_milestones() {
     #
     # Usage:
     #
-    #       list_milestones someuser/somerepo
-    #       list_milestones someuser/somerepo state=closed
+    #     list_milestones someuser/somerepo
+    #     list_milestones someuser/somerepo state=closed
     #
     # Positional arguments
     #
@@ -1703,12 +1705,12 @@ create_milestone() {
     #
     # Usage:
     #
-    #       create_milestone someuser/somerepo MyMilestone
+    #     create_milestone someuser/somerepo MyMilestone
     #
-    #       create_milestone someuser/somerepo MyMilestone \
-    #           due_on=2015-06-16T16:54:00Z \
-    #           description='Long description here
-    #       that spans multiple lines.'
+    #     create_milestone someuser/somerepo MyMilestone \
+    #         due_on=2015-06-16T16:54:00Z \
+    #         description='Long description here
+    #     that spans multiple lines.'
     #
     # Positional arguments
     #
@@ -1741,7 +1743,8 @@ add_comment() {
     # Add a comment to an issue
     #
     # Usage:
-    #   add_comment someuser/somerepo 123 'This is a comment'
+    #
+    #     add_comment someuser/somerepo 123 'This is a comment'
     #
     # Positional arguments
     #
@@ -1769,7 +1772,8 @@ add_commit_comment() {
     # Add a comment to a commit
     #
     # Usage:
-    #   add_commit_comment someuser/somerepo 123 'This is a comment'
+    #
+    #     add_commit_comment someuser/somerepo 123 'This is a comment'
     #
     # Positional arguments
     #
@@ -1797,7 +1801,8 @@ close_issue() {
     # Close an issue
     #
     # Usage:
-    #   close_issue someuser/somerepo 123
+    #
+    #     close_issue someuser/somerepo 123
     #
     # Positional arguments
     #
@@ -1830,9 +1835,9 @@ list_issues() {
     #
     # Usage:
     #
-    #       list_issues
-    #       list_issues someuser/somerepo
-    #       list_issues <any of the above> state=closed labels=foo,bar
+    #     list_issues
+    #     list_issues someuser/somerepo
+    #     list_issues <any of the above> state=closed labels=foo,bar
     #
     # Positional arguments
     #
@@ -1881,8 +1886,8 @@ user_issues() {
     #
     # Usage:
     #
-    #       user_issues
-    #       user_issues since=2015-60-11T00:09:00Z
+    #     user_issues
+    #     user_issues since=2015-60-11T00:09:00Z
     #
     # Keyword arguments
     #
@@ -1917,7 +1922,7 @@ org_issues() {
     #
     # Usage:
     #
-    #       org_issues someorg
+    #     org_issues someorg
     #
     # Positional arguments
     #
@@ -1958,7 +1963,7 @@ list_orgs() {
     #
     # Usage:
     #
-    #       list_orgs
+    #     list_orgs
     #
     # Keyword arguments
     #
@@ -1983,7 +1988,7 @@ labels() {
     #
     # Usage:
     #
-    #       labels someuser/somerepo
+    #     labels someuser/somerepo
     #
     # Positional arguments
     #
@@ -2009,7 +2014,8 @@ add_label() {
     # Add a label to a repository
     #
     # Usage:
-    #       add_label someuser/somerepo LabelName color
+    #
+    #     add_label someuser/somerepo LabelName color
     #
     # Positional arguments
     #
@@ -2036,8 +2042,9 @@ update_label() {
     # Update a label
     #
     # Usage:
-    #       update_label someuser/somerepo OldLabelName \
-    #           label=NewLabel color=newcolor
+    #
+    #     update_label someuser/somerepo OldLabelName \
+    #         label=NewLabel color=newcolor
     #
     # Positional arguments
     #
@@ -2096,7 +2103,7 @@ list_pulls() {
     #
     # Usage:
     #
-    #       list_pulls user repo
+    #     list_pulls user repo
     #
     # Positional arguments
     #
@@ -2125,9 +2132,9 @@ create_pull_request() {
     #
     # Usage:
     #
-    #       create_pull_request someuser/somerepo title head base
+    #     create_pull_request someuser/somerepo title head base
     #
-    #       create_pull_request someuser/somerepo title head base body='Description here.'
+    #     create_pull_request someuser/somerepo title head base body='Description here.'
     #
     # Positional arguments
     #
@@ -2164,7 +2171,7 @@ update_pull_request() {
     #
     # Usage:
     #
-    #       update_pull_request someuser/somerepo number title='New title' body='New body'
+    #     update_pull_request someuser/somerepo number title='New title' body='New body'
     #
     # Positional arguments
     #
