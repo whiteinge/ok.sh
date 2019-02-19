@@ -1958,6 +1958,31 @@ org_issues() {
     _get "/orgs/${org}/issues${qs}" | _filter_json "$_filter"
 }
 
+list_my_orgs() {
+    # List your organizations
+    #
+    # Usage:
+    #
+    #     list_my_orgs
+    #
+    # Keyword arguments
+    #
+    local _follow_next
+    #   Automatically look for a 'Links' header and follow any 'next' URLs.
+    local _follow_next_limit
+    #   Maximum number of 'next' URLs to follow before stopping.
+    local _filter='.[] | "\(.login)\t\(.id)"'
+    #   A jq filter to apply to the return data.
+
+    local qs
+
+    _opts_pagination "$@"
+    _opts_filter "$@"
+    _opts_qs "$@"
+
+    _get "/user/orgs" | _filter_json "$_filter"
+}
+
 list_orgs() {
     # List all organizations
     #
