@@ -23,7 +23,8 @@ test_format_json() {
     local is_fail=0
 
     $SCRIPT -j _format_json foo=Foo bar=123 baz=true qux=Qux=Qux quux='Multi-line
-string' quuz=\'5.20170918\' corge="$(${SCRIPT} _format_json grault=Grault)" | {
+string' quuz=\'5.20170918\' corge="$(${SCRIPT} _format_json grault=Grault)" \
+    garply="$(${SCRIPT} _format_json -a waldo true 3)" | {
         read -r output
 
         printf '%s\n' "$output" | grep -q -E '^\{' || {
@@ -38,6 +39,8 @@ string' quuz=\'5.20170918\' corge="$(${SCRIPT} _format_json grault=Grault)" | {
             printf 'JSON does not have properly quoted numbers.\n'; is_fail=1 ;}
         printf '%s\n' "$output" | grep -q -E '"Grault"' || {
             printf 'JSON does not have properly nested structure\n'; is_fail=1 ;}
+        printf '%s\n' "$output" | grep -q -E '"garply": \["' || {
+            printf 'JSON does not have properly nested arrays\n'; is_fail=1 ;}
 
         if [ "$is_fail" -ne 1 ] ; then
             return 0
