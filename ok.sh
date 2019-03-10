@@ -51,7 +51,7 @@
 #   Output some text in Markdown format.
 
 export NAME=$(basename "$0")
-export VERSION='0.4.0'
+export VERSION='0.5.0'
 
 export OK_SH_URL=${OK_SH_URL:-'https://api.github.com'}
 export OK_SH_ACCEPT=${OK_SH_ACCEPT:-'application/vnd.github.v3+json'}
