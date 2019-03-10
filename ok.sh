@@ -2263,4 +2263,29 @@ transfer_repo() {
     _format_json "new_owner=${new_owner}" "$@" | _post "/repos/${owner}/${repo}/transfer" | _filter_json "${_filter}"
 }
 
+archive_repo() {
+    # Archive a repo
+    #
+    # Usage:
+    #
+    #     archive_repo owner/repo
+    #
+    # Positional arguments
+    #
+    local repo="${1:?Repo name required.}"
+    #   A GitHub repository.
+    #
+    local _filter='"\(.name)\t\(.html_url)"'
+    #   A jq filter to apply to the return data.
+    #
+
+    shift 1
+
+    _opts_filter "$@"
+
+    _format_json "archived=true" \
+        | _post "/repos/${repo}" method='PATCH' \
+        | _filter_json "$_filter"
+}
+
 __main "$@"
