@@ -129,7 +129,9 @@ Flags _must_ be the first argument to `ok.sh`, before `command`.
 * [close_issue](#close_issue)
 * [list_issues](#list_issues)
 * [user_issues](#user_issues)
+* [create_issue](#create_issue)
 * [org_issues](#org_issues)
+* [list_my_orgs](#list_my_orgs)
 * [list_orgs](#list_orgs)
 * [labels](#labels)
 * [add_label](#add_label)
@@ -138,6 +140,8 @@ Flags _must_ be the first argument to `ok.sh`, before `command`.
 * [list_pulls](#list_pulls)
 * [create_pull_request](#create_pull_request)
 * [update_pull_request](#update_pull_request)
+* [transfer_repo](#transfer_repo)
+* [archive_repo](#archive_repo)
 
 ## Commands
 
@@ -190,6 +194,7 @@ Input
 ### _awk_blacklist
 
 Some awks will populate ENVIRON with defaults; print those defaults
+Also prints any exported vars within this script.
 
 ### _format_json
 
@@ -197,13 +202,20 @@ Create formatted JSON from name=value pairs
 
 Usage:
 ```
-_format_json foo=Foo bar=123 baz=true qux=Qux=Qux quux='Multi-line
-string' quuz=\'5.20170918\' corge="$(ok.sh _format_json grault=Grault)"
+ok.sh _format_json foo=Foo bar=123 baz=true qux=Qux=Qux quux='Multi-line
+string' quuz=\'5.20170918\' \
+  corge="$(ok.sh _format_json grault=Grault)" \
+  garply="$(ok.sh _format_json -a waldo true 3)"
 ```
 
 Return:
 ```
 {
+  "garply": [
+    "waldo",
+    true,
+    3
+  ],
   "foo": "Foo",
   "corge": {
     "grault": "Grault"
@@ -211,13 +223,18 @@ Return:
   "baz": true,
   "qux": "Qux=Qux",
   "quux": "Multi-line\nstring",
-  "bar": 123,
-  "quuz": "5.20170918"
+  "quuz": "5.20170918",
+  "bar": 123
 }
 ```
 
 Tries not to quote numbers, booleans, nulls, or nested structures.
 Note, nested structures must be quoted since the output contains spaces.
+
+The `-a` option will create an array instead of an object. This option
+must come directly after the _format_json command and before any
+operands. E.g., `_format_json -a foo bar baz`.
+
 If jq is installed it will also validate the output.
 
 Positional arguments
@@ -448,7 +465,7 @@ Keyword arguments
 
 ### _post
 
-A wrapper around _request() for commoon POST / PUT patterns
+A wrapper around _request() for common POST / PUT patterns
 
 Usage:
 
@@ -822,7 +839,7 @@ POST data may also be passed as keyword arguments:
 
 ### delete_repo
 
-Create a repository for a user or organization
+Delete a repository for a user or organization
 
 Usage:
 
@@ -1264,6 +1281,41 @@ GitHub querystring arguments may also be passed as keyword arguments:
 * `sort`
 * `state`
 
+### create_issue
+
+Create an issue
+
+Usage:
+
+    create_issue owner repo 'Issue title' body='Add multiline body
+    content here' labels="$(./ok.sh _format_json -a foo bar)"
+
+Positional arguments
+
+* `owner="$1"`
+
+  A GitHub repository.
+* `repo="$2"`
+
+  A GitHub repository.
+* `title="$3"`
+
+  A GitHub repository.
+
+Keyword arguments
+
+* `_filter='"\(.id)\t\(.number)\t\(.html_url)"'`
+
+  A jq filter to apply to the return data.
+
+Additional issue fields may be passed as keyword arguments:
+
+* `body` (string)
+* `assignee` (string)
+* `milestone` (integer)
+* `labels` (array of strings)
+* `assignees` (array of strings)
+
 ### org_issues
 
 List all issues for a given organization for the authenticated user
@@ -1299,6 +1351,26 @@ GitHub querystring arguments may also be passed as keyword arguments:
 * `since`
 * `sort`
 * `state`
+
+### list_my_orgs
+
+List your organizations
+
+Usage:
+
+    list_my_orgs
+
+Keyword arguments
+
+* `_follow_next`
+
+  Automatically look for a 'Links' header and follow any 'next' URLs.
+* `_follow_next_limit`
+
+  Maximum number of 'next' URLs to follow before stopping.
+* `_filter='.[] | "\(.login)\t\(.id)"'`
+
+  A jq filter to apply to the return data.
 
 ### list_orgs
 
@@ -1523,4 +1595,56 @@ Pull request options may also be passed as keyword arguments:
 * `maintainer_can_modify`
 * `state` (either open or closed)
 * `title`
+
+### transfer_repo
+
+Transfer a repository to a user or organization
+
+Usage:
+
+    transfer_repo owner repo new_owner
+    transfer_repo owner repo new_owner team_ids='[ 12, 345 ]'
+
+Positional arguments
+
+* `owner="$1"`
+
+  Name of the current owner
+
+* `repo="$2"`
+
+  Name of the current repo
+
+* `new_owner="$3"`
+
+  Name of the new owner
+
+Keyword arguments
+
+* `_filter='"\(.name)"'`
+
+  A jq filter to apply to the return data.
+
+POST data may also be passed as keyword arguments:
+
+* `team_ids`
+
+### archive_repo
+
+Archive a repo
+
+Usage:
+
+    archive_repo owner/repo
+
+Positional arguments
+
+* `repo="$1"`
+
+  A GitHub repository.
+
+* `_filter='"\(.name)\t\(.html_url)"'`
+
+  A jq filter to apply to the return data.
+
 
