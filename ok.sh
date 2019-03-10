@@ -1974,6 +1974,45 @@ user_issues() {
     _get "/issues${qs}" | _filter_json "$_filter"
 }
 
+create_issue() {
+    # Create an issue
+    #
+    # Usage:
+    #
+    #     create_issue owner repo 'Issue title' body='Add multiline body
+    #     content here' labels="$(./ok.sh _format_json -a foo bar)"
+    #
+    # Positional arguments
+    #
+    local owner="${1:?Owner name required.}"
+    #   A GitHub repository.
+    local repo="${2:?Repo name required.}"
+    #   A GitHub repository.
+    local title="${3:?Issue title required.}"
+    #   A GitHub repository.
+    #
+    # Keyword arguments
+    #
+    local _filter='"\(.id)\t\(.number)\t\(.html_url)"'
+    #   A jq filter to apply to the return data.
+    #
+    # Additional issue fields may be passed as keyword arguments:
+    #
+    # * `body` (string)
+    # * `assignee` (string)
+    # * `milestone` (integer)
+    # * `labels` (array of strings)
+    # * `assignees` (array of strings)
+
+    shift 3
+
+    _opts_filter "$@"
+
+    _format_json title="$title" "$@" \
+        | _post "/repos/${owner}/${repo}/issues" \
+        | _filter_json "$_filter"
+}
+
 org_issues() {
     # List all issues for a given organization for the authenticated user
     #
