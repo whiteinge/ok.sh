@@ -873,7 +873,7 @@ _get() {
 }
 
 _post() {
-    # A wrapper around _request() for commoon POST / PUT patterns
+    # A wrapper around _request() for common POST / PUT patterns
     #
     # Usage:
     #
@@ -1393,7 +1393,7 @@ create_repo() {
 }
 
 delete_repo() {
-    # Create a repository for a user or organization
+    # Delete a repository for a user or organization
     #
     # Usage:
     #
