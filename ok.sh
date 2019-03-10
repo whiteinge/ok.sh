@@ -2227,4 +2227,40 @@ update_pull_request() {
         | _filter_json "$_filter"
 }
 
+transfer_repo() {
+    # Transfer a repository to a user or organization
+    #
+    # Usage:
+    #
+    #     transfer_repo owner repo new_owner
+    #     transfer_repo owner repo new_owner team_ids='[ 12, 345 ]'
+    #
+    # Positional arguments
+    #
+    local owner="${1:?Owner name required.}"
+    #   Name of the current owner
+    #
+    local repo="${2:?Repo name required.}"
+    #   Name of the current repo
+    #
+    local new_owner="${3:?New owner name required.}"
+    #   Name of the new owner
+    #
+    # Keyword arguments
+    #
+    local _filter='"\(.name)"'
+    #   A jq filter to apply to the return data.
+    #
+    # POST data may also be passed as keyword arguments:
+    #
+    # * `team_ids`
+
+    shift 3
+
+    _opts_filter "$@"
+
+    export OK_SH_ACCEPT='application/vnd.github.nightshade-preview+json'
+    _format_json "new_owner=${new_owner}" "$@" | _post "/repos/${owner}/${repo}/transfer" | _filter_json "${_filter}"
+}
+
 __main "$@"
