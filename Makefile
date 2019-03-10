@@ -37,7 +37,7 @@ shellcheck :
 readme : $(PROGRAM)
 	@ printf '<!---\nThis README file is generated. Changes will be overwritten.\n-->\n' > README.md
 	@ printf '[![Build Status](https://travis-ci.org/whiteinge/ok.sh.svg?branch=master)](https://travis-ci.org/whiteinge/ok.sh)\n\n' >> README.md
-	OK_SH_MARKDOWN=1 $(PROGRAM) help >> README.md
+	OK_SH_MARKDOWN=1 ./$(PROGRAM) help >> README.md
 
 .PHONY: preview
 preview :
