@@ -873,7 +873,7 @@ _get() {
 }
 
 _post() {
-    # A wrapper around _request() for commoon POST / PUT patterns
+    # A wrapper around _request() for common POST / PUT patterns
     #
     # Usage:
     #
