@@ -1393,7 +1393,7 @@ create_repo() {
 }
 
 delete_repo() {
-    # Create a repository for a user or organization
+    # Delete a repository for a user or organization
     #
     # Usage:
     #
