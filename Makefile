@@ -9,13 +9,29 @@ VERSION	:=
 test :
 	make -C tests all
 
-.PHONY: dev
-dev : .image
+.PHONY: docker
+docker : .image
 	docker run -it --rm -v $$PWD:/oksh oksh
 
+# Remove this file to trigger a rebuild.
 .image :
 	docker build -t oksh .
 	touch $@
+
+.PHONY: busybox
+busybox : .busybox
+	env -i -- PATH=$$PWD/.busybox SHELL=sh $$PWD/.busybox/sh
+
+.busybox :
+	mkdir -p $$PWD/.busybox
+	busybox --install -s $$PWD/.busybox
+	ln -s $$(which curl) $$PWD/.busybox/curl
+	ln -s $$(which jq) $$PWD/.busybox/jq
+	ln -s $$(which make) $$PWD/.busybox/make
+	ln -s $$(which socat) $$PWD/.busybox/socat
+
+clean :
+	rm -f .image
 
 install : $(PROGRAM)
 	cp $(PROGRAM) "$(DESTDIR)/bin/"

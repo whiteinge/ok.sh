@@ -13,9 +13,14 @@ maintainability of the script.
 
 ### Development Environment
 
-A development environment can be quickly created if you have Docker installed
-by running `make dev` from the main repo directory. This will drop you into
-a shell with the local directory mounted as a volume.
+There are two ways to quickly create a consistent development environment.
+Although busybox is not completely POSIX compliant it's the closest out-of-box
+environment that I know of.
+
+- OS X (requires Docker): run `make docker` to drop you into an Alpine/busybox
+  shell with the local directory mounted as a volume.
+- Linux (requires busybox): run `make busybox` to create and populate
+  a directory of busybox symlinks and drop you into a shell with that path set.
 
 ### POSIX Documentation
 
