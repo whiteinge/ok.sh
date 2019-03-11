@@ -5,6 +5,10 @@ DESTDIR ?= $(HOME)
 DESTDIRB ?= /
 VERSION	:=
 
+.PHONY: test
+test :
+	make -C tests all
+
 .PHONY: dev
 dev : .image
 	docker run -it --rm -v $$PWD:/oksh oksh
@@ -18,10 +22,6 @@ install : $(PROGRAM)
 	chmod 755 "$(DESTDIR)/bin/$(PROGRAM)"
 	cp $(PROGRAM) "$(DESTDIRB)bin/"
 	chmod 777 "$(DESTDIRB)bin/$(PROGRAM)"
-
-.PHONY: test
-test :
-	make -C tests all
 
 .PHONY: version
 version : readme
