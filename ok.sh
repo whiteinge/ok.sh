@@ -337,77 +337,6 @@ _helptext() {
 # ### Request-response
 # Functions for making HTTP requests and processing HTTP responses.
 
-__awk_blacklist() { awk 'BEGIN { for (name in ENVIRON) print name }'; }
-_awk_blacklist() {
-    # Some awks will populate ENVIRON with defaults; print those defaults
-    # Also prints any exported vars within this script.
-
-    env -i -- "$0" __awk_blacklist
-}
-
-__format_json() {
-    local opt
-    local OPTIND
-    local is_array=0
-    local env_blacklist="$(_awk_blacklist)"
-    while getopts a opt; do
-        case $opt in
-        a)  is_array=1;;
-        esac
-    done
-    shift $(( OPTIND - 1 ))
-
-    _log debug "Formatting ${#} parameters as JSON."
-
-    awk -v is_array="$is_array" -v env_blacklist="$env_blacklist" '
-    function isnum(x){ return (x == x + 0) }
-    function isnull(x){ return (x == "null" ) }
-    function isbool(x){ if (x == "true" || x == "false") return 1 }
-    function isnested(x) { if (substr(x, 0, 1) == "[" \
-        || substr(x, 0, 1) == "{") return 1 }
-    function castOrQuote(val) {
-        if (!isbool(val) && !isnum(val) && !isnull(val) && !isnested(val)) {
-            sub(/^('\''|")/, "", val) # Remove surrounding quotes
-            sub(/('\''|")$/, "", val)
-
-            gsub(/"/, "\\\"", val)  # Escape double-quotes.
-            gsub(/\n/, "\\n", val)  # Replace newlines with \n text.
-            val = "\"" val "\""
-            return val
-        } else {
-            return val
-        }
-    }
-
-    BEGIN {
-        split(env_blacklist, _ebl, "\n")
-        for (v in _ebl) delete ENVIRON[_ebl[v]]
-
-        if (is_array) {
-            printf("[")
-            for (i in ARGV) {
-                if (i == 0) continue
-
-                val = castOrQuote(ARGV[i])
-                ARGV[i] = ""
-
-                printf("%s%s", sep, val)
-                sep = ", "
-            }
-            printf("]\n")
-        } else {
-            printf("{")
-            for (name in ENVIRON) {
-                val = castOrQuote(ENVIRON[name])
-
-                printf("%s\"%s\": %s", sep, name, val)
-                sep = ", "
-            }
-            printf("}\n")
-        }
-    }
-    ' "$@"
-}
 _format_json() {
     # Create formatted JSON from name=value pairs
     #
@@ -458,20 +387,56 @@ _format_json() {
     local opt
     local OPTIND
     local is_array=0
+    local use_env=1
     while getopts a opt; do
         case $opt in
-        a)  is_array=1;;
+        a)  is_array=1; unset use_env;;
         esac
     done
     shift $(( OPTIND - 1 ))
 
-    if [ "$is_array" -eq 1 ]; then
-        __format_json -a "$@"
-    else
-        # Call the wrapped function so we can reuse the same awk definition for
-        # both arrays and objects.
-        env -i -- "$@" "$0" __format_json
-    fi
+    _log debug "Formatting ${#} parameters as JSON."
+
+    env -i -- ${use_env+"$@"} awk -v is_array="$is_array" '
+    function isnum(x){ return (x == x + 0) }
+    function isnull(x){ return (x == "null" ) }
+    function isbool(x){ if (x == "true" || x == "false") return 1 }
+    function isnested(x) { if (substr(x, 0, 1) == "[" \
+        || substr(x, 0, 1) == "{") return 1 }
+    function castOrQuote(val) {
+        if (!isbool(val) && !isnum(val) && !isnull(val) && !isnested(val)) {
+            sub(/^('\''|")/, "", val) # Remove surrounding quotes
+            sub(/('\''|")$/, "", val)
+
+            gsub(/"/, "\\\"", val)  # Escape double-quotes.
+            gsub(/\n/, "\\n", val)  # Replace newlines with \n text.
+            val = "\"" val "\""
+            return val
+        } else {
+            return val
+        }
+    }
+
+    BEGIN {
+        printf("%s", is_array ? "[" : "{")
+
+        for (i = 1; i < length(ARGV); i += 1) {
+            arg = ARGV[i]
+
+            if (is_array == 1) {
+                val = castOrQuote(arg)
+                printf("%s%s", sep, val)
+            } else {
+                name = substr(arg, 0, index(arg, "=") - 1)
+                val = castOrQuote(ENVIRON[name])
+                printf("%s\"%s\": %s", sep, name, val)
+            }
+
+            sep = ", "
+            ARGV[i] = ""
+        }
+        printf("%s", is_array ? "]" : "}")
+    }' "$@"
 }
 
 _format_urlencode() {
@@ -491,10 +456,8 @@ _format_urlencode() {
 
     _log debug "Formatting ${#} parameters as urlencoded"
 
-    local env_blacklist="$(_awk_blacklist)"
-
-    env -i -- "$@" awk -v env_blacklist="$env_blacklist" '
-    function escape(str, c, len, res) {
+    env -i -- "$@" awk '
+    function escape(str, c, i, len, res) {
         len = length(str)
         res = ""
         for (i = 1; i <= len; i += 1) {
@@ -508,20 +471,19 @@ _format_urlencode() {
     }
 
     BEGIN {
-        split(env_blacklist, _ebl, "\n")
-        for (v in _ebl) delete ENVIRON[_ebl[v]]
-
         for (i = 0; i <= 255; i += 1) ord[sprintf("%c", i)] = i;
 
-        for (name in ENVIRON) {
+        for (j = 1; j < length(ARGV); j += 1) {
+            arg = ARGV[j]
+            name = substr(arg, 0, index(arg, "=") - 1)
             if (substr(name, 1, 1) == "_") continue
             val = ENVIRON[name]
 
             printf("%s%s=%s", sep, name, escape(val))
             sep = "&"
+            ARGV[j] = ""
         }
-    }
-    '
+    }' "$@"
 }
 
 _filter_json() {
