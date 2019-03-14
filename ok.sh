@@ -1297,6 +1297,33 @@ list_collaborators() {
     _get "${url}${qs}" | _filter_json "${_filter}"
 }
 
+list_hooks() {
+    # List webhooks from the specified repository.
+    # ( https://developer.github.com/v3/repos/hooks/#list-hooks )
+    #
+    # Usage:
+    #
+    #     list_hooks owner/repo
+    #
+    # Positional arguments
+    #
+    local repo="${1:?Repo name required.}"
+    #   Name of the repo for which to list contributors
+    #   Owner is mandatory, like 'owner/repo'
+    #
+    local _filter='.[] | "\(.name)\t\(.config.url)"'
+    #   A jq filter to apply to the return data.
+    #
+
+    shift 1
+
+    _opts_filter "$@"
+
+    url="/repos/${repo}/hooks"
+
+    _get "${url}" | _filter_json "${_filter}"
+}
+
 add_collaborator() {
     # Add a collaborator to a repository
     #
