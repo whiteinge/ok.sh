@@ -84,7 +84,6 @@ Flags _must_ be the first argument to `ok.sh`, before `command`.
 * [_all_funcs](#_all_funcs)
 * [_log](#_log)
 * [_helptext](#_helptext)
-* [_awk_blacklist](#_awk_blacklist)
 * [_format_json](#_format_json)
 * [_format_urlencode](#_format_urlencode)
 * [_filter_json](#_filter_json)
@@ -190,11 +189,6 @@ Input
 
 * (stdin)
   The text of a function body to parse.
-
-### _awk_blacklist
-
-Some awks will populate ENVIRON with defaults; print those defaults
-Also prints any exported vars within this script.
 
 ### _format_json
 
