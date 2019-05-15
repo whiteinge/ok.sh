@@ -31,6 +31,8 @@
 #         login <username>
 #         password <token>
 #
+# Or set an environment `GITHUB_TOKEN=token`
+#
 # ## Configuration
 #
 # The following environment variables may be set to customize ${NAME}.
@@ -697,6 +699,7 @@ _request() {
     curl -nsSig \
         -H "Accept: ${OK_SH_ACCEPT}" \
         -H "Content-Type: ${content_type}" \
+        ${GITHUB_TOKEN:+-H "Authorization: token ${GITHUB_TOKEN}"} \
         ${etag:+-H "If-None-Match: \"${etag}\""} \
         ${has_stdin:+--data-binary @-} \
         ${trace_curl:+--trace-ascii /dev/stderr} \

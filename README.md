@@ -35,6 +35,8 @@ Restrict permissions on that file with `chmod 600 ~/.netrc`!
         login <username>
         password <token>
 
+Or set an environment `GITHUB_TOKEN=token`
+
 ## Configuration
 
 The following environment variables may be set to customize ok.sh.
