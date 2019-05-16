@@ -696,7 +696,7 @@ _request() {
 
     [ "$OK_SH_VERBOSE" -eq 1 ] && set -x
     # shellcheck disable=SC2086
-    curl -nsSig \
+    curl -sSig $([ -z "${GITHUB_TOKEN}" ] && echo ' -n') \
         -H "Accept: ${OK_SH_ACCEPT}" \
         -H "Content-Type: ${content_type}" \
         ${GITHUB_TOKEN:+-H "Authorization: token ${GITHUB_TOKEN}"} \
