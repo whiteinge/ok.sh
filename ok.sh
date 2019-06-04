@@ -1470,7 +1470,7 @@ delete_repo() {
 }
 
 fork_repo() {
-    # Fork a repository from a user or organization to own account
+    # Fork a repository from a user or organization to own account or organization
     #
     # Usage:
     #
@@ -1483,16 +1483,21 @@ fork_repo() {
     local repo="${2:?Repo name required.}"
     #   Name of the existing repo
     #
+    #
     # Keyword arguments
     #
     local _filter='"\(.clone_url)\t\(.ssh_url)"'
     #   A jq filter to apply to the return data.
+    #
+    # POST data may also be passed as keyword arguments:
+    # 
+    # * `organization` (The organization to clone into; default: your personal account)
 
     shift 2
 
     _opts_filter "$@"
 
-    _format_json foo=Foo | _post "/repos/${owner}/${repo}/forks" \
+    _format_json "$@" | _post "/repos/${owner}/${repo}/forks" \
         | _filter_json "${_filter}"
     exit $?  # might take a bit time...
 }

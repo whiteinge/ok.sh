@@ -112,6 +112,7 @@ Flags _must_ be the first argument to `ok.sh`, before `command`.
 * [list_branches](#list_branches)
 * [list_contributors](#list_contributors)
 * [list_collaborators](#list_collaborators)
+* [list_hooks](#list_hooks)
 * [add_collaborator](#add_collaborator)
 * [delete_collaborator](#delete_collaborator)
 * [create_repo](#create_repo)
@@ -753,6 +754,27 @@ Querystring arguments may also be passed as keyword arguments:
 * `sort`
 * `type`
 
+### list_hooks
+
+List webhooks from the specified repository.
+( https://developer.github.com/v3/repos/hooks/#list-hooks )
+
+Usage:
+
+    list_hooks owner/repo
+
+Positional arguments
+
+* `repo="$1"`
+
+  Name of the repo for which to list contributors
+  Owner is mandatory, like 'owner/repo'
+
+* `_filter='.[] | "\(.name)\t\(.config.url)"'`
+
+  A jq filter to apply to the return data.
+
+
 ### add_collaborator
 
 Add a collaborator to a repository
@@ -855,7 +877,7 @@ Positional arguments
 
 ### fork_repo
 
-Fork a repository from a user or organization to own account
+Fork a repository from a user or organization to own account or organization
 
 Usage:
 
@@ -870,11 +892,16 @@ Positional arguments
 
   Name of the existing repo
 
+
 Keyword arguments
 
 * `_filter='"\(.clone_url)\t\(.ssh_url)"'`
 
   A jq filter to apply to the return data.
+
+POST data may also be passed as keyword arguments:
+
+* `organization` (The organization to clone into; default: your personal account)
 
 ### list_releases
 
