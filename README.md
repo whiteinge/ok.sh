@@ -877,7 +877,7 @@ Positional arguments
 
 ### fork_repo
 
-Fork a repository from a user or organization to own account
+Fork a repository from a user or organization to own account or organization
 
 Usage:
 
@@ -891,6 +891,17 @@ Positional arguments
 * `repo="$2"`
 
   Name of the existing repo
+
+
+Keyword arguments
+
+* `_filter='"\(.clone_url)\t\(.ssh_url)"'`
+
+  A jq filter to apply to the return data.
+
+POST data may also be passed as keyword arguments:
+
+* `organization` (The organization to clone into; default: your personal account)
 
 ### list_releases
 

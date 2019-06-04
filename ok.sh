@@ -1470,7 +1470,7 @@ delete_repo() {
 }
 
 fork_repo() {
-    # Fork a repository from a user or organization to own account
+    # Fork a repository from a user or organization to own account or organization
     #
     # Usage:
     #
@@ -1482,7 +1482,7 @@ fork_repo() {
     #   Name of existing user or organization
     local repo="${2:?Repo name required.}"
     #   Name of the existing repo
-
+    #
     #
     # Keyword arguments
     #
