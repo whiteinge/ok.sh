@@ -123,6 +123,7 @@ Flags _must_ be the first argument to `ok.sh`, before `command`.
 * [create_release](#create_release)
 * [delete_release](#delete_release)
 * [release_assets](#release_assets)
+* [download_asset](#download_asset)
 * [upload_asset](#upload_asset)
 * [list_milestones](#list_milestones)
 * [create_milestone](#create_milestone)
@@ -1034,6 +1035,26 @@ Keyword arguments
 * `_filter='.[] | "\(.id)\t\(.name)\t\(.updated_at)"'`
 
   A jq filter to apply to the return data.
+
+### download_asset
+
+Download a release asset
+
+Usage:
+
+    download_asset user repo 48298
+
+Positional arguments
+
+* `owner="$1"`
+
+  A GitHub user or organization.
+* `repo="$2"`
+
+  A GitHub repository.
+* `asset_id="$3"`
+
+  The unique ID of the asset; see release_assets.
 
 ### upload_asset
 

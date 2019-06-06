@@ -674,6 +674,7 @@ _request() {
     local arg
     local has_stdin
     local trace_curl
+    local accept=${OK_SH_ACCEPT}
 
     case $path in
         (http*) : ;;
@@ -685,6 +686,7 @@ _request() {
             (method=*) method="${arg#*=}";;
             (content_type=*) content_type="${arg#*=}";;
             (etag=*) etag="${arg#*=}";;
+            (accept=*) accept="${arg#*=}";;
         esac
     done
 
@@ -697,13 +699,14 @@ _request() {
     [ "$OK_SH_VERBOSE" -eq 1 ] && set -x
     # shellcheck disable=SC2086
     curl -nsSig \
-        -H "Accept: ${OK_SH_ACCEPT}" \
+        -H "Accept: ${accept}" \
         -H "Content-Type: ${content_type}" \
         ${GITHUB_TOKEN:+-H "Authorization: token ${GITHUB_TOKEN}"} \
         ${etag:+-H "If-None-Match: \"${etag}\""} \
         ${has_stdin:+--data-binary @-} \
         ${trace_curl:+--trace-ascii /dev/stderr} \
         -X "${method}" \
+        -L \
         "${path}"
     set +x
 }
@@ -851,6 +854,14 @@ _get() {
     local status_code
     local status_text
     local next_url
+    local accept=${OK_SH_ACCEPT}
+
+    for arg in "$@"; do
+        case $arg in
+            (accept=*) accept="${arg#*=}";;
+        esac
+    done
+
 
     # If the variable is unset or empty set it to a default value. Functions
     # that call this function can pass these parameters in one of two ways:
@@ -867,7 +878,7 @@ _get() {
 
     _opts_pagination "$@"
 
-    _request "$path" | _response status_code status_text Link_next | {
+    _request "$path" accept=${accept}| _response status_code status_text Link_next | {
         read -r status_code
         read -r status_text
         read -r next_url
@@ -889,7 +900,7 @@ _get() {
         if [ -n "$next_url" ] && [ $_follow_next_limit -gt 0 ] ; then
             _follow_next_limit=$(( _follow_next_limit - 1 ))
 
-            _get "$next_url" "_follow_next_limit=${_follow_next_limit}"
+            _get "$next_url" accept=${accept} "_follow_next_limit=${_follow_next_limit}"
         fi
     }
 }
@@ -1658,6 +1669,27 @@ release_assets() {
         | _filter_json "$_filter"
 }
 
+download_asset() {
+    # Download a release asset
+    #
+    # Usage:
+    #
+    #     download_asset user repo 48298
+    #
+    # Positional arguments
+    #
+    local owner="${1:?Owner name required.}"
+    #   A GitHub user or organization.
+    local repo="${2:?Repo name required.}"
+    #   A GitHub repository.
+    local asset_id="${3:?Asset ID required.}"
+    #   The unique ID of the asset; see release_assets.
+    
+    shift 3
+
+    _get "/repos/${owner}/${repo}/releases/assets/${asset_id}" accept="application/octet-stream"
+}
+
 upload_asset() {
     # Upload a release asset
     #
@@ -2380,5 +2412,4 @@ archive_repo() {
         | _post "/repos/${repo}" method='PATCH' \
         | _filter_json "$_filter"
 }
-
 __main "$@"
