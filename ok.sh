@@ -544,6 +544,7 @@ _get_mime_type() {
         *.tar) mime_type=application/x-tar ;;
         *.txt) mime_type=text/plain ;;
         *.yaml) mime_type=application/x-yaml ;;
+        *.apk) mime_type=application/vnd.android.package-archive ;;
         *.zip) mime_type=application/zip ;;
     esac
 
