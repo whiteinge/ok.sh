@@ -1328,6 +1328,93 @@ list_hooks() {
     _get "${url}" | _filter_json "${_filter}"
 }
 
+list_gists() {
+    # List gists for the current authenticated user or a specific user
+    #
+    # https://developer.github.com/v3/gists/#list-a-users-gists
+    #
+    # Usage:
+    #
+    #     list_gists
+    #     list_gists <username>
+    #
+    # Positional arguments
+    #
+    local username="$1"
+    #   An optional user to filter listing
+    #
+    # Keyword arguments
+    #
+    local _follow_next
+    #   Automatically look for a 'Links' header and follow any 'next' URLs.
+    local _follow_next_limit
+    #   Maximum number of 'next' URLs to follow before stopping.
+    local _filter='.[] | "\(.id)\t\(.description)"'
+    #   A jq filter to apply to the return data.
+
+    local url
+    case "$username" in
+        ('') url='/gists';;
+        (*=*) url='/gists';;
+        (*) url="/users/${username}/gists"; shift 1;;
+    esac
+
+    _opts_pagination "$@"
+    _opts_filter "$@"
+
+    _get "${url}" | _filter_json "${_filter}"
+}
+
+public_gists() {
+    # List public gists
+    #
+    # https://developer.github.com/v3/gists/#list-all-public-gists
+    #
+    # Usage:
+    #
+    #     public_gists
+    #
+    # Keyword arguments
+    #
+    local _follow_next
+    #   Automatically look for a 'Links' header and follow any 'next' URLs.
+    local _follow_next_limit
+    #   Maximum number of 'next' URLs to follow before stopping.
+    local _filter='.[] | "\(.id)\t\(.description)"'
+    #   A jq filter to apply to the return data.
+
+    _opts_pagination "$@"
+    _opts_filter "$@"
+
+    _get '/gists/public' | _filter_json "${_filter}"
+}
+
+gist() {
+    # Get a single gist
+    #
+    # https://developer.github.com/v3/gists/#get-a-single-gist
+    #
+    # Usage:
+    #
+    #     get_gist
+    #
+    # Positional arguments
+    #
+    local gist_id="${1:?Gist ID required.}"
+    #   ID of gist to fetch.
+    #
+    # Keyword arguments
+    #
+    local _filter='.files | keys | join(", ")'
+    #   A jq filter to apply to the return data.
+
+    shift 1
+
+    _opts_filter "$@"
+
+    _get "/gists/${gist_id}" | _filter_json "${_filter}"
+}
+
 add_collaborator() {
     # Add a collaborator to a repository
     #
