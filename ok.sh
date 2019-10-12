@@ -1596,6 +1596,8 @@ fork_repo() {
 list_releases() {
     # List releases for a repository
     #
+    # https://developer.github.com/v3/repos/releases/#list-releases-for-a-repository
+    #
     # Usage:
     #
     #     list_releases org repo '\(.assets[0].name)\t\(.name.id)'
@@ -1622,6 +1624,8 @@ list_releases() {
 
 release() {
     # Get a release
+    #
+    # https://developer.github.com/v3/repos/releases/#get-a-single-release
     #
     # Usage:
     #
@@ -1651,6 +1655,8 @@ release() {
 
 create_release() {
     # Create a release
+    #
+    # https://developer.github.com/v3/repos/releases/#create-a-release
     #
     # Usage:
     #
@@ -1691,6 +1697,8 @@ create_release() {
 delete_release() {
     # Delete a release
     #
+    # https://developer.github.com/v3/repos/releases/#delete-a-release
+    #
     # Usage:
     #
     #     delete_release org repo 1087855
@@ -1720,9 +1728,30 @@ delete_release() {
 release_assets() {
     # List release assets
     #
+    # https://developer.github.com/v3/repos/releases/#list-assets-for-a-release
+    #
     # Usage:
     #
     #     release_assets user repo 1087855
+    #
+    # Example of downloading release assets:
+    #
+    #     ok.sh release_assets <user> <repo> <release_id> \
+    #             _filter='.[] | .browser_download_url' \
+    #         | xargs -L1 curl -L -O
+    #
+    # Example of the multi-step process for grabbing the release ID for
+    # a specific version, then grabbing the release asset IDs, and then
+    # downloading all the release assets (whew!):
+    #
+    #     username='myuser'
+    #     repo='myrepo'
+    #     release_tag='v1.2.3'
+    #     ok.sh list_releases "$myuser" "$myrepo" \
+    #         | awk -F'\t' -v tag="$release_tag" '$2 == tag { print $3 }' \
+    #         | xargs -I{} ./ok.sh release_assets "$myuser" "$myrepo" {} \
+    #             _filter='.[] | .browser_download_url' \
+    #         | xargs -L1 curl -n -L -O
     #
     # Positional arguments
     #
@@ -1748,6 +1777,8 @@ release_assets() {
 
 upload_asset() {
     # Upload a release asset
+    #
+    # https://developer.github.com/v3/repos/releases/#upload-a-release-asset
     #
     # Usage:
     #
