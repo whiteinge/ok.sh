@@ -1734,6 +1734,25 @@ release_assets() {
     #
     #     release_assets user repo 1087855
     #
+    # Example of downloading release assets:
+    #
+    #     ok.sh release_assets <user> <repo> <release_id> \
+    #             _filter='.[] | .browser_download_url' \
+    #         | xargs -L1 curl -L -O
+    #
+    # Example of the multi-step process for grabbing the release ID for
+    # a specific version, then grabbing the release asset IDs, and then
+    # downloading all the release assets (whew!):
+    #
+    #     username='myuser'
+    #     repo='myrepo'
+    #     release_tag='v1.2.3'
+    #     ok.sh list_releases "$myuser" "$myrepo" \
+    #         | awk -F'\t' -v tag="$release_tag" '$2 == tag { print $3 }' \
+    #         | xargs -I{} ./ok.sh release_assets "$myuser" "$myrepo" {} \
+    #             _filter='.[] | .browser_download_url' \
+    #         | xargs -L1 curl -n -L -O
+    #
     # Positional arguments
     #
     local owner="${1:?Owner name required.}"
