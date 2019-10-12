@@ -113,6 +113,9 @@ Flags _must_ be the first argument to `ok.sh`, before `command`.
 * [list_contributors](#list_contributors)
 * [list_collaborators](#list_collaborators)
 * [list_hooks](#list_hooks)
+* [list_gists](#list_gists)
+* [public_gists](#public_gists)
+* [gist](#gist)
 * [add_collaborator](#add_collaborator)
 * [delete_collaborator](#delete_collaborator)
 * [create_repo](#create_repo)
@@ -774,6 +777,79 @@ Positional arguments
 
   A jq filter to apply to the return data.
 
+
+### list_gists
+
+List gists for the current authenticated user or a specific user
+
+https://developer.github.com/v3/gists/#list-a-users-gists
+
+Usage:
+
+    list_gists
+    list_gists <username>
+
+Positional arguments
+
+* `username="$1"`
+
+  An optional user to filter listing
+
+Keyword arguments
+
+* `_follow_next`
+
+  Automatically look for a 'Links' header and follow any 'next' URLs.
+* `_follow_next_limit`
+
+  Maximum number of 'next' URLs to follow before stopping.
+* `_filter='.[] | "\(.id)\t\(.description)"'`
+
+  A jq filter to apply to the return data.
+
+### public_gists
+
+List public gists
+
+https://developer.github.com/v3/gists/#list-all-public-gists
+
+Usage:
+
+    public_gists
+
+Keyword arguments
+
+* `_follow_next`
+
+  Automatically look for a 'Links' header and follow any 'next' URLs.
+* `_follow_next_limit`
+
+  Maximum number of 'next' URLs to follow before stopping.
+* `_filter='.[] | "\(.id)\t\(.description)"'`
+
+  A jq filter to apply to the return data.
+
+### gist
+
+Get a single gist
+
+https://developer.github.com/v3/gists/#get-a-single-gist
+
+Usage:
+
+    get_gist
+
+Positional arguments
+
+* `gist_id="$1"`
+
+  ID of gist to fetch.
+
+Keyword arguments
+
+* `_filter='.files | keys | join(", ")'`
+
+  A jq filter to apply to the return data.
 
 ### add_collaborator
 
