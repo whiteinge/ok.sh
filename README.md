@@ -124,6 +124,7 @@ Flags _must_ be the first argument to `ok.sh`, before `command`.
 * [list_releases](#list_releases)
 * [release](#release)
 * [create_release](#create_release)
+* [edit_release](#edit_release)
 * [delete_release](#delete_release)
 * [release_assets](#release_assets)
 * [upload_asset](#upload_asset)
@@ -1063,6 +1064,44 @@ Keyword arguments
 
 POST data may also be passed as keyword arguments:
 
+* `body`
+* `draft`
+* `name`
+* `prerelease`
+* `target_commitish`
+
+### edit_release
+
+Edit a release
+
+https://developer.github.com/v3/repos/releases/#edit-a-release
+
+Usage:
+
+    edit_release org repo 1087855 name='Foo Bar 1.4.6'
+    edit_release user repo 1087855 draft=false
+
+Positional arguments
+
+* `owner="$1"`
+
+  A GitHub user or organization.
+* `repo="$2"`
+
+  A GitHub repository.
+* `release_id="$3"`
+
+  The unique ID of the release; see list_releases.
+
+Keyword arguments
+
+* `_filter='"\(.tag_name)\t\(.name)\t\(.html_url)"'`
+
+  A jq filter to apply to the return data.
+
+POST data may also be passed as keyword arguments:
+
+* `tag_name`
 * `body`
 * `draft`
 * `name`
