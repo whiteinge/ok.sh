@@ -1694,6 +1694,48 @@ create_release() {
         | _filter_json "${_filter}"
 }
 
+edit_release() {
+    # Edit a release
+    #
+    # https://developer.github.com/v3/repos/releases/#edit-a-release
+    #
+    # Usage:
+    #
+    #     edit_release org repo 1087855 name='Foo Bar 1.4.6'
+    #     edit_release user repo 1087855 draft=false
+    #
+    # Positional arguments
+    #
+    local owner="${1:?Owner name required.}"
+    #   A GitHub user or organization.
+    local repo="${2:?Repo name required.}"
+    #   A GitHub repository.
+    local release_id="${3:?Release ID required.}"
+    #   The unique ID of the release; see list_releases.
+    #
+    # Keyword arguments
+    #
+    local _filter='"\(.tag_name)\t\(.name)\t\(.html_url)"'
+    #   A jq filter to apply to the return data.
+    #
+    # POST data may also be passed as keyword arguments:
+    #
+    # * `tag_name`
+    # * `body`
+    # * `draft`
+    # * `name`
+    # * `prerelease`
+    # * `target_commitish`
+
+    shift 3
+
+    _opts_filter "$@"
+
+    _format_json "$@" \
+        | _post "/repos/${owner}/${repo}/releases/${release_id}" method="PATCH" \
+        | _filter_json "${_filter}"
+}
+
 delete_release() {
     # Delete a release
     #
