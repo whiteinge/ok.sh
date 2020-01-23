@@ -166,4 +166,24 @@ Hi\n' | $SCRIPT _response Baz Bad Foo | {
     }
 }
 
+test_response_headers_100_continue() {
+    # Test that process response 100 Continue is handled correctly.
+
+    local baz bar foo
+
+    printf 'HTTP/1.1 100 Continue\r\n\r\nHTTP/1.1 200 OK\r\nServer: example.com\r\nFoo: Foo!\r\nBar: Bar!\r\nBaz: Baz!\r\n\r\nHi
+' | $SCRIPT _response Baz Bad Foo | {
+        read -r baz
+        read -r bar     # Ensure unfound items are blank.
+        read -r foo
+
+        ret=0
+        [ "$baz" = 'Baz!' ] || { ret=1; printf '`Baz!` != `%s`\n' "$baz"; }
+        [ "$bar" = '' ] || { ret=1; printf '`` != `%s`\n' "$bar"; }
+        [ "$foo" = 'Foo!' ] || { ret=1; printf '`Foo!` != `%s`\n' "$foo"; }
+
+        return $ret
+    }
+}
+
 _main "$@"

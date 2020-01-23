@@ -769,6 +769,22 @@ _response() {
 
     _log debug "Response status is: ${status_code} ${status_text}"
 
+    if [ "${status_code}" = "100" ]; then
+        _log debug "Ignoring response '${status_code} ${status_text}', skipping to real response."
+        while IFS=": " read -r hdr val; do
+            # Headers stop at the first blank line.
+            [ "$hdr" = "$crlf" ] && break
+            val="${val%${crlf}}"
+            _log debug "Unexpected additional header: ${hdr}: ${val}"
+        done
+
+        read -r http_version status_code status_text
+        status_text="${status_text%${crlf}}"
+        http_version="${http_version#HTTP/}"
+
+        _log debug "Response status is: ${status_code} ${status_text}"
+    fi
+
     headers="http_version: ${http_version}
 status_code: ${status_code}
 status_text: ${status_text}
