@@ -171,8 +171,10 @@ test_response_headers_100_continue() {
 
     local baz bar foo
 
-    printf 'HTTP/1.1 100 Continue\r\n\r\nHTTP/1.1 200 OK\r\nServer: example.com\r\nFoo: Foo!\r\nBar: Bar!\r\nBaz: Baz!\r\n\r\nHi
-' | $SCRIPT _response Baz Bad Foo | {
+    header_100='HTTP/1.1 100 Continue\r\n\r\n'
+    header_200='HTTP/1.1 200 OK\r\n'
+    header_key_value='Server: example.com\r\nFoo: Foo!\r\nBar: Bar!\r\nBaz: Baz!\r\n\r\nHi\n'
+    printf "${header_100}${header_100}${header_200}${header_key_value}" | $SCRIPT _response Baz Bad Foo | {
         read -r baz
         read -r bar     # Ensure unfound items are blank.
         read -r foo

@@ -757,33 +757,30 @@ _response() {
     local hdr
     local val
     local http_version
-    local status_code
+    local status_code=100
     local status_text
     local headers output
 
     _log debug 'Processing response.'
 
-    read -r http_version status_code status_text
-    status_text="${status_text%${crlf}}"
-    http_version="${http_version#HTTP/}"
-
-    _log debug "Response status is: ${status_code} ${status_text}"
-
-    if [ "${status_code}" = "100" ]; then
-        _log debug "Ignoring response '${status_code} ${status_text}', skipping to real response."
-        while IFS=": " read -r hdr val; do
-            # Headers stop at the first blank line.
-            [ "$hdr" = "$crlf" ] && break
-            val="${val%${crlf}}"
-            _log debug "Unexpected additional header: ${hdr}: ${val}"
-        done
-
+    while [ "${status_code}" = "100" ]; do
         read -r http_version status_code status_text
         status_text="${status_text%${crlf}}"
         http_version="${http_version#HTTP/}"
 
         _log debug "Response status is: ${status_code} ${status_text}"
-    fi
+
+        if [ "${status_code}" = "100" ]; then
+            _log debug "Ignoring response '${status_code} ${status_text}', skipping to real response."
+            while IFS=": " read -r hdr val; do
+                # Headers stop at the first blank line.
+                [ "$hdr" = "$crlf" ] && break
+                val="${val%${crlf}}"
+                _log debug "Unexpected additional header: ${hdr}: ${val}"
+            done
+
+        fi
+    done
 
     headers="http_version: ${http_version}
 status_code: ${status_code}
