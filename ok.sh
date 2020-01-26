@@ -546,6 +546,8 @@ _get_mime_type() {
         *.yaml) mime_type=application/x-yaml ;;
         *.apk) mime_type=application/vnd.android.package-archive ;;
         *.zip) mime_type=application/zip ;;
+        *.jar) mime_type=application/java-archive ;;
+        *.war) mime_type=application/zip ;;
     esac
 
     _log debug "Guessed mime type of '${mime_type}' for '${filename}'."
