@@ -403,8 +403,11 @@ _format_json() {
     function isnum(x){ return (x == x + 0) }
     function isnull(x){ return (x == "null" ) }
     function isbool(x){ if (x == "true" || x == "false") return 1 }
-    function isnested(x) { if (substr(x, 0, 1) == "[" \
-        || substr(x, 0, 1) == "{") return 1 }
+    function isnested(x) {
+      if (substr(x, 0, 1) == "[" || substr(x, 0, 1) == "{") {
+        return 1
+      }
+    }
     function castOrQuote(val) {
         if (!isbool(val) && !isnum(val) && !isnull(val) && !isnested(val)) {
             sub(/^('\''|")/, "", val) # Remove surrounding quotes
@@ -509,8 +512,7 @@ _filter_json() {
         return
     fi
 
-    "${OK_SH_JQ_BIN}" -c -r "${_filter}"
-    [ $? -eq 0 ] || printf 'jq parse error; invalid JSON.\n' 1>&2
+    "${OK_SH_JQ_BIN}" -c -r "${_filter}" || printf 'jq parse error; invalid JSON.\n' 1>&2
 }
 
 _get_mime_type() {
