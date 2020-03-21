@@ -1133,6 +1133,30 @@ org_members() {
         | _filter_json "${_filter}"
 }
 
+org_collaborators() {
+    # List organization outside collaborators 
+    #
+    # Usage:
+    #
+    #     org_collaborators org
+    #
+    # Positional arguments
+    #
+    local org="${1:?Org name required.}"
+    #   Organization GitHub login or id.
+    #
+    # Keyword arguments
+    #
+    local _filter='.[] | "\(.login)\t\(.id)"'
+    #   A jq filter to apply to the return data.
+
+    shift 1
+
+    _opts_filter "$@"
+
+    _get "/orgs/${org}/outside_collaborators" | _filter_json "${_filter}"
+}
+
 team_members() {
     # List team members
     #
