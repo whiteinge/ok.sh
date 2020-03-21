@@ -107,6 +107,7 @@ Flags _must_ be the first argument to `ok.sh`, before `command`.
 * [org_repos](#org_repos)
 * [org_teams](#org_teams)
 * [org_members](#org_members)
+* [org_collaborators](#org_collaborators)
 * [team_members](#team_members)
 * [list_repos](#list_repos)
 * [list_branches](#list_branches)
@@ -139,6 +140,7 @@ Flags _must_ be the first argument to `ok.sh`, before `command`.
 * [org_issues](#org_issues)
 * [list_my_orgs](#list_my_orgs)
 * [list_orgs](#list_orgs)
+* [list_users](#list_users)
 * [labels](#labels)
 * [add_label](#add_label)
 * [update_label](#update_label)
@@ -605,6 +607,26 @@ List organization members
 Usage:
 
     org_members org
+
+Positional arguments
+
+* `org="$1"`
+
+  Organization GitHub login or id.
+
+Keyword arguments
+
+* `_filter='.[] | "\(.login)\t\(.id)"'`
+
+  A jq filter to apply to the return data.
+
+### org_collaborators
+
+List organization outside collaborators
+
+Usage:
+
+    org_collaborators org
 
 Positional arguments
 
@@ -1548,6 +1570,26 @@ List all organizations
 Usage:
 
     list_orgs
+
+Keyword arguments
+
+* `_follow_next`
+
+  Automatically look for a 'Links' header and follow any 'next' URLs.
+* `_follow_next_limit`
+
+  Maximum number of 'next' URLs to follow before stopping.
+* `_filter='.[] | "\(.login)\t\(.id)"'`
+
+  A jq filter to apply to the return data.
+
+### list_users
+
+List all users
+
+Usage:
+
+    list_users
 
 Keyword arguments
 

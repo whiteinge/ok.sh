@@ -1136,7 +1136,7 @@ org_members() {
 }
 
 org_collaborators() {
-    # List organization outside collaborators 
+    # List organization outside collaborators
     #
     # Usage:
     #
