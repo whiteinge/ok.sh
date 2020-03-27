@@ -1127,12 +1127,14 @@ org_members() {
     local _filter='.[] | "\(.login)\t\(.id)"'
     #   A jq filter to apply to the return data.
 
+    local qs
+
     shift 1
 
     _opts_filter "$@"
+    _opts_qs "$@"
 
-    _get "/orgs/${org}/members" \
-        | _filter_json "${_filter}"
+    _get "/orgs/${org}/members${qs}" | _filter_json "${_filter}"
 }
 
 org_collaborators() {
@@ -1152,11 +1154,14 @@ org_collaborators() {
     local _filter='.[] | "\(.login)\t\(.id)"'
     #   A jq filter to apply to the return data.
 
+    local qs
+
     shift 1
 
     _opts_filter "$@"
+    _opts_qs "$@"
 
-    _get "/orgs/${org}/outside_collaborators" | _filter_json "${_filter}"
+    _get "/orgs/${org}/outside_collaborators${qs}" | _filter_json "${_filter}"
 }
 
 team_members() {
