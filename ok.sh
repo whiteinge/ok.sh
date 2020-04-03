@@ -1572,6 +1572,7 @@ create_repo() {
         url='/user/repos'
     fi
 
+    export OK_SH_ACCEPT="application/vnd.github.nebula-preview+json"
     _format_json "name=${name}" "$@" | _post "$url" | _filter_json "${_filter}"
 }
 
