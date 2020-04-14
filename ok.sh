@@ -1270,6 +1270,47 @@ list_branches() {
     _get "${url}${qs}" | _filter_json "${_filter}"
 }
 
+list_commits() {
+    # List commits of a specified repository.
+    # ( https://developer.github.com/v3/repos/commits/#list-commits-on-a-repository )
+    #
+    # Usage:
+    #
+    #     list_commits user repo
+    #
+    # Positional arguments
+    #
+    #   GitHub user login or id for which to list branches
+    #   Name of the repo for which to list branches
+    #
+
+    local user="${1:?User name required.}"
+    local repo="${2:?Repo name required.}"
+    shift 2
+
+    #   A jq filter to apply to the return data.
+    #
+
+    local _filter='.[] | "\(.sha) \(.author.login) \(.commit.author.email) \(.committer.login) \(.commit.committer.email)"'
+
+    # Querystring arguments may also be passed as keyword arguments:
+    #
+    # * `sha` 
+    # * `path`
+    # * `author`
+    # * `since` Only commits after this date will be returned. This is a timestamp in ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ.
+    # * `until`     
+
+    local qs
+
+    _opts_filter "$@"
+    _opts_qs "$@"
+
+    url="/repos/${user}/${repo}/commits"
+
+    _get "${url}${qs}" | _filter_json "${_filter}"
+}
+
 list_contributors() {
     # List contributors to the specified repository, sorted by the number of commits per contributor in descending order.
     # ( https://developer.github.com/v3/repos/#list-contributors )
