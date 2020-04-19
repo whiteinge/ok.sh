@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
-# # A GitHub API client library written in POSIX sh
+# shellcheck disable=SC2039,SC2220
+
+# A GitHub API client library written in POSIX sh
 #
 # https://github.com/whiteinge/ok.sh
 # BSD licensed.
@@ -52,7 +54,8 @@
 # * OK_SH_MARKDOWN=${OK_SH_MARKDOWN}
 #   Output some text in Markdown format.
 
-export NAME=$(basename "$0")
+NAME=$(basename "$0")
+export NAME
 export VERSION='0.5.1'
 
 export OK_SH_URL=${OK_SH_URL:-'https://api.github.com'}
@@ -205,8 +208,8 @@ __main() {
     local OPTARG
     local OPTIND
     local quiet=0
-    local temp_dir="${TMPDIR-/tmp}/${NAME}.${$}.$(awk \
-        'BEGIN {srand(); printf "%d\n", rand() * 10^10}')"
+    local temp_dir
+    temp_dir="${TMPDIR-/tmp}/${NAME}.${$}.$(awk 'BEGIN {srand(); printf "%d\n", rand() * 10^10}')"
     local summary_fifo="${temp_dir}/oksh_summary.fifo"
 
     # shellcheck disable=SC2154
@@ -627,7 +630,8 @@ _opts_qs() {
     #     _opts_qs "$@"
     #     _get "/some/path${qs}"
 
-    local querystring=$(_format_urlencode "$@")
+    local querystring
+    querystring=$(_format_urlencode "$@")
     qs="${querystring:+?$querystring}"
 }
 
