@@ -1,6 +1,4 @@
 #!/usr/bin/env sh
-# shellcheck disable=SC2039,SC2220
-
 # A GitHub API client library written in POSIX sh
 #
 # https://github.com/whiteinge/ok.sh
@@ -53,6 +51,8 @@
 #   Allow destructive operations without prompting for confirmation.
 # * OK_SH_MARKDOWN=${OK_SH_MARKDOWN}
 #   Output some text in Markdown format.
+
+# shellcheck disable=SC2039,SC2220
 
 NAME=$(basename "$0")
 export NAME

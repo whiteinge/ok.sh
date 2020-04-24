@@ -3,7 +3,7 @@ This README file is generated. Changes will be overwritten.
 -->
 [![Build Status](https://travis-ci.org/whiteinge/ok.sh.svg?branch=master)](https://travis-ci.org/whiteinge/ok.sh)
 
-# A GitHub API client library written in POSIX sh
+A GitHub API client library written in POSIX sh
 
 https://github.com/whiteinge/ok.sh
 BSD licensed.
@@ -111,6 +111,7 @@ Flags _must_ be the first argument to `ok.sh`, before `command`.
 * [team_members](#team_members)
 * [list_repos](#list_repos)
 * [list_branches](#list_branches)
+* [list_commits](#list_commits)
 * [list_contributors](#list_contributors)
 * [list_collaborators](#list_collaborators)
 * [list_hooks](#list_hooks)
@@ -719,6 +720,21 @@ Querystring arguments may also be passed as keyword arguments:
 * `per_page`
 * `sort`
 * `type`
+
+### list_commits
+
+List commits of a specified repository.
+( https://developer.github.com/v3/repos/commits/#list-commits-on-a-repository )
+
+Usage:
+
+    list_commits user repo
+
+Positional arguments
+
+  GitHub user login or id for which to list branches
+  Name of the repo for which to list branches
+
 
 ### list_contributors
 
