@@ -3,7 +3,7 @@ This README file is generated. Changes will be overwritten.
 -->
 [![Build Status](https://travis-ci.org/whiteinge/ok.sh.svg?branch=master)](https://travis-ci.org/whiteinge/ok.sh)
 
-A GitHub API client library written in POSIX sh
+# A GitHub API client library written in POSIX sh
 
 https://github.com/whiteinge/ok.sh
 BSD licensed.
