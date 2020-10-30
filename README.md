@@ -132,7 +132,9 @@ Flags _must_ be the first argument to `ok.sh`, before `command`.
 * [upload_asset](#upload_asset)
 * [list_milestones](#list_milestones)
 * [create_milestone](#create_milestone)
+* [list_issue_comments](#list_issue_comments)
 * [add_comment](#add_comment)
+* [list_commit_comments](#list_commit_comments)
 * [add_commit_comment](#add_commit_comment)
 * [close_issue](#close_issue)
 * [list_issues](#list_issues)
@@ -1337,6 +1339,26 @@ Milestone options may also be passed as keyword arguments:
 * `due_on`
 * `state`
 
+### list_issue_comments
+
+List comments of a specified issue.
+( https://developer.github.com/v3/issues/comments/#list-issue-comments )
+
+Usage:
+
+    list_issue_comments someuser/somerepo number
+
+Positional arguments
+
+  GitHub owner login or id for which to list branches
+  Name of the repo for which to list branches
+  Issue number
+
+* `repo="$1"`
+
+* `number="$2"`
+
+
 ### add_comment
 
 Add a comment to an issue
@@ -1362,6 +1384,26 @@ Keyword arguments
 * `_filter='"\(.id)\t\(.html_url)"'`
 
   A jq filter to apply to the return data.
+
+### list_commit_comments
+
+List comments of a specified commit.
+( https://developer.github.com/v3/repos/comments/#list-commit-comments )
+
+Usage:
+
+    list_commit_comments someuser/somerepo sha
+
+Positional arguments
+
+  GitHub owner login or id for which to list branches
+  Name of the repo for which to list branches
+  Commit SHA
+
+* `repo="$1"`
+
+* `sha="$2"`
+
 
 ### add_commit_comment
 
