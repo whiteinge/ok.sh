@@ -2638,48 +2638,6 @@ update_pull_request() {
         | _filter_json "$_filter"
 }
 
-list_pull_request_comments() {
-    # List comments of a specified pull request.
-    # ( https://developer.github.com/v3/issues/comments/#list-issue-comments-for-a-repository )
-    #
-    # Usage:
-    #
-    #     list_comments someuser/somerepo number
-    #
-    # Positional arguments
-    #
-    #   GitHub owner login or id for which to list branches
-    #   Name of the repo for which to list branches
-    #   Pull Request number
-    #
-    local repo="${1:?Repo name required.}"
-    local number="${2:?Pull Request number is required.}"
-    shift 2
-
-    local _follow_next
-    #   Automatically look for a 'Links' header and follow any 'next' URLs.
-    local _follow_next_limit
-    #   Maximum number of 'next' URLs to follow before stopping.
-    local _filter='.[] | "\(.body)"'
-    #   A jq filter to apply to the return data.
-
-    _opts_pagination "$@"
-
-    #   A jq filter to apply to the return data.
-    #
-    # Querystring arguments may also be passed as keyword arguments:
-    #
-    # * `direction`
-    # * `sort`
-    # * `since`
-    local qs
-    _opts_filter "$@"
-    _opts_qs "$@"
-    url="/repos/${repo}/issues/comments"
-    pr_number_query="[ .[] | select(contains({\"html_url\": \"https://github.com/${repo}/pull/${number}\"})) ]"
-    _get "${url}${qs}"  | ${OK_SH_JQ_BIN} -c -r "${pr_number_query}" | _filter_json "${_filter}"
-}
-
 transfer_repo() {
     # Transfer a repository to a user or organization
     #
