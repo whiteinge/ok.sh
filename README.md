@@ -110,6 +110,7 @@ This README file is generated. Changes will be overwritten.
 * [upload_asset](#upload_asset)
 * [list_milestones](#list_milestones)
 * [create_milestone](#create_milestone)
+* [list_issue_comments](#list_issue_comments)
 * [add_comment](#add_comment)
 * [add_commit_comment](#add_commit_comment)
 * [close_issue](#close_issue)
@@ -269,6 +270,9 @@ This README file is generated. Changes will be overwritten.
 
 
 ### create_milestone
+
+
+### list_issue_comments
 
 
 ### add_comment
