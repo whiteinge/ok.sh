@@ -112,6 +112,7 @@ This README file is generated. Changes will be overwritten.
 * [create_milestone](#create_milestone)
 * [list_issue_comments](#list_issue_comments)
 * [add_comment](#add_comment)
+* [list_commit_comments](#list_commit_comments)
 * [add_commit_comment](#add_commit_comment)
 * [close_issue](#close_issue)
 * [list_issues](#list_issues)
@@ -128,7 +129,6 @@ This README file is generated. Changes will be overwritten.
 * [list_pulls](#list_pulls)
 * [create_pull_request](#create_pull_request)
 * [update_pull_request](#update_pull_request)
-* [list_pull_request_comments](#list_pull_request_comments)
 * [transfer_repo](#transfer_repo)
 * [archive_repo](#archive_repo)
 
@@ -278,6 +278,9 @@ This README file is generated. Changes will be overwritten.
 ### add_comment
 
 
+### list_commit_comments
+
+
 ### add_commit_comment
 
 
@@ -324,9 +327,6 @@ This README file is generated. Changes will be overwritten.
 
 
 ### update_pull_request
-
-
-### list_pull_request_comments
 
 
 ### transfer_repo

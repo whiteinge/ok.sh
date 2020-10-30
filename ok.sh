@@ -2116,6 +2116,48 @@ add_comment() {
         | _filter_json "${_filter}"
 }
 
+list_commit_comments() {
+    # List comments of a specified commit.
+    # ( https://developer.github.com/v3/repos/comments/#list-commit-comments )
+    #
+    # Usage:
+    #
+    #     list_commit_comments someuser/somerepo sha
+    #
+    # Positional arguments
+    #
+    #   GitHub owner login or id for which to list branches
+    #   Name of the repo for which to list branches
+    #   Commit SHA
+    #
+    local repo="${1:?Repo name required.}"
+    local sha="${2:?Commit SHA is required.}"
+    shift 2
+
+    local _follow_next
+    #   Automatically look for a 'Links' header and follow any 'next' URLs.
+    local _follow_next_limit
+    #   Maximum number of 'next' URLs to follow before stopping.
+    local _filter='.[] | "\(.body)"'
+    #   A jq filter to apply to the return data.
+
+    _opts_pagination "$@"
+
+    #   A jq filter to apply to the return data.
+    #
+    # Querystring arguments may also be passed as keyword arguments:
+    #
+    # * `direction`
+    # * `sort`
+    # * `since`
+    local qs
+    _opts_filter "$@"
+    _opts_qs "$@"
+    url="/repos/${repo}/commits/${sha}/comments"
+    _get "${url}${qs}" | _filter_json "${_filter}"
+}
+
+
 add_commit_comment() {
     # Add a comment to a commit
     #
