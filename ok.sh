@@ -56,7 +56,7 @@
 
 NAME=$(basename "$0")
 export NAME
-export VERSION='0.5.1'
+export VERSION='0.7.0'
 
 export OK_SH_URL=${OK_SH_URL:-'https://api.github.com'}
 export OK_SH_ACCEPT=${OK_SH_ACCEPT:-'application/vnd.github.v3+json'}
