@@ -646,11 +646,11 @@ Keyword arguments
 
 ### org_auditlog
 
-List organization audit logs
+Interact with the Github Audit Log
 
 Usage:
 
-    org_audit org
+    org_auditlog org
 
 Positional arguments
 
