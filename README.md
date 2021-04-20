@@ -108,6 +108,7 @@ Flags _must_ be the first argument to `ok.sh`, before `command`.
 * [org_teams](#org_teams)
 * [org_members](#org_members)
 * [org_collaborators](#org_collaborators)
+* [org_auditlog](#org_auditlog)
 * [team_members](#team_members)
 * [list_repos](#list_repos)
 * [list_branches](#list_branches)
@@ -640,6 +641,26 @@ Positional arguments
 Keyword arguments
 
 * `_filter='.[] | "\(.login)\t\(.id)"'`
+
+  A jq filter to apply to the return data.
+
+### org_auditlog
+
+List organization audit logs
+
+Usage:
+
+    org_audit org
+
+Positional arguments
+
+* `org="$1"`
+
+  Organization GitHub login or id.
+
+Keyword arguments
+
+* `_filter='.[] | "\(.actor)\t\(.action)"'`
 
   A jq filter to apply to the return data.
 
