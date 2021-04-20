@@ -1168,6 +1168,33 @@ org_collaborators() {
     _get "/orgs/${org}/outside_collaborators${qs}" | _filter_json "${_filter}"
 }
 
+org_auditlog() {
+    # Interact with the Github Audit Log
+    #
+    # Usage:
+    #
+    #     org_auditlog org
+    #
+    # Positional arguments
+    #
+    local org="${1:?Org name required.}"
+    #   Organization GitHub login or id.
+    #
+    # Keyword arguments
+    #
+    local _filter='.[] | "\(.actor)\t\(.action)"'
+    #   A jq filter to apply to the return data.
+
+    local qs
+
+    shift 1
+
+    _opts_filter "$@"
+    _opts_qs "$@"
+
+    _get "/orgs/${org}/audit-log${qs}" | _filter_json "${_filter}"
+}
+
 team_members() {
     # List team members
     #
