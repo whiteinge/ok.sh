@@ -799,22 +799,25 @@ status_text: ${status_text}
         [ "$hdr" = "$crlf" ] && break
         val="${val%${crlf}}"
 
+        # Headers are case insensitive
+        hdr="$(printf '%s' "$hdr" | awk '{print toupper($0)}')"
+
         # Process each header; reformat some to work better with sh tools.
         case "$hdr" in
             # Update the GitHub rate limit trackers.
-            X-RateLimit-Remaining)
+            X-RATELIMIT-REMAINING)
                 printf 'GitHub remaining requests: %s\n' "$val" 1>&$LSUMMARY ;;
-            X-RateLimit-Reset)
+            X-RATELIMIT-RESET)
                 awk -v gh_reset="$val" 'BEGIN {
                     srand(); curtime = srand()
                     print "GitHub seconds to reset: " gh_reset - curtime
                 }' 1>&$LSUMMARY ;;
 
             # Remove quotes from the etag header.
-            ETag) val="${val#\"}"; val="${val%\"}" ;;
+            ETAG) val="${val#\"}"; val="${val%\"}" ;;
 
             # Split the URLs in the Link header into separate pseudo-headers.
-            Link) headers="${headers}$(printf '%s' "$val" | awk '
+            LINK) headers="${headers}$(printf '%s' "$val" | awk '
                 BEGIN { RS=", "; FS="; "; OFS=": " }
                 {
                     sub(/^rel="/, "", $2); sub(/"$/, "", $2)
