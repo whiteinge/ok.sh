@@ -790,9 +790,9 @@ _response() {
         fi
     done
 
-    headers="http_version: ${http_version}
-status_code: ${status_code}
-status_text: ${status_text}
+    headers="HTTP_VERSION: ${http_version}
+STATUS_CODE: ${status_code}
+STATUS_TEXT: ${status_text}
 "
     while IFS=": " read -r hdr val; do
         # Headers stop at the first blank line.
@@ -822,7 +822,7 @@ status_text: ${status_text}
                 {
                     sub(/^rel="/, "", $2); sub(/"$/, "", $2)
                     sub(/^ *</, "", $1); sub(/>$/, "", $1)
-                    print "Link_" $2, $1
+                    print "LINK_" toupper($2), $1
                 }')
 "  # need trailing newline
             ;;
@@ -836,6 +836,7 @@ status_text: ${status_text}
     # Output requested headers in deterministic order.
     for arg in "$@"; do
         _log debug "Outputting requested header '${arg}'."
+        arg="$(printf '%s' "$arg" | awk '{print toupper($0)}')"
         output=$(printf '%s' "$headers" | while IFS=": " read -r hdr val; do
             [ "$hdr" = "$arg" ] && printf '%s' "$val"
         done)
