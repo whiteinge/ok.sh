@@ -2420,6 +2420,49 @@ org_issues() {
     _get "/orgs/${org}/issues${qs}" | _filter_json "$_filter"
 }
 
+list_starred() {
+    # List starred repositories
+    #
+    # Usage:
+    #
+    #     list_starred
+    #     list_starred user
+    #
+    # Positional arguments
+    #
+    local user="$1"
+    #   Optional GitHub user login or id for which to list the starred repos.
+    #
+    # Keyword arguments
+    #
+    local _filter='.[] | "\(.name)\t\(.html_url)"'
+    #   A jq filter to apply to the return data.
+    #
+    # Querystring arguments may also be passed as keyword arguments:
+    #
+    # * `direction`
+    # * `per_page`
+    # * `sort`
+    # * `type`
+
+    # User is optional; is this a keyword arg?
+    case "$user" in *=*) user='' ;; esac
+    if [ -n "$user" ]; then shift 1; fi
+
+    local qs
+
+    _opts_filter "$@"
+    _opts_qs "$@"
+
+    if [ -n "$user" ] ; then
+        url="/users/${user}/starred"
+    else
+        url='/user/starred'
+    fi
+
+    _get "${url}${qs}" | _filter_json "${_filter}"
+}
+
 list_my_orgs() {
     # List your organizations
     #
