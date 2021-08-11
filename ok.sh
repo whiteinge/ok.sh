@@ -1250,8 +1250,10 @@ list_repos() {
     # * `sort`
     # * `type`
 
+    # User is optional; is this a keyword arg?
+    case "$user" in *=*) user='' ;; esac
+    if [ -n "$user" ]; then shift 1; fi
 
-    shift 1
     local qs
 
     _opts_filter "$@"
