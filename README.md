@@ -140,6 +140,7 @@ Flags _must_ be the first argument to `ok.sh`, before `command`.
 * [user_issues](#user_issues)
 * [create_issue](#create_issue)
 * [org_issues](#org_issues)
+* [list_starred](#list_starred)
 * [list_my_orgs](#list_my_orgs)
 * [list_orgs](#list_orgs)
 * [list_users](#list_users)
@@ -1619,6 +1620,34 @@ GitHub querystring arguments may also be passed as keyword arguments:
 * `since`
 * `sort`
 * `state`
+
+### list_starred
+
+List starred repositories
+
+Usage:
+
+    list_starred
+    list_starred user
+
+Positional arguments
+
+* `user="$1"`
+
+  Optional GitHub user login or id for which to list the starred repos.
+
+Keyword arguments
+
+* `_filter='.[] | "\(.name)\t\(.html_url)"'`
+
+  A jq filter to apply to the return data.
+
+Querystring arguments may also be passed as keyword arguments:
+
+* `direction`
+* `per_page`
+* `sort`
+* `type`
 
 ### list_my_orgs
 
