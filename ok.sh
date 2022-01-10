@@ -1998,6 +1998,54 @@ upload_asset() {
         | _filter_json "$_filter"
 }
 
+delete_asset() {
+    # Delete a release asset
+    #
+    # https://docs.github.com/en/rest/reference/releases#delete-a-release-asset
+    #
+    # Usage:
+    #
+    #     delete_asset user repo 51955388
+    #
+    # Example of deleting release assets:
+    #
+    #     ok.sh release_assets <user> <repo> <release_id> \
+    #             _filter='.[] | .id' \
+    #         | xargs -L1 ./ok.sh delete_asset "$myuser" "$myrepo"
+    #
+    # Example of the multi-step process for grabbing the release ID for
+    # a specific version, then grabbing the release asset IDs, and then
+    # deleting all the release assets (whew!):
+    #
+    #     username='myuser'
+    #     repo='myrepo'
+    #     release_tag='v1.2.3'
+    #     ok.sh list_releases "$myuser" "$myrepo" \
+    #         | awk -F'\t' -v tag="$release_tag" '$2 == tag { print $3 }' \
+    #         | xargs -I{} ./ok.sh release_assets "$myuser" "$myrepo" {} \
+    #             _filter='.[] | .id' \
+    #         | xargs -L1 ./ok.sh -y delete_asset "$myuser" "$myrepo"
+    #
+    # Positional arguments
+    #
+    local owner="${1:?Owner name required.}"
+    #   A GitHub user or organization.
+    local repo="${2:?Repo name required.}"
+    #   A GitHub repository.
+    local asset_id="${3:?Release asset ID required.}"
+    #   The unique ID of the release asset; see release_assets.
+
+    shift 3
+
+    local confirm
+
+    _get_confirm 'This will permanently delete a release asset. Continue?'
+    [ "$confirm" -eq 1 ] || exit 0
+
+    _delete "/repos/${owner}/${repo}/releases/assets/${asset_id}"
+    exit $?
+}
+
 # ### Issues
 # Create, update, edit, delete, list issues and milestones.
 
