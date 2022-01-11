@@ -129,6 +129,7 @@ Flags _must_ be the first argument to `ok.sh`, before `command`.
 * [delete_release](#delete_release)
 * [release_assets](#release_assets)
 * [upload_asset](#upload_asset)
+* [delete_asset](#delete_asset)
 * [list_milestones](#list_milestones)
 * [create_milestone](#create_milestone)
 * [list_issue_comments](#list_issue_comments)
@@ -1290,6 +1291,47 @@ Keyword arguments
   A jq filter to apply to the return data.
 
 Also any other keyword arguments accepted by `_post()`.
+
+### delete_asset
+
+Delete a release asset
+
+https://docs.github.com/en/rest/reference/releases#delete-a-release-asset
+
+Usage:
+
+    delete_asset user repo 51955388
+
+Example of deleting release assets:
+
+    ok.sh release_assets <user> <repo> <release_id> \
+            _filter='.[] | .id' \
+        | xargs -L1 ./ok.sh delete_asset "$myuser" "$myrepo"
+
+Example of the multi-step process for grabbing the release ID for
+a specific version, then grabbing the release asset IDs, and then
+deleting all the release assets (whew!):
+
+    username='myuser'
+    repo='myrepo'
+    release_tag='v1.2.3'
+    ok.sh list_releases "$myuser" "$myrepo" \
+        | awk -F'\t' -v tag="$release_tag" '$2 == tag { print $3 }' \
+        | xargs -I{} ./ok.sh release_assets "$myuser" "$myrepo" {} \
+            _filter='.[] | .id' \
+        | xargs -L1 ./ok.sh -y delete_asset "$myuser" "$myrepo"
+
+Positional arguments
+
+* `owner="$1"`
+
+  A GitHub user or organization.
+* `repo="$2"`
+
+  A GitHub repository.
+* `asset_id="$3"`
+
+  The unique ID of the release asset; see release_assets.
 
 ### list_milestones
 
