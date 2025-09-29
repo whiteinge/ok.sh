@@ -2865,4 +2865,55 @@ archive_repo() {
         | _filter_json "$_filter"
 }
 
+list_notifications() {
+    # List notifications for the authenticated user
+    #
+    # Usage:
+    #
+    #     list_notifications
+    #     list_notifications all=false
+    #     list_notifications participating=false
+    #     list_notifications since=YYYY-MM-DDTHH:MM:SSZ
+    #     list_notifications before=YYYY-MM-DDTHH:MM:SSZ
+    #
+    # Keyword arguments
+    #
+    local _follow_next
+    #   Automatically look for a 'Links' header and follow any 'next' URLs.
+    local _follow_next_limit
+    #   Maximum number of 'next' URLs to follow before stopping.
+    local _filter='.[] | "\(.id)\t\(.unread)\t\(.reason)\t\(.updated_at)\t\(.repository.full_name)\t\(.subject.title)"'
+    #   A jq filter to apply to the return data.
+    #
+    # GitHub querystring arguments may also be passed as keyword arguments:
+    #
+    # * `all`
+    # * `participating`
+    # * `since`
+    # * `before`
+
+    local qs
+
+    _opts_pagination "$@"
+    _opts_filter "$@"
+    _opts_qs "$@"
+
+    _get "/notifications${qs}" | _filter_json "$_filter"
+}
+
+read_thread() {
+    # Mark a thread as done
+    #
+    # Usage:
+    #
+    #     read_thread <thread-id>
+    #
+    # Positional arguments
+    #
+    local thread_id="${1:?Thread id required.}"
+    #   The thread id (returned from list_notifications)
+
+    _delete "/notifications/threads/${thread_id}"
+}
+
 __main "$@"
